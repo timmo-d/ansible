@@ -1,0 +1,42 @@
+- name: Ensure .ssh directory exists
+  file:
+    path: /home/admin/.ssh
+    state: directory
+    owner: admin
+    group: admin
+    mode: '0700'
+
+- name: Backup existing keypair if present
+  shell: |
+    mv /home/admin/.ssh/id_rsa /home/admin/.ssh/id_rsa.old_{{ ansible_date_time.iso8601 }}
+    mv /home/admin/.ssh/id_rsa.pub /home/admin/.ssh/id_rsa.old_{{ ansible_date_time.iso8601 }}.pub
+  args:
+    creates: /home/admin/.ssh/id_rsa.old_{{ ansible_date_time.iso8601 }}
+  become_user: admin
+  when: ansible_facts['ansible_local']['ssh_keys']['id_rsa'] is defined
+
+- name: Generate new SSH keypair
+  command: >
+    ssh-keygen -t rsa -b 4096 -f /home/admin/.ssh/id_rsa -N ""
+  args:
+    creates: /home/admin/.ssh/id_rsa
+  become_user: admin
+
+- name: Set permissions on new keys
+  file:
+    path: "{{ item }}"
+    owner: admin
+    group: admin
+    mode: "{{ '0600' if item.endswith('.rsa') else '0644' }}"
+  loop:
+    - /home/admin/.ssh/id_rsa
+    - /home/admin/.ssh/id_rsa.pub
+
+- name: Inject new public key into authorized_keys
+  copy:
+    src: /home/admin/.ssh/id_rsa.pub
+    dest: /home/admin/.ssh/authorized_keys
+    remote_src: yes
+    owner: admin
+    group: admin
+    mode: '0600'
