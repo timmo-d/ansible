@@ -1,0 +1,1 @@
+system_is_container: "{{ ansible_virtualization_type in ['docker', 'lxc'] }}"
