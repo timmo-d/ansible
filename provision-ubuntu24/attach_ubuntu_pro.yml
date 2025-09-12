@@ -2,8 +2,11 @@
 - name: Attach to Ubuntu Pro using config file and enable FIPS + USG
   hosts: all
   become: true
+  environment:
+    UBUNTU_PRO_TOKEN: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
   vars:
     ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
+
 
   tasks:
 
