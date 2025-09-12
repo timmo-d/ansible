@@ -9,7 +9,10 @@
 
 
   tasks:
-
+    - name: Show Ubuntu Pro token
+      debug:
+        msg: "Token is {{ ubuntu_pro_token }}"
+    
     - name: Ensure 'pro' CLI is installed
       apt:
         name: ubuntu-advantage-tools
