@@ -1,0 +1,22 @@
+- name: Disable guest account
+  lineinfile:
+    path: /etc/lightdm/lightdm.conf
+    regexp: '^allow-guest'
+    line: 'allow-guest=false'
+    create: yes
+  tags:
+    - UBUNTU-24-020010
+    - disruption
+    - stig
+    - usg
+
+- name: Disable graphical login
+  systemd:
+    name: graphical.target
+    enabled: no
+    masked: yes
+  tags:
+    - UBUNTU-24-020020
+    - disruption
+    - stig
+    - usg
