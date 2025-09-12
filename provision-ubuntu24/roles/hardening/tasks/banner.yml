@@ -1,0 +1,12 @@
+- name: Set DoD login banner
+  copy:
+    dest: /etc/issue
+    content: "{{ lookup('template', 'banner.txt.j2') }}"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - UBUNTU-24-010100
+    - banner
+    - stig
+    - usg
