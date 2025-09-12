@@ -1,0 +1,16 @@
+file:
+  /etc/ssh/sshd_config:
+    exists: true
+    contains:
+      - 'PermitRootLogin no'
+      - 'Protocol 2'
+
+  /etc/cron.allow:
+    exists: true
+    mode: '0600'
+    owner: root
+    group: root
+
+package:
+  auditd:
+    installed: true
