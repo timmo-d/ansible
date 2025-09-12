@@ -1,0 +1,23 @@
+- name: Set permissions on /etc/passwd
+  file:
+    path: /etc/passwd
+    mode: '0644'
+    owner: root
+    group: root
+  tags:
+    - UBUNTU-24-010140
+    - file_permissions
+    - stig
+    - usg
+
+- name: Set permissions on /etc/shadow
+  file:
+    path: /etc/shadow
+    mode: '0000'
+    owner: root
+    group: shadow
+  tags:
+    - UBUNTU-24-010150
+    - file_permissions
+    - stig
+    - usg
