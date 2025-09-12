@@ -1,9 +1,0 @@
----
-roles:
-
-  - name: cloudflared
-    src: git+https://github.com/example-org/ansible-role-cloudflared.git
-    version: main
-
-  - name: geerlingguy.security
-    version: 2.0.0
