@@ -8,4 +8,4 @@
 
 - name: Set timezone
   timezone:
-    name: "AWST"
+    name: "UTC+08:00"
