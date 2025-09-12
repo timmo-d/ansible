@@ -14,26 +14,28 @@
   set_fact:
     pro_status: "{{ pro_status_raw.stdout | from_json }}"
 
-- name: Fail if already attached to another account
-  fail:
-    msg: "System already attached to {{ pro_status.account.email }}. Detach first if you want to re-attach."
-  when: pro_status.account.contract_token | default('') != ''
+- name: Skip Ubuntu Pro attach if already attached
+  debug:
+    msg: "System already attached to {{ pro_status.account.email }}. Skipping attach and config creation."
+  when: pro_status.account.email | default('') != ''
   tags: always
 
-- name: Create Ubuntu Pro attach config file
-  copy:
-    content: |
-      token: "{{ ubuntu_pro_token }}"
-      enable_services:
-        - usg
-    dest: /tmp/pro-attach-config.yaml
-    mode: '0600'
-  when: pro_status.account.contract_token | default('') == ''
+- block:
 
-- name: Attach to Ubuntu Pro using config file
-  command: pro attach --attach-config /tmp/pro-attach-config.yaml
-  register: pro_attach_result
-  changed_when: "'already attached' not in pro_attach_result.stdout"
+    - name: Create Ubuntu Pro attach config file
+      copy:
+        content: |
+          token: "{{ ubuntu_pro_token }}"
+          enable_services:
+            - usg
+        dest: /tmp/pro-attach-config.yaml
+        mode: '0600'
+
+    - name: Attach to Ubuntu Pro using config file
+      command: pro attach --attach-config /tmp/pro-attach-config.yaml
+      register: pro_attach_result
+      changed_when: "'already attached' not in pro_attach_result.stdout"
+
   when: pro_status.account.email | default('') == ''
 
 - name: Skip USG enablement if already active
@@ -46,6 +48,12 @@
   register: usg_enable
   changed_when: "'enabled' in usg_enable.stdout"
   when: "'usg' not in pro_status.enabled_services"
+
+- name: Save Ubuntu Pro status to audit log
+  copy:
+    content: "{{ pro_status_raw.stdout }}"
+    dest: /var/log/ubuntu-pro-status.json
+    mode: '0640'
 
 - name: Show final Ubuntu Pro status
   command: pro status
