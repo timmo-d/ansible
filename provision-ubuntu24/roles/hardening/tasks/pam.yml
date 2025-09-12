@@ -1,0 +1,10 @@
+- name: Ensure no accounts have null passwords
+  command: "awk -F: '($2 == \"\") { print $1 }' /etc/shadow"
+  register: null_passwd_accounts
+  changed_when: false
+  failed_when: null_passwd_accounts.stdout != ""
+  tags:
+    - UBUNTU-24-010110
+    - pam
+    - stig
+    - usg
