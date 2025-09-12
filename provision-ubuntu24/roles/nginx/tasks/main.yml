@@ -4,7 +4,7 @@
     state: present
     update_cache: yes
 
-- name: Configure NGINX securely
+- name: Configure NGINX for loopback-only access
   template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf
