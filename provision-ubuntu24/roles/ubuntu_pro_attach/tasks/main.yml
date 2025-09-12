@@ -18,24 +18,9 @@
   debug:
     msg: "System already attached to {{ pro_status.account.email }}. Skipping attach and config creation."
   when: pro_status.account.email | default('') != ''
-  tags: always
 
-- block:
-
-    - name: Create Ubuntu Pro attach config file
-      copy:
-        content: |
-          token: "{{ ubuntu_pro_token }}"
-          enable_services:
-            - usg
-        dest: /tmp/pro-attach-config.yaml
-        mode: '0600'
-
-    - name: Attach to Ubuntu Pro using config file
-      command: pro attach --attach-config /tmp/pro-attach-config.yaml
-      register: pro_attach_result
-      changed_when: "'already attached' not in pro_attach_result.stdout"
-
+- name: Include attach tasks only if not already attached
+  include_tasks: attach.yml
   when: pro_status.account.email | default('') == ''
 
 - name: Skip USG enablement if already active
