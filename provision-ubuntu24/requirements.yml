@@ -1,0 +1,12 @@
+---
+roles:
+  - name: ubuntu_pro_attach
+    src: ../roles/ubuntu_pro_attach
+    type: path
+
+  - name: cloudflared
+    src: git+https://github.com/example-org/ansible-role-cloudflared.git
+    version: main
+
+  - name: geerlingguy.security
+    version: 2.0.0
