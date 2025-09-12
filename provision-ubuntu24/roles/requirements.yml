@@ -1,0 +1,15 @@
+---
+roles:
+  # Local Ubuntu Pro attachment role
+  - name: ubuntu_pro_attach
+    src: ../../roles/ubuntu_pro_attach
+    type: path
+
+  # Cloudflare tunnel setup role
+  - name: cloudflared
+    src: git+https://github.com/example-org/ansible-role-cloudflared.git
+    version: main
+
+  # General security hardening
+  - name: geerlingguy.security
+    version: 2.0.0
