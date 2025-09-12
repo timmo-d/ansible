@@ -1,0 +1,21 @@
+- name: Disable SSH root login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+  tags:
+    - UBUNTU-24-010050
+    - ssh
+    - stig
+    - usg
+
+- name: Enforce SSH protocol 2
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^Protocol'
+    line: 'Protocol 2'
+  tags:
+    - UBUNTU-24-010060
+    - ssh
+    - stig
+    - usg
