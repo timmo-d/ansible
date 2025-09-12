@@ -1,78 +1,25 @@
-- name: STIG Control Matrix — Ubuntu 24.04
-  hosts: all
-  become: true
-  tasks:
+- name: Load container detection
+  include_vars: ../vars/is_container.yml
 
-    - name: Ensure auditd is installed
-      apt:
-        name: auditd
-        state: present
-      tags: [stig, usg, rule_id: "SV-230346r627751_rule"]
+- name: Include auditd controls
+  include_tasks: auditd.yml
+  when:
+    - "'auditd' in stig_enabled_tags"
+    - not system_is_container | default(false)
 
-    - name: Configure auditd retention
-      lineinfile:
-        path: /etc/audit/auditd.conf
-        regexp: '^max_log_file_action'
-        line: 'max_log_file_action = ROTATE'
-      tags: [stig, usg, rule_id: "SV-230347r627752_rule"]
+- name: Include SSH controls
+  include_tasks: ssh.yml
+  when:
+    - "'ssh' in stig_enabled_tags"
+    - not system_is_container | default(false)
 
-    - name: Disable core dumps
-      sysctl:
-        name: fs.suid_dumpable
-        value: 0
-        sysctl_set: yes
-        state: present
-      tags: [stig, usg, rule_id: "SV-230345r627750_rule"]
+- name: Include cron controls
+  include_tasks: cron.yml
+  when:
+    - "'cron' in stig_enabled_tags"
+    - not system_is_container | default(false)
 
-    - name: Restrict cron access
-      file:
-        path: /etc/cron.allow
-        state: touch
-        mode: '0600'
-        owner: root
-        group: root
-      tags: [stig, usg, rule_id: "SV-230348r627753_rule"]
-
-    - name: Set password hashing algorithm to SHA-512
-      lineinfile:
-        path: /etc/login.defs
-        regexp: '^ENCRYPT_METHOD'
-        line: 'ENCRYPT_METHOD SHA512'
-      tags: [stig, usg, rule_id: "SV-230349r627754_rule"]
-
-    - name: Disable unused filesystems
-      mount:
-        path: /proc/sys/fs/binfmt_misc
-        state: absent
-      tags: [stig, usg, rule_id: "SV-230350r627755_rule"]
-
-    - name: Set permissions on /etc/passwd
-      file:
-        path: /etc/passwd
-        mode: '0644'
-        owner: root
-        group: root
-      tags: [stig, usg, rule_id: "SV-230351r627756_rule"]
-
-    - name: Set permissions on /etc/shadow
-      file:
-        path: /etc/shadow
-        mode: '0000'
-        owner: root
-        group: shadow
-      tags: [stig, usg, rule_id: "SV-230352r627757_rule"]
-
-    - name: Disable IPv6 if not required
-      sysctl:
-        name: net.ipv6.conf.all.disable_ipv6
-        value: 1
-        sysctl_set: yes
-        state: present
-      tags: [stig, usg, rule_id: "SV-230353r627758_rule"]
-
-    - name: Ensure SSH uses protocol 2
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^Protocol'
-        line: 'Protocol 2'
-      tags: [stig, usg, rule_id: "SV-230354r627759_rule"]
+- name: Include disruption controls
+  include_tasks: disruption.yml
+  when:
+    - ubuntu24stig_disruption_high | bool
