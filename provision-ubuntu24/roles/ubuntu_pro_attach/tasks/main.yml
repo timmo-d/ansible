@@ -14,6 +14,14 @@
   set_fact:
     pro_status: "{{ pro_status_raw.stdout | from_json }}"
 
+- name: Log current attachment status
+  debug:
+    msg: "System is currently attached to: {{ pro_status.account.email | default('UNATTACHED') }}"
+
+- name: Include attach logic only if system is not already attached
+  include_tasks: "{{ role_path }}/tasks/attach.yml"
+  when: pro_status.account.email is not defined or pro_status.account.email | trim == ''
+
 - name: Skip Ubuntu Pro attach if already attached
   debug:
     msg: "System already attached to {{ pro_status.account.email }}. Skipping attach and config creation."
