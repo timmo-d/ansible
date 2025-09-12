@@ -1,0 +1,7 @@
+stig_enabled_tags:
+  - auditd
+  - ssh
+  - cron
+
+ubuntu24stig_disruption_high: false
+ubtu24stig_run_audit: true
