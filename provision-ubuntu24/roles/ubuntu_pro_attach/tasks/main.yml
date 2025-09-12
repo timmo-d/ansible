@@ -1,0 +1,57 @@
+---
+- name: Ensure 'pro' CLI is installed
+  apt:
+    name: ubuntu-advantage-tools
+    state: present
+    update_cache: yes
+
+- name: Check current Ubuntu Pro status
+  command: pro status --format json
+  register: pro_status_raw
+  changed_when: false
+
+- name: Parse Ubuntu Pro status
+  set_fact:
+    pro_status: "{{ pro_status_raw.stdout | from_json }}"
+
+- name: Fail if already attached to another account
+  fail:
+    msg: "System already attached to {{ pro_status.account.email }}. Detach first if you want to re-attach."
+  when: pro_status.account.contract_token | default('') != ''
+  tags: always
+
+- name: Create Ubuntu Pro attach config file
+  copy:
+    content: |
+      token: "{{ ubuntu_pro_token }}"
+      enable_services:
+        - usg
+    dest: /tmp/pro-attach-config.yaml
+    mode: '0600'
+  when: pro_status.account.contract_token | default('') == ''
+
+- name: Attach to Ubuntu Pro using config file
+  command: pro attach --attach-config /tmp/pro-attach-config.yaml
+  register: pro_attach_result
+  changed_when: "'already attached' not in pro_attach_result.stdout"
+  when: pro_status.account.contract_token | default('') == ''
+
+- name: Skip USG enablement if already active
+  debug:
+    msg: "USG already enabled. Skipping."
+  when: "'usg' in pro_status.enabled_services"
+
+- name: Enable USG (Ubuntu Security Guide)
+  command: pro enable usg
+  register: usg_enable
+  changed_when: "'enabled' in usg_enable.stdout"
+  when: "'usg' not in pro_status.enabled_services"
+
+- name: Show final Ubuntu Pro status
+  command: pro status
+  register: final_status
+  changed_when: false
+
+- name: Display final status
+  debug:
+    var: final_status.stdout
