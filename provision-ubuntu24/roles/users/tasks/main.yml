@@ -1,12 +1,45 @@
-- name: Create admin user
+- name: Ensure admin user exists
   user:
-    name: "admin"
-    groups: "sudo"
-    shell: "/bin/bash"
+    name: admin
+    groups: sudo
+    shell: /bin/bash
     state: present
     create_home: yes
 
-- name: Set authorized key for admin
-  authorized_key:
-    user: "admin"
-    key: "{{ lookup('file', 'files/admin.pub') }}"
+- name: Create .ssh directory for admin
+  file:
+    path: /home/admin/.ssh
+    state: directory
+    owner: admin
+    group: admin
+    mode: '0700'
+
+- name: Generate SSH keypair for admin (if not exists)
+  command: >
+    ssh-keygen -t rsa -b 4096 -f /home/admin/.ssh/id_rsa -N ""
+  args:
+    creates: /home/admin/.ssh/id_rsa
+  become_user: admin
+
+- name: Set permissions on private key
+  file:
+    path: /home/admin/.ssh/id_rsa
+    owner: admin
+    group: admin
+    mode: '0600'
+
+- name: Set permissions on public key
+  file:
+    path: /home/admin/.ssh/id_rsa.pub
+    owner: admin
+    group: admin
+    mode: '0644'
+
+- name: Inject public key into authorized_keys
+  copy:
+    src: /home/admin/.ssh/id_rsa.pub
+    dest: /home/admin/.ssh/authorized_keys
+    remote_src: yes
+    owner: admin
+    group: admin
+    mode: '0600'
