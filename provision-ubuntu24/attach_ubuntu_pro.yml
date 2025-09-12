@@ -48,3 +48,12 @@
         pre_reboot_delay: 0
         post_reboot_delay: 30
       when: "'enabled' in fips_enable.stdout"
+
+    - name: Verify FIPS mode is active
+      command: fips-mode-setup --check
+      register: fips_check
+      changed_when: false
+
+    - name: Show FIPS verification result
+      debug:
+        var: fips_check.stdout
