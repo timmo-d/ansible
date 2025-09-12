@@ -1,0 +1,11 @@
+- name: Ensure FIPS mode is enabled
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX='
+    line: 'GRUB_CMDLINE_LINUX="fips=1"'
+  notify: Update grub
+  tags:
+    - UBUNTU-24-010120
+    - fips
+    - stig
+    - usg
