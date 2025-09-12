@@ -12,3 +12,4 @@
   command: pro attach --attach-config /tmp/pro-attach-config.yaml
   register: pro_attach_result
   changed_when: "'already attached' not in pro_attach_result.stderr"
+  failed_when: "'already attached' not in pro_attach_result.stderr and pro_attach_result.rc != 0"
