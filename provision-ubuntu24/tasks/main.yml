@@ -1,0 +1,38 @@
+- name: Load container detection
+  include_vars: ../vars/is_container.yml
+
+- name: Include auditd controls
+  include_tasks: auditd.yml
+  when: "'auditd' in stig_enabled_tags and not system_is_container | default(false)"
+
+- name: Include SSH controls
+  include_tasks: ssh.yml
+  when: "'ssh' in stig_enabled_tags and not system_is_container | default(false)"
+
+- name: Include PAM controls
+  include_tasks: pam.yml
+  when: "'pam' in stig_enabled_tags"
+
+- name: Include banner controls
+  include_tasks: banner.yml
+  when: "'banner' in stig_enabled_tags"
+
+- name: Include cron controls
+  include_tasks: cron.yml
+  when: "'cron' in stig_enabled_tags"
+
+- name: Include FIPS cryptography controls
+  include_tasks: fips.yml
+  when: "'fips' in stig_enabled_tags"
+
+- name: Include Ctrl-Alt-Del controls
+  include_tasks: ctrl_alt_del.yml
+  when: "'ctrl_alt_del' in stig_enabled_tags"
+
+- name: Include file permission controls
+  include_tasks: file_permissions.yml
+  when: "'file_permissions' in stig_enabled_tags"
+
+- name: Include disruption controls
+  include_tasks: disruption.yml
+  when: ubuntu24stig_disruption_high | bool
