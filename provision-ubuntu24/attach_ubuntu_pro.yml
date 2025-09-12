@@ -5,7 +5,7 @@
   environment:
     UBUNTU_PRO_TOKEN: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
   vars:
-    ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
+    ubuntu_pro_token: "{{ ubuntu_pro_token }}"
 
 
   tasks:
