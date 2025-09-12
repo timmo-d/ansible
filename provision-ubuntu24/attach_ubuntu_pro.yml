@@ -1,0 +1,41 @@
+---
+- name: Attach to Ubuntu Pro and enable FIPS + USG
+  hosts: all
+  become: true
+  vars:
+    ubuntu_pro_token: "YOUR_UBUNTU_PRO_TOKEN"  # Replace with your actual token
+
+  tasks:
+
+    - name: Ensure 'pro' CLI is installed
+      apt:
+        name: ubuntu-advantage-tools
+        state: present
+        update_cache: yes
+
+    - name: Attach system to Ubuntu Pro
+      command: >
+        pro attach {{ ubuntu_pro_token }}
+      register: pro_attach_result
+      changed_when: "'already attached' not in pro_attach_result.stdout"
+
+    - name: Enable FIPS
+      command: >
+        pro enable fips
+      register: fips_enable
+      changed_when: "'enabled' in fips_enable.stdout"
+
+    - name: Enable USG (Ubuntu Security Guide)
+      command: >
+        pro enable usg
+      register: usg_enable
+      changed_when: "'enabled' in usg_enable.stdout"
+
+    - name: Display enabled services
+      command: pro status
+      register: pro_status
+      changed_when: false
+
+    - name: Show Ubuntu Pro status
+      debug:
+        var: pro_status.stdout
