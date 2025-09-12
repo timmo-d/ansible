@@ -15,7 +15,7 @@
 
     - name: Attach system to Ubuntu Pro
       command: >
-        pro attach {{ ubuntu_pro_token }} --assume-yes
+        pro attach {{ ubuntu_pro_token }}
       register: pro_attach_result
       changed_when: "'already attached' not in pro_attach_result.stdout"
       ignore_errors: false
