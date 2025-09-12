@@ -20,7 +20,7 @@
   when: pro_status.account.email | default('') != ''
 
 - name: Include attach tasks only if not already attached
-  include_tasks: attach.yml
+  include_tasks: "{{ role_path }}/tasks/attach.yml"
   when: pro_status.account.email | default('') == ''
 
 - name: Skip USG enablement if already active
