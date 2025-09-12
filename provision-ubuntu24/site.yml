@@ -1,0 +1,10 @@
+- name: Provision Ubuntu 24.04 Server
+  hosts: all
+  become: true
+  roles:
+    - common
+    - users
+    - ssh
+    - firewall
+    - packages
+    - hardening
