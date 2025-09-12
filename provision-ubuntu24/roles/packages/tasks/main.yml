@@ -1,0 +1,8 @@
+- name: Install essential packages
+  apt:
+    name:
+      - curl
+      - nano
+      - git
+      - htop
+    state: present
