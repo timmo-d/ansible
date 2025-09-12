@@ -1,0 +1,13 @@
+- name: Disable core dumps
+  sysctl:
+    name: fs.suid_dumpable
+    value: 0
+    state: present
+    sysctl_set: yes
+  tags: [stig, rule_id: "SV-230345r627750_rule"]
+
+- name: Ensure auditd is installed
+  apt:
+    name: auditd
+    state: present
+  tags: [stig, rule_id: "SV-230346r627751_rule"]
