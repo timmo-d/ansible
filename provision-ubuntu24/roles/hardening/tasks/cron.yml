@@ -1,0 +1,12 @@
+- name: Restrict cron access
+  file:
+    path: /etc/cron.allow
+    state: touch
+    mode: '0600'
+    owner: root
+    group: root
+  tags:
+    - UBUNTU-24-010070
+    - cron
+    - stig
+    - usg
