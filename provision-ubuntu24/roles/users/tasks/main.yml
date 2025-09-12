@@ -1,0 +1,12 @@
+- name: Create admin user
+  user:
+    name: "admin"
+    groups: "sudo"
+    shell: "/bin/bash"
+    state: present
+    create_home: yes
+
+- name: Set authorized key for admin
+  authorized_key:
+    user: "admin"
+    key: "{{ lookup('file', 'files/admin.pub') }}"
