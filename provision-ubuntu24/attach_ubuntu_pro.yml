@@ -1,5 +1,5 @@
 ---
-- name: Attach to Ubuntu Pro and enable FIPS + USG
+- name: Attach to Ubuntu Pro using config file and enable FIPS + USG
   hosts: all
   become: true
   vars:
@@ -13,24 +13,25 @@
         state: present
         update_cache: yes
 
-    - name: Attach system to Ubuntu Pro
-      command: >
-        pro attach {{ ubuntu_pro_token }}
+    - name: Validate Ubuntu Pro token
+      fail:
+        msg: "UBUNTU_PRO_TOKEN is not set or invalid."
+      when: ubuntu_pro_token is undefined or ubuntu_pro_token | length < 10
+
+    - name: Create Ubuntu Pro attach config file
+      copy:
+        content: |
+          token: "{{ ubuntu_pro_token }}"
+          enable_services:
+            - fips
+            - usg
+        dest: /tmp/pro-attach-config.yaml
+        mode: '0600'
+
+    - name: Attach to Ubuntu Pro using config file
+      command: pro attach --attach-config /tmp/pro-attach-config.yaml
       register: pro_attach_result
       changed_when: "'already attached' not in pro_attach_result.stdout"
-      ignore_errors: false
-
-    - name: Enable FIPS
-      command: >
-        pro enable fips
-      register: fips_enable
-      changed_when: "'enabled' in fips_enable.stdout"
-
-    - name: Enable USG (Ubuntu Security Guide)
-      command: >
-        pro enable usg
-      register: usg_enable
-      changed_when: "'enabled' in usg_enable.stdout"
 
     - name: Display enabled services
       command: pro status
@@ -48,7 +49,7 @@
         reboot_timeout: 600
         pre_reboot_delay: 0
         post_reboot_delay: 30
-      when: "'enabled' in fips_enable.stdout"
+      when: "'fips' in pro_status.stdout"
 
     - name: Verify FIPS mode is active
       command: fips-mode-setup --check
