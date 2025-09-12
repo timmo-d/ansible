@@ -1,7 +1,7 @@
 ---
 roles:
   - name: ubuntu_pro_attach
-    src: roles/ubuntu_pro_attach
+    src: ./roles/ubuntu_pro_attach
     type: path
 
   - name: cloudflared
