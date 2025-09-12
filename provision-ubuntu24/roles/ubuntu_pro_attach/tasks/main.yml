@@ -34,7 +34,7 @@
   command: pro attach --attach-config /tmp/pro-attach-config.yaml
   register: pro_attach_result
   changed_when: "'already attached' not in pro_attach_result.stdout"
-  when: pro_status.account.contract_token | default('') == ''
+  when: pro_status.account.email | default('') == ''
 
 - name: Skip USG enablement if already active
   debug:
