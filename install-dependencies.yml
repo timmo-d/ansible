@@ -1,0 +1,17 @@
+---
+- name: Install Ansible roles and collections
+  hosts: localhost
+  gather_facts: false
+  tasks:
+
+    - name: Install roles from provision-ubuntu24 manifest
+      ansible.builtin.command:
+        cmd: ansible-galaxy install -r provision-ubuntu24/roles/requirements.yml --force
+      register: role_install
+      changed_when: "'was installed successfully' in role_install.stdout"
+
+    - name: Install collections from global manifest
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection install -r collections/requirements.yml --force
+      register: collection_install
+      changed_when: "'was installed successfully' in collection_install.stdout"
