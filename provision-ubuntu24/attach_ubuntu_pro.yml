@@ -5,11 +5,10 @@
   vars:
     ubuntu_pro_token: "{{ ubuntu_pro_token }}"
 
-
   tasks:
     - name: Show Ubuntu Pro token
       debug:
-        msg: "Token is {{ ubuntu_pro_token }}"
+        msg: "Token is {{ ubuntu_pro_token | default('NOT SET') }}"
     
     - name: Ensure 'pro' CLI is installed
       apt:
