@@ -11,3 +11,8 @@
     - role: hardening       # Apply full STIG controls
     - role: nginx           # Hardened reverse proxy on loopback
     - role: cloudflared     # Secure outbound tunnel to Cloudflare
+    - role: common
+    - role: firewall
+    - role: packages
+    - role: ssh
+    
