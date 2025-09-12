@@ -1,10 +1,9 @@
-- name: Provision Ubuntu 24.04 Server
+---
+- name: STIG-Compliant Hardening for Ubuntu 24.04
   hosts: all
   become: true
+  vars_files:
+    - group_vars/all.yml
+
   roles:
-    - common
-    - users
-    - ssh
-    - firewall
-    - packages
-    - hardening
+    - role: hardening
