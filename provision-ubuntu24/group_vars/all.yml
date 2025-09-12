@@ -1,7 +1,12 @@
 stig_enabled_tags:
   - auditd
   - ssh
+  - pam
+  - banner
   - cron
+  - fips
+  - ctrl_alt_del
+  - file_permissions
 
 ubuntu24stig_disruption_high: false
 ubtu24stig_run_audit: true
