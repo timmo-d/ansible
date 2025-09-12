@@ -6,6 +6,9 @@
     - group_vars/all.yml
 
   roles:
+    - role: ubuntu_pro_attach
+      vars:
+        ubuntu_pro_token: "{{ ubuntu_pro_token }}"
     - role: users           # Create admin user and SSH keypair
     - role: key_rotation    # Rotate admin SSH key securely
     - role: hardening       # Apply full STIG controls
