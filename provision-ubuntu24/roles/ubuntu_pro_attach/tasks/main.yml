@@ -22,15 +22,6 @@
   include_tasks: "{{ role_path }}/tasks/attach.yml"
   when: pro_status.account.email is not defined or pro_status.account.email | trim == ''
 
-- name: Skip Ubuntu Pro attach if already attached
-  debug:
-    msg: "System already attached to {{ pro_status.account.email }}. Skipping attach and config creation."
-  when: pro_status.account.email | default('') != ''
-
-- name: Include attach tasks only if not already attached
-  include_tasks: "{{ role_path }}/tasks/attach.yml"
-  when: pro_status.account.email | default('') == ''
-
 - name: Skip USG enablement if already active
   debug:
     msg: "USG already enabled. Skipping."
