@@ -1,0 +1,20 @@
+- name: Install auditd
+  apt:
+    name: auditd
+    state: present
+  tags:
+    - UBUNTU-24-010010
+    - auditd
+    - stig
+    - usg
+
+- name: Configure auditd retention
+  lineinfile:
+    path: /etc/audit/auditd.conf
+    regexp: '^max_log_file_action'
+    line: 'max_log_file_action = ROTATE'
+  tags:
+    - UBUNTU-24-010020
+    - auditd
+    - stig
+    - usg
