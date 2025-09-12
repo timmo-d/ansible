@@ -6,7 +6,7 @@
     state: present
   with_items:
     - { regexp: '^PermitRootLogin', line: 'PermitRootLogin no' }
-    - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication no' }
+    - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication yes' }
     - { regexp: '^X11Forwarding', line: 'X11Forwarding no' }
 
 - name: Restart SSH
