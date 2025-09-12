@@ -11,4 +11,4 @@
 - name: Attach to Ubuntu Pro using config file
   command: pro attach --attach-config /tmp/pro-attach-config.yaml
   register: pro_attach_result
-  changed_when: "'already attached' not in pro_attach_result.stdout"
+  changed_when: "'already attached' not in pro_attach_result.stderr"
