@@ -1,0 +1,9 @@
+- name: Disable Ctrl-Alt-Del reboot
+  systemd:
+    name: ctrl-alt-del.target
+    masked: yes
+  tags:
+    - UBUNTU-24-010130
+    - ctrl_alt_del
+    - stig
+    - usg
