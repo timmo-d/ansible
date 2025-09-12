@@ -1,64 +1,55 @@
 ---
-- name: Attach to Ubuntu Pro using config file and enable FIPS + USG
+- name: Conditionally attach to Ubuntu Pro and enable USG
   hosts: all
   become: true
   vars:
-    ubuntu_pro_token: "{{ ubuntu_pro_token }}"
+    ubuntu_pro_token: "{{ ubuntu_pro_token }}"  # Passed via SemaphoreUI CLI args
 
   tasks:
-    - name: Show Ubuntu Pro token
-      debug:
-        msg: "Token is {{ ubuntu_pro_token | default('NOT SET') }}"
-    
+
     - name: Ensure 'pro' CLI is installed
       apt:
         name: ubuntu-advantage-tools
         state: present
         update_cache: yes
 
-    - name: Validate Ubuntu Pro token
-      fail:
-        msg: "UBUNTU_PRO_TOKEN is not set or invalid."
-      when: ubuntu_pro_token is undefined or ubuntu_pro_token | length < 10
+    - name: Check current Ubuntu Pro status
+      command: pro status --format json
+      register: pro_status_raw
+      changed_when: false
 
-    - name: Create Ubuntu Pro attach config file
-      copy:
-        content: |
-          token: "{{ ubuntu_pro_token }}"
-          enable_services:
-            # - fips
-            - usg
-        dest: /tmp/pro-attach-config.yaml
-        mode: '0600'
+    - name: Parse Ubuntu Pro status
+      set_fact:
+        pro_status: "{{ pro_status_raw.stdout | from_json }}"
 
-    - name: Attach to Ubuntu Pro using config file
-      command: pro attach --attach-config /tmp/pro-attach-config.yaml
+    - name: Skip if already attached
+      debug:
+        msg: "System already attached to Ubuntu Pro. Skipping attach."
+      when: pro_status.account.contract_token is defined
+
+    - name: Attach to Ubuntu Pro (if not already attached)
+      command: >
+        pro attach {{ ubuntu_pro_token }}
+      when: pro_status.account.contract_token is not defined
       register: pro_attach_result
       changed_when: "'already attached' not in pro_attach_result.stdout"
 
-    - name: Display enabled services
+    - name: Skip if USG already enabled
+      debug:
+        msg: "USG already enabled. Skipping."
+      when: "'usg' in pro_status.enabled_services"
+
+    - name: Enable USG (Ubuntu Security Guide)
+      command: pro enable usg
+      when: "'usg' not in pro_status.enabled_services"
+      register: usg_enable
+      changed_when: "'enabled' in usg_enable.stdout"
+
+    - name: Show final Ubuntu Pro status
       command: pro status
-      register: pro_status
+      register: final_status
       changed_when: false
 
-    - name: Show Ubuntu Pro status
+    - name: Display final status
       debug:
-        var: pro_status.stdout
-
-    - name: Reboot if FIPS was just enabled
-      reboot:
-        msg: "Rebooting to apply FIPS kernel modules"
-        connect_timeout: 5
-        reboot_timeout: 600
-        pre_reboot_delay: 0
-        post_reboot_delay: 30
-      when: "'fips' in pro_status.stdout"
-
-    - name: Verify FIPS mode is active
-      command: fips-mode-setup --check
-      register: fips_check
-      changed_when: false
-
-    - name: Show FIPS verification result
-      debug:
-        var: fips_check.stdout
+        var: final_status.stdout
