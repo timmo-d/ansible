@@ -10,3 +10,4 @@ stig_enabled_tags:
 
 ubuntu24stig_disruption_high: false
 ubtu24stig_run_audit: true
+ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
