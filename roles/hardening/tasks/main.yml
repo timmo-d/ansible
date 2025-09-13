@@ -1,5 +1,5 @@
 - name: Load container detection
-  include_vars: ../vars/is_container.yml
+  include_vars: ./vars/is_container.yml
 
 - name: Include auditd controls
   include_tasks: auditd.yml
