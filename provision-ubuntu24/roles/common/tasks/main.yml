@@ -8,4 +8,4 @@
 
 - name: Set timezone
   timezone:
-    name: "UTC"
+    name: "Australia/Perth"

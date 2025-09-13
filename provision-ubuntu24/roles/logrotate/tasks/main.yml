@@ -1,0 +1,9 @@
+- name: Install logrotate
+  apt:
+    name: logrotate
+    state: present
+
+- name: Configure Nginx log rotation
+  copy:
+    src: nginx-logrotate.conf
+    dest: /etc/logrotate.d/nginx

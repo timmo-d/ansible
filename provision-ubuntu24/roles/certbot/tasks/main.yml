@@ -1,0 +1,18 @@
+- name: Install Certbot
+  apt:
+    name: certbot
+    state: present
+
+- name: Obtain certificate
+  command: >
+    certbot certonly --nginx --non-interactive --agree-tos
+    --email {{ certbot.email }}
+    -d {{ certbot.domain }}
+
+- name: Setup auto-renewal
+  cron:
+    name: "Certbot renew"
+    job: "certbot renew --quiet"
+    user: root
+    hour: 3
+    minute: 30

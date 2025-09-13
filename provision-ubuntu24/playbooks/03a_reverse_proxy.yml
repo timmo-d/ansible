@@ -1,0 +1,10 @@
+---
+- name: Configure NGINX as reverse proxy through Cloudflare Tunnel
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/all.yml
+
+  roles:
+    - role: nginx           # Hardened reverse proxy on loopback
+    - role: cloudflared     # Secure outbound tunnel to Cloudflare

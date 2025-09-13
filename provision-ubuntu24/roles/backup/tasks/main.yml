@@ -1,0 +1,13 @@
+- name: Create backup script
+  template:
+    src: backup.sh.j2
+    dest: /usr/local/bin/backup_nginx.sh
+    mode: '0755'
+
+- name: Schedule cron job
+  cron:
+    name: "Daily Nginx backup"
+    job: "/usr/local/bin/backup_nginx.sh"
+    user: root
+    hour: 2
+    minute: 0

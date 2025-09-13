@@ -1,0 +1,3 @@
+certbot:
+  email: internet@timmos.com.au
+  domain: proxy.timmos.com.au

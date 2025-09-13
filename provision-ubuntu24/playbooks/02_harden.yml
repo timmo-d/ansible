@@ -1,0 +1,11 @@
+---
+- name: Full STIG-Compliant Provisioning for Ubuntu 24.04
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/all.yml
+
+  roles:
+    - role: hardening       # Apply full STIG controls
+    - role: firewall
+    - role: ssh
