@@ -8,3 +8,5 @@
   roles:
     - role: key_rotation    # Rotate admin SSH key securely
     - role: common
+    - role: logrotate
+    - role: monitoring
