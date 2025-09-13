@@ -1,1 +1,21 @@
+---
+- name: Full STIG-Compliant Provisioning for Ubuntu 24.04
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/all.yml
 
+  roles:
+    - role: ubuntu_pro_attach
+      vars:
+        ubuntu_pro_token: "{{ ubuntu_pro_token }}"
+    - role: users           # Create admin user and SSH keypair
+    - role: key_rotation    # Rotate admin SSH key securely
+    - role: hardening       # Apply full STIG controls
+    - role: nginx           # Hardened reverse proxy on loopback
+    - role: cloudflared     # Secure outbound tunnel to Cloudflare
+    - role: common
+    - role: firewall
+    - role: packages
+    - role: ssh
+    
