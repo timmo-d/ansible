@@ -9,6 +9,7 @@
     - usg
 
 - name: Configure auditd
+  become: true
   block:
 
     - name: Ensure auditd is installed
