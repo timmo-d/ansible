@@ -10,6 +10,7 @@
     - { regexp: '^X11Forwarding', line: 'X11Forwarding no' }
 
 - name: Restart SSH
+  become: true
   service:
     name: ssh
     state: restarted
