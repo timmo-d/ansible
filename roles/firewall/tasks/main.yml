@@ -4,6 +4,7 @@
     state: present
 
 - name: Set default policies
+  become: true
   ufw:
     state: enabled
     policy: deny
