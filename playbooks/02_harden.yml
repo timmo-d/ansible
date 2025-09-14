@@ -3,7 +3,7 @@
   hosts: all
   become: true
   vars_files:
-    - ../group_vars/all.yml
+    - group_vars/all.yml
 
 - name: Confirm Ansible context
   hosts: all
@@ -16,7 +16,7 @@
     - name: Show playbook_dir
       debug:
         var: playbook_dir
-        
+
 - name: Confirm group_vars loading
   hosts: all
   gather_facts: false
