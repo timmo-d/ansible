@@ -7,6 +7,56 @@
     - auditd
     - stig
     - usg
+- name: Harden auditd configuration
+  become: true
+  block:
+
+    - name: Ensure auditd is installed
+      package:
+        name: auditd
+        state: present
+
+    - name: Start and enable auditd service
+      service:
+        name: auditd
+        state: started
+        enabled: true
+
+    - name: Check if auditd.conf exists
+      stat:
+        path: /etc/audit/auditd.conf
+      register: auditd_conf
+
+    - name: Create minimal auditd.conf if missing
+      copy:
+        dest: /etc/audit/auditd.conf
+        content: |
+          log_file = /var/log/audit/audit.log
+          max_log_file = 20
+          max_log_file_action = ROTATE
+        owner: root
+        group: root
+        mode: '0640'
+      when: not auditd_conf.stat.exists
+
+    - name: Set max_log_file size
+      lineinfile:
+        path: /etc/audit/auditd.conf
+        regexp: '^max_log_file ='
+        line: 'max_log_file = 20'
+        backup: yes
+
+    - name: Set log rotation action
+      lineinfile:
+        path: /etc/audit/auditd.conf
+        regexp: '^max_log_file_action ='
+        line: 'max_log_file_action = ROTATE'
+        backup: yes
+
+  when:
+    - "'auditd' in (stig_enabled_tags | default([]))"
+    - not system_is_container | default(false)
+
 
 - name: Configure auditd
   become: true
