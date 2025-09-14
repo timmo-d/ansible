@@ -5,6 +5,14 @@
   vars_files:
     - group_vars/all.yml
 
+- name: Confirm group_vars loading
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Show STIG tags
+      debug:
+        var: stig_enabled_tags
+        
   roles:
     - role: hardening       # Apply full STIG controls
     - role: firewall
