@@ -5,6 +5,18 @@
   vars_files:
     - ../group_vars/all.yml
 
+- name: Confirm Ansible context
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Show inventory_dir
+      debug:
+        var: inventory_dir
+
+    - name: Show playbook_dir
+      debug:
+        var: playbook_dir
+        
 - name: Confirm group_vars loading
   hosts: all
   gather_facts: false
