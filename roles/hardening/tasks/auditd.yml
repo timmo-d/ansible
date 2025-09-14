@@ -1,7 +1,3 @@
-- name: Debug STIG tags
-  debug:
-    var: stig_enabled_tags
-
 - name: Install auditd
   apt:
     name: auditd

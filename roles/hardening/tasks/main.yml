@@ -1,3 +1,7 @@
+- name: Debug STIG tags
+  debug:
+    var: stig_enabled_tags
+    
 - name: Load container detection
   include_vars: ../vars/is_container.yml
 
