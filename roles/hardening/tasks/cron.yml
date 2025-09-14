@@ -1,4 +1,5 @@
 - name: Restrict cron access
+  become: true
   file:
     path: /etc/cron.allow
     state: touch
