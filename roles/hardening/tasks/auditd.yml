@@ -8,6 +8,52 @@
     - stig
     - usg
 
+- name: Configure auditd
+  block:
+
+    - name: Ensure auditd is installed
+      package:
+        name: auditd
+        state: present
+
+    - name: Start and enable auditd service
+      service:
+        name: auditd
+        state: started
+        enabled: true
+
+    - name: Ensure auditd.conf exists
+      stat:
+        path: /etc/audit/auditd.conf
+      register: auditd_conf
+
+    - name: Fail if auditd.conf is missing
+      fail:
+        msg: "auditd.conf not found — auditd may not be fully initialized"
+      when: not auditd_conf.stat.exists
+
+    - name: Configure auditd retention
+      lineinfile:
+        path: /etc/audit/auditd.conf
+        regexp: '^max_log_file ='
+        line: 'max_log_file = 20'
+        state: present
+        backup: yes
+      when: auditd_conf.stat.exists
+
+    - name: Set auditd action when max log size reached
+      lineinfile:
+        path: /etc/audit/auditd.conf
+        regexp: '^max_log_file_action ='
+        line: 'max_log_file_action = ROTATE'
+        state: present
+        backup: yes
+      when: auditd_conf.stat.exists
+
+  when:
+    - "'auditd' in (stig_enabled_tags | default([]))"
+    - not system_is_container | default(false)
+
 - name: Configure auditd retention
   lineinfile:
     path: /etc/audit/auditd.conf
