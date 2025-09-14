@@ -1,7 +1,8 @@
-- name: Install Prometheus Node Exporter
+- name: Download Prometheus Node Exporter
   get_url:
-    url: https://github.com/prometheus/node_exporter/releases/latest/download/node_exporter-1.6.1.linux-amd64.tar.gz
+    url: https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
     dest: /tmp/node_exporter.tar.gz
+    mode: '0644'
 
 - name: Extract and install
   unarchive:
