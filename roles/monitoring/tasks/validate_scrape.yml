@@ -1,0 +1,11 @@
+- name: Validate Prometheus scrape config
+  template:
+    src: prometheus_scrape_config.yml.j2
+    dest: "{{ prometheus_scrape_config_path }}"
+    mode: '0644'
+
+- name: Log scrape config validation
+  lineinfile:
+    path: "{{ audit_log_path }}"
+    line: "Scrape config validated at {{ ansible_date_time.iso8601 }}"
+    create: yes

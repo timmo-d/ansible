@@ -1,0 +1,7 @@
+node_exporter_version: "1.7.0"
+node_exporter_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+node_exporter_bin_path: "/usr/local/bin/node_exporter"
+node_exporter_service_path: "/etc/systemd/system/node_exporter.service"
+node_exporter_port: 9100
+prometheus_scrape_config_path: "/etc/prometheus/node_exporter.yml"
+audit_log_path: "/var/log/node_exporter_install.log"

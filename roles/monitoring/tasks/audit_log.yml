@@ -1,0 +1,8 @@
+- name: Log Node Exporter install metadata
+  copy:
+    content: |
+      Installed Node Exporter {{ node_exporter_version }}
+      Hostname: {{ inventory_hostname }}
+      Date: {{ ansible_date_time.iso8601 }}
+    dest: "{{ audit_log_path }}"
+    mode: '0644'

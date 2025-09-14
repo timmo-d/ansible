@@ -1,0 +1,17 @@
+- name: Ensure UFW is installed
+  apt:
+    name: ufw
+    state: present
+  become: true
+
+- name: Allow Node Exporter port
+  ufw:
+    rule: allow
+    port: "{{ node_exporter_port }}"
+    proto: tcp
+  become: true
+
+- name: Log firewall rule
+  lineinfile:
+    path: "{{ audit_log_path }}"
+    line: "Firewall rule added for port {{ node_exporter_port }} at {{ ansible_date_time.iso8601 }}"
