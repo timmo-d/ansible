@@ -47,15 +47,15 @@
     content: "{{ cloudflare_tunnel_secret }}"
     mode: '0600'
 
-- name: Copy tunnel credentials to system path
-  become: true
-  ansible.builtin.copy:
-    src: "/home/tim/.cloudflared/{{ cloudflare_tunnel_id }}.json"
-    dest: "/etc/cloudflared/{{ cloudflare_tunnel_id }}.json"
-    owner: root
-    group: root
-    mode: '0600'
-    remote_src: true
+#- name: Copy tunnel credentials to system path
+#  become: true
+#  ansible.builtin.copy:
+#    src: "/home/tim/.cloudflared/{{ cloudflare_tunnel_id }}.json"
+#    dest: "/etc/cloudflared/{{ cloudflare_tunnel_id }}.json"
+#    owner: root
+#    group: root
+#    mode: '0600'
+#    remote_src: true
 
 - name: Start cloudflared tunnel
   become: true
