@@ -60,8 +60,11 @@
 - name: Include CSR generation
   include_tasks: generate_csr.yml
 
-- name: Include certificate request
-  include_tasks: request_cert.yml
+- name: Run Terraform to request certificate
+  include_tasks: run_terraform.yml
+
+#- name: Include certificate request
+#  include_tasks: request_cert.yml
 
 - name: Include certificate installation
   include_tasks: install_cert.yml

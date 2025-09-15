@@ -1,0 +1,14 @@
+- name: Terraform Init
+  command: terraform init
+  args:
+    chdir: "{{ cf_terraform_path }}"
+
+- name: Terraform Apply
+  environment:
+    TF_VAR_cloudflare_email: "{{ cf_email }}"
+    TF_VAR_cloudflare_global_api_key: "{{ cf_global_api_key }}"
+    TF_VAR_cloudflare_hostnames: "{{ cf_hostnames }}"
+    TF_VAR_cert_validity_days: "{{ cf_cert_validity_days }}"
+  command: terraform apply -auto-approve
+  args:
+    chdir: "{{ cf_terraform_path }}"

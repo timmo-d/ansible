@@ -1,21 +1,16 @@
-- name: Ensure cert install path exists
-  become: true
+- name: Ensure Terraform directory exists
   file:
-    path: "{{ cf_cert_install_path }}"
+    path: "{{ cf_terraform_path }}"
     state: directory
     mode: '0755'
 
-- name: Generate private key
-  become: true
-  command: >
-    openssl genrsa -out {{ cf_key_file }} {{ cf_key_size }}
-  args:
-    creates: "{{ cf_key_file }}"
+- name: Copy CSR generator script
+  copy:
+    src: origin_csr.sh
+    dest: "{{ cf_terraform_path }}/origin_csr.sh"
+    mode: '0755'
 
-- name: Generate CSR
-  become: true
-  command: >
-    openssl req -new -key {{ cf_key_file }} -out {{ cf_csr_file }}
-    -subj "/CN={{ cf_hostnames[0] }}"
+- name: Run CSR generator
+  command: ./origin_csr.sh
   args:
-    creates: "{{ cf_csr_file }}"
+    chdir: "{{ cf_terraform_path }}"
