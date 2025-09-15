@@ -18,7 +18,7 @@
       csr: "{{ csr_raw.content | b64decode | regex_replace('\n', '\\n') }}"
     return_content: true
   register: cert_response
-  no_log: true
+  no_log: false
 
 - name: Write cert.pem
   become: true
