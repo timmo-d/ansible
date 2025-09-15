@@ -3,12 +3,17 @@
     src: "{{ cf_csr_file }}"
   register: csr_raw
 
+- name: Log current attachment status
+  debug:
+    msg: "System is currently attached to: {{ cf_global_api_key | default('UNATTACHED') }}"
+
 - name: Request Cloudflare Origin Certificate
   uri:
     url: "https://api.cloudflare.com/client/v4/certificates"
     method: POST
     headers:
-      Authorization: "Bearer {{ cf_api_token }}"
+      X-Auth-Key: "{{ cf_global_api_key }}"
+      X-Auth-Email: "{{ cf_email }}"
       Content-Type: "application/json"
     body_format: json
     body:
