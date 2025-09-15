@@ -1,7 +1,7 @@
-tunnel: {{ tunnel_id }}
-credentials-file: /etc/cloudflared/{{ tunnel_id }}.json
+tunnel: {{ cloudflare_tunnel_id }}
+credentials-file: /etc/cloudflared/{{ cloudflare_tunnel_id }}.json
 
 ingress:
-  - hostname: {{ domain }}
+  - hostname: {{ cloudflare_zone }}
     service: http://localhost:80
   - service: http_status:404
