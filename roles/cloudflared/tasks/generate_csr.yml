@@ -1,0 +1,21 @@
+- name: Ensure cert install path exists
+  become: true
+  file:
+    path: "{{ cf_cert_install_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Generate private key
+  become: true
+  command: >
+    openssl genrsa -out {{ cf_key_file }} {{ cf_key_size }}
+  args:
+    creates: "{{ cf_key_file }}"
+
+- name: Generate CSR
+  become: true
+  command: >
+    openssl req -new -key {{ cf_key_file }} -out {{ cf_csr_file }}
+    -subj "/CN={{ cf_hostnames[0] }}"
+  args:
+    creates: "{{ cf_csr_file }}"

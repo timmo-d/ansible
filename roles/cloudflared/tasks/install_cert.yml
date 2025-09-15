@@ -1,0 +1,9 @@
+- name: Validate cert.pem exists
+  stat:
+    path: "{{ cf_cert_file }}"
+  register: cert_stat
+
+- name: Fail if cert.pem is missing
+  fail:
+    msg: "Cloudflare Origin Certificate was not created successfully."
+  when: not cert_stat.stat.exists

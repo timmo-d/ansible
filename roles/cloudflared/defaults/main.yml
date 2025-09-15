@@ -11,3 +11,15 @@ cloudflare_access_apps:
     domain: "radarr.timmos.com.au"
     local_service: "http://192.168.1.100:7878"
     email: "internet@timmos.com.au"
+
+cf_api_token: ""
+cf_zone: "timmos.com.au"
+cf_hostnames:
+  - "*.timmos.com.au"
+cf_cert_validity_days: 5475
+cf_key_type: "rsa"
+cf_key_size: 4096
+cf_cert_install_path: "/etc/cloudflared/"
+cf_cert_file: "{{ cf_cert_install_path }}cert.pem"
+cf_key_file: "{{ cf_cert_install_path }}origin.key"
+cf_csr_file: "{{ cf_cert_install_path }}origin.csr"

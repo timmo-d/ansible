@@ -57,6 +57,15 @@
 #    mode: '0600'
 #    remote_src: true
 
+- name: Include CSR generation
+  include_tasks: generate_csr.yml
+
+- name: Include certificate request
+  include_tasks: request_cert.yml
+
+- name: Include certificate installation
+  include_tasks: install_cert.yml
+
 - name: Start cloudflared tunnel
   become: true
   command: "{{ cloudflared_bin_path }} tunnel run {{ cloudflare_tunnel_name }}"
