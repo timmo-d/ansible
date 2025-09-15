@@ -18,53 +18,53 @@
   async: 30
   poll: 0
 
-- name: Install nginx
-  become: true
-  apt:
-    name: nginx
-    state: present
-    update_cache: true
+#- name: Install nginx
+#  become: true
+#  apt:
+#    name: nginx
+#    state: present
+#    update_cache: true
 
-- name: Harden nginx config
-  become: true
-  lineinfile:
-    path: /etc/nginx/nginx.conf
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  loop:
-    - { regexp: '^worker_processes', line: "worker_processes {{ nginx_worker_processes }};" }
-    - { regexp: '^worker_connections', line: "worker_connections {{ nginx_worker_connections }};" }
-    - { regexp: '^keepalive_timeout', line: "keepalive_timeout {{ nginx_keepalive_timeout }};" }
-    - { regexp: '^server_tokens', line: "server_tokens {{ nginx_server_tokens }};" }
+#- name: Harden nginx config
+#  become: true
+#  lineinfile:
+#    path: /etc/nginx/nginx.conf
+#    regexp: "{{ item.regexp }}"
+#    line: "{{ item.line }}"
+#    state: present
+#  loop:
+#    - { regexp: '^worker_processes', line: "worker_processes {{ nginx_worker_processes }};" }
+#    - { regexp: '^worker_connections', line: "worker_connections {{ nginx_worker_connections }};" }
+#    - { regexp: '^keepalive_timeout', line: "keepalive_timeout {{ nginx_keepalive_timeout }};" }
+#    - { regexp: '^server_tokens', line: "server_tokens {{ nginx_server_tokens }};" }
 
-- name: Deploy Sonarr proxy config
-  become: true
-  template:
-    src: nginx_sonarr.conf.j2
-    dest: /etc/nginx/sites-available/sonarr
+#- name: Deploy Sonarr proxy config
+#  become: true
+#  template:
+#    src: nginx_sonarr.conf.j2
+#    dest: /etc/nginx/sites-available/sonarr
 
-- name: Deploy Radarr proxy config
-  become: true
-  template:
-    src: nginx_radarr.conf.j2
-    dest: /etc/nginx/sites-available/radarr
+#- name: Deploy Radarr proxy config
+#  become: true
+#  template:
+#    src: nginx_radarr.conf.j2
+#    dest: /etc/nginx/sites-available/radarr
 
-- name: Enable proxy configs
-  become: true
-  file:
-    src: "/etc/nginx/sites-available/{{ item }}"
-    dest: "/etc/nginx/sites-enabled/{{ item }}"
-    state: link
-  loop:
-    - sonarr
-    - radarr
+#- name: Enable proxy configs
+#  become: true
+#  file:
+#    src: "/etc/nginx/sites-available/{{ item }}"
+#    dest: "/etc/nginx/sites-enabled/{{ item }}"
+#    state: link
+#  loop:
+#    - sonarr
+#    - radarr
 
-- name: Reload nginx
-  become: true
-  service:
-    name: nginx
-    state: restarted
+#- name: Reload nginx
+#  become: true
+#  service:
+#    name: nginx
+#    state: restarted
 
 - name: Include Cloudflare Access app creation
   include_tasks: create_access_apps.yml

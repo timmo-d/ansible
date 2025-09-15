@@ -1,16 +1,21 @@
 server {
-  listen 443 ssl;
-  server_name {{ item.hostname }};
+    listen 127.0.0.1:80 default_server;
+    server_name sonarr.timmos.com.au;
 
-  ssl_protocols {{ nginx_ssl_protocols }};
-  ssl_ciphers {{ nginx_ssl_ciphers }};
-  ssl_certificate /etc/ssl/certs/your_cert.pem;
-  ssl_certificate_key /etc/ssl/private/your_key.pem;
+    access_log /var/log/nginx/sonarr.access.log;
+    error_log /var/log/nginx/sonarr.error.log;
 
-  location / {
-    proxy_pass {{ item.local }};
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  }
+    location / {
+        proxy_pass {{ item.local_service }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+    }
+
+    # STIG-aligned headers
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options DENY;
+    add_header Referrer-Policy no-referrer;
 }

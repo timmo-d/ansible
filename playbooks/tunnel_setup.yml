@@ -2,25 +2,25 @@
   hosts: localhost
   gather_facts: false
   roles:
-    - cloudflared
     - nginx
-    - cloudflare_access
+    - cloudflared
+#    - cloudflare_access
 
-- name: Provision Cloudflare Access apps
-  hosts: localhost
-  gather_facts: false
-  roles:
-    - role: timmos.cloudflare_access
-      vars:
-        cloudflare_api_token: "{{ vault_cloudflare_token }}"
-        cloudflare_account_id: "abc123xyz"
-        cloudflare_zone: "timmos.com.au"
-        cloudflare_access_apps:
-          - name: "Sonarr"
-            domain: "sonarr.timmos.com.au"
-            local_service: "http://192.168.1.100:8989"
-            email: "admin@timmos.com.au"
-          - name: "Radarr"
-            domain: "radarr.timmos.com.au"
-            local_service: "http://192.168.1.100:7878"
-            email: "admin@timmos.com.au"
+#- name: Provision Cloudflare Access apps
+#  hosts: localhost
+#  gather_facts: false
+#  roles:
+#    - role: timmos.cloudflare_access
+#      vars:
+#        cloudflare_api_token: "{{ cloudflare_api_token }}"
+#        cloudflare_account_id: "{{ cloudflare_account_id }}"
+#        cloudflare_zone: "{{ cloudflare_zone }}"
+#        cloudflare_access_apps:
+#          - name: "Sonarr"
+#            domain: "sonarr.timmos.com.au"
+#            local_service: "http://192.168.1.100:8989"
+#            email: "admin@timmos.com.au"
+#          - name: "Radarr"
+#            domain: "radarr.timmos.com.au"
+#            local_service: "http://192.168.1.100:7878"
+#            email: "admin@timmos.com.au"

@@ -1,0 +1,39 @@
+- name: Get existing Cloudflare Access apps
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cloudflare_api_token }}"
+    return_content: yes
+  register: existing_access_apps
+
+- name: Create Cloudflare Access apps if not already present
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflare_api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "{{ item.name }}"
+      domain: "{{ item.domain }}"
+      type: "self_hosted"
+      session_duration: "24h"
+      policies:
+        - decision: allow
+          include:
+            - email:
+                email: "{{ item.email }}"
+    status_code: 200
+  loop: "{{ cloudflare_access_apps }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: >
+    existing_access_apps.json.result is defined and
+    item.domain not in existing_access_apps.json.result | map(attribute='domain') | list
+  register: created_access_apps
+
+- name: Log newly created apps
+  debug:
+    var: created_access_apps
