@@ -1,0 +1,16 @@
+server {
+  listen 443 ssl;
+  server_name {{ item.hostname }};
+
+  ssl_protocols {{ nginx_ssl_protocols }};
+  ssl_ciphers {{ nginx_ssl_ciphers }};
+  ssl_certificate /etc/ssl/certs/your_cert.pem;
+  ssl_certificate_key /etc/ssl/private/your_key.pem;
+
+  location / {
+    proxy_pass {{ item.local }};
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+}

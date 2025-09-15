@@ -1,0 +1,13 @@
+cloudflare_api_token: ""
+cloudflare_account_id: ""
+cloudflare_zone: "timmos.com.au"
+
+cloudflare_access_apps:
+  - name: "Sonarr"
+    domain: "sonarr.timmos.com.au"
+    local_service: "http://192.168.1.100:8989"
+    email: "your@email.com"
+  - name: "Radarr"
+    domain: "radarr.timmos.com.au"
+    local_service: "http://192.168.1.100:7878"
+    email: "your@email.com"

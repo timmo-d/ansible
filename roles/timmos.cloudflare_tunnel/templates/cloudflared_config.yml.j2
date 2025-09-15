@@ -1,0 +1,8 @@
+tunnel: {{ cloudflare_tunnel_id }}
+credentials-file: /etc/cloudflared/{{ cloudflare_tunnel_id }}.json
+ingress:
+  - hostname: sonarr.timmos.com.au
+    service: {{ sonarr_local }}
+  - hostname: radarr.timmos.com.au
+    service: {{ radarr_local }}
+  - service: http_status:404
