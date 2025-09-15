@@ -42,7 +42,7 @@
 
 - name: Log cloudflare_tunnel_id
   debug:
-    msg: "System is currently attached to: {{ cloudflare_tunnel_id | default('UNATTACHED') }}"
+    msg: "System is currently attached to: {{ cloudflared_bin_path | default('UNATTACHED') }}"
 
 - name: Write tunnel credentials
   become: true
