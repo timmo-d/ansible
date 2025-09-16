@@ -1,0 +1,3 @@
+- name: Start Cloudflared tunnel (headless token mode)
+  ansible.builtin.command: >
+    {{ cloudflared_bin_path }} tunnel --config {{ cloudflared_config_path }} run {{ cloudflared_tunnel_id }}

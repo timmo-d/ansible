@@ -1,22 +1,21 @@
-- name: Ensure cloudflared is installed
-  become: true
-  get_url:
-    url: https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
-    dest: "{{ cloudflared_bin_path }}"
-    mode: '0755'
+- import_tasks: install.yml
+- import_tasks: configure.yml
+- import_tasks: run.yml
 
-- name: Create tunnel config directory
-  become: true
-  file:
-    path: /etc/cloudflared
-    state: directory
-    mode: '0755'
 
-- name: Upload tunnel config
-  template:
-    src: config.yml.j2
-    dest: /etc/cloudflared/config.yml
-    mode: '0644'
+
+#- name: Create tunnel config directory
+#  become: true
+#  file:
+#    path: /etc/cloudflared
+#    state: directory
+#    mode: '0755'
+
+#- name: Upload tunnel config
+#  template:
+#    src: config.yml.j2
+#    dest: /etc/cloudflared/config.yml
+#    mode: '0644'
 
 - name: Register tunnel as systemd service
   copy:
@@ -51,6 +50,10 @@
     owner: root
     group: root
     mode: '0600'
+
+- name: Start Cloudflared tunnel
+  command: >
+    /usr/local/bin/cloudflared tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id }}
 
 
 #- name: Write tunnel credentials

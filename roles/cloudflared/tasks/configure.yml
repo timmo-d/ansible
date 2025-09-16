@@ -1,0 +1,23 @@
+- name: Ensure config directory exists
+  ansible.builtin.file:
+    path: /etc/cloudflared
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy config.yml
+  ansible.builtin.template:
+    src: config.yml.j2
+    dest: "{{ cloudflared_config_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Deploy tunnel credentials JSON
+  ansible.builtin.copy:
+    content: "{{ cloudflared_tunnel_credentials_json }}"
+    dest: "/etc/cloudflared/{{ cloudflared_tunnel_id }}.json"
+    owner: root
+    group: root
+    mode: '0600'

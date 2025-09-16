@@ -26,3 +26,11 @@ cf_csr_file: "{{ cf_cert_install_path }}origin.csr"
 cf_global_api_key: "{{ cloudflare_global_api_token }}"
 cf_email: "internet@timmos.com.au"
 cf_terraform_path: "/opt/terraform/cloudflare_origin_cert"
+
+
+# Headless token mode defaults
+cloudflared_bin_path: /usr/local/bin/cloudflared
+cloudflared_config_path: /etc/cloudflared/config.yml
+cloudflared_tunnel_id: ""                # From Terraform output
+cloudflared_tunnel_credentials_json: ""  # From Terraform output (JSON string)
+cloudflared_service_name: cloudflared
