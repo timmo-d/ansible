@@ -11,11 +11,19 @@
     name: unzip
     state: present
 
+- name: Check if Terraform configs exist on controller
+  local_action:
+    module: stat
+    path: "roles/cloudflared/files/terraform_configs/main.tf"
+  register: tf_config_check
+  failed_when: not tf_config_check.stat.exists
+
 - name: Copy Terraform configuration files
   copy:
     src: "terraform_configs/"
     dest: "{{ cf_terraform_path }}/"
     mode: '0644'
+    remote_src: false
 
 - name: Unzip Terraform binary
   become: true
