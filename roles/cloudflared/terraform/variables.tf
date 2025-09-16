@@ -10,11 +10,11 @@ variable "cloudflare_global_api_key" {
 
 variable "cloudflare_hostnames" {
   type        = list(string)
-  description = "List of hostnames for the Origin CA cert"
+  description = "List of hostnames for the Origin CA certificate"
 }
 
 variable "cert_validity_days" {
   type        = number
   default     = 5475
-  description = "Validity period in days"
+  description = "Certificate validity period in days"
 }

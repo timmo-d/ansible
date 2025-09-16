@@ -11,6 +11,12 @@
     name: unzip
     state: present
 
+- name: Copy Terraform configuration files
+  copy:
+    src: "terraform_configs/"
+    dest: "{{ cf_terraform_path }}/"
+    mode: '0644'
+
 - name: Unzip Terraform binary
   become: true
   unarchive:
@@ -40,6 +46,17 @@
     path: "{{ cf_terraform_path }}"
     state: directory
     mode: '0755'
+
+- name: Check for Terraform config files
+  find:
+    paths: "{{ cf_terraform_path }}"
+    patterns: "*.tf"
+  register: tf_files
+
+- name: Fail if no Terraform configs found
+  fail:
+    msg: "No Terraform configuration files found in {{ cf_terraform_path }}."
+  when: tf_files.matched == 0
 
 - name: Copy CSR generator script
   copy:
