@@ -12,20 +12,20 @@ cloudflare_access_apps:
     local_service: "http://192.168.1.100:7878"
     email: "internet@timmos.com.au"
 
-cf_api_token: ""
-cf_zone: "timmos.com.au"
-cf_hostnames:
-  - "*.timmos.com.au"
-cf_cert_validity_days: 5475
-cf_key_type: "rsa"
-cf_key_size: 4096
-cf_cert_install_path: "/etc/cloudflared/"
-cf_cert_file: "{{ cf_cert_install_path }}cert.pem"
-cf_key_file: "{{ cf_cert_install_path }}origin.key"
-cf_csr_file: "{{ cf_cert_install_path }}origin.csr"
-cf_global_api_key: "{{ cloudflare_global_api_token }}"
-cf_email: "internet@timmos.com.au"
-cf_terraform_path: "/opt/terraform/cloudflare_origin_cert"
+#cf_api_token: ""
+#cf_zone: "timmos.com.au"
+#cf_hostnames:
+#  - "*.timmos.com.au"
+#cf_cert_validity_days: 5475
+#cf_key_type: "rsa"
+#cf_key_size: 4096
+#cf_cert_install_path: "/etc/cloudflared/"
+#cf_cert_file: "{{ cf_cert_install_path }}cert.pem"
+#cf_key_file: "{{ cf_cert_install_path }}origin.key"
+#cf_csr_file: "{{ cf_cert_install_path }}origin.csr"
+#cf_global_api_key: "{{ cloudflare_global_api_token }}"
+#cf_email: "internet@timmos.com.au"
+#cf_terraform_path: "/opt/terraform/cloudflare_origin_cert"
 
 
 # Headless token mode defaults
@@ -47,3 +47,7 @@ cloudflared_ingress:
     service: http://localhost:80
   - service: http_status:404
 
+# Vars passed to Terraform
+cloudflare_api_token: ""
+cloudflare_account_id: ""
+tunnel_name: "home-edge"
