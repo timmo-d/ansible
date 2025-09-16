@@ -3,6 +3,10 @@
   args:
     chdir: "{{ cf_terraform_path }}"
 
+- name: Show rendered hostnames
+  debug:
+    msg: "{{ cf_hostnames | to_json }}"
+
 - name: Terraform Apply
   environment:
     TF_VAR_cloudflare_email: "{{ cf_email }}"
