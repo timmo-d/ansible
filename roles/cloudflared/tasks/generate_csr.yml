@@ -5,6 +5,12 @@
     dest: "/tmp/terraform.zip"
     mode: '0644'
 
+- name: Ensure unzip is installed
+  become: true
+  package:
+    name: unzip
+    state: present
+
 - name: Unzip Terraform binary
   become: true
   unarchive:
