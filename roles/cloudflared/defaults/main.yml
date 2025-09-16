@@ -34,3 +34,16 @@ cloudflared_config_path: /etc/cloudflared/config.yml
 cloudflared_tunnel_id: ""                # From Terraform output
 cloudflared_tunnel_credentials_json: ""  # From Terraform output (JSON string)
 cloudflared_service_name: cloudflared
+
+# Path to Terraform working directory containing .tfstate
+terraform_dir: /opt/terraform/cloudflared
+
+# Path to cloudflared binary
+cloudflared_bin_path: /usr/local/bin/cloudflared
+
+# Hostname/service mapping for ingress
+cloudflared_ingress:
+  - hostname: proxy.timmos.com.au
+    service: http://localhost:80
+  - service: http_status:404
+

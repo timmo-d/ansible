@@ -1,6 +1,85 @@
-- import_tasks: install.yml
-- import_tasks: configure.yml
-- import_tasks: run.yml
+- name: Ensure Terraform directory exists
+  file:
+    path: "{{ terraform_dir }}"
+    state: directory
+
+- name: Run Terraform init
+  command: terraform init
+  args:
+    chdir: "{{ terraform_dir }}"
+
+- name: Run Terraform apply
+  command: terraform apply -auto-approve
+  args:
+    chdir: "{{ terraform_dir }}"
+
+- name: Get tunnel ID from Terraform
+  command: terraform output -raw tunnel_id
+  args:
+    chdir: "{{ terraform_dir }}"
+  register: tunnel_id_result
+
+- name: Get tunnel credentials JSON from Terraform
+  command: terraform output -raw tunnel_credentials_json
+  args:
+    chdir: "{{ terraform_dir }}"
+  register: tunnel_creds_result
+
+- name: Ensure /etc/cloudflared exists
+  file:
+    path: /etc/cloudflared
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Write tunnel credentials file
+  copy:
+    content: "{{ tunnel_creds_result.stdout }}"
+    dest: "/etc/cloudflared/{{ tunnel_id_result.stdout }}.json"
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Write config.yml for cloudflared
+  template:
+    src: config.yml.j2
+    dest: /etc/cloudflared/config.yml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create systemd service for cloudflared tunnel
+  copy:
+    dest: /etc/systemd/system/cloudflared.service
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Cloudflare Tunnel
+      After=network.target
+
+      [Service]
+      TimeoutStartSec=0
+      Type=notify
+      ExecStart={{ cloudflared_bin_path }} tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id_result.stdout }}
+      Restart=on-failure
+      RestartSec=5s
+      LimitNOFILE=65536
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start cloudflared service
+  systemd:
+    name: cloudflared
+    enabled: yes
+    state: started
 
 - name: Include Cloudflare Access app creation
   include_tasks: create_access_apps.yml
