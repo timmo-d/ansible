@@ -1,13 +1,13 @@
 - name: Get tunnel ID from Terraform
   command: terraform output -raw tunnel_id
   args:
-    chdir: /path/to/terraform/module
+    chdir: /opt/terraform/cloudflared
   register: tunnel_id_result
 
 - name: Get tunnel credentials JSON from Terraform
   command: terraform output -raw tunnel_credentials_json
   args:
-    chdir: /path/to/terraform/module
+    chdir: /opt/terraform/cloudflared
   register: tunnel_creds_result
 
 - name: Ensure /etc/cloudflared exists
