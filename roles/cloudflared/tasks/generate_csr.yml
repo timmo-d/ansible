@@ -18,14 +18,14 @@
     mode: '0644'
     remote_src: false
 
-- name: Check if Terraform configs exist on controller
-  delegate_to: localhost
-  become: false
-  stat:
-    path: "roles/cloudflared/files/terraform_configs/main.tf"
-  register: tf_config_check
-  failed_when: not tf_config_check.stat.exists
-  
+#- name: Check if Terraform configs exist on controller
+#  delegate_to: localhost
+#  become: false
+#  stat:
+#    path: "roles/cloudflared/files/terraform_configs/main.tf"
+#  register: tf_config_check
+#  failed_when: not tf_config_check.stat.exists
+
 - name: Unzip Terraform binary
   become: true
   unarchive:
