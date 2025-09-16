@@ -1,3 +1,25 @@
+- name: Download Terraform binary
+  become: true
+  get_url:
+    url: "https://releases.hashicorp.com/terraform/1.6.2/terraform_1.6.2_linux_amd64.zip"
+    dest: "/tmp/terraform.zip"
+    mode: '0644'
+
+- name: Unzip Terraform binary
+  become: true
+  unarchive:
+    src: "/tmp/terraform.zip"
+    dest: "/usr/local/bin/"
+    remote_src: true
+    creates: "/usr/local/bin/terraform"
+
+- name: Ensure terraform is executable
+  become: true
+  file:
+    path: "/usr/local/bin/terraform"
+    mode: '0755'
+    state: file
+
 - name: Ensure Terraform directory exists
   file:
     path: "{{ cf_terraform_path }}"
