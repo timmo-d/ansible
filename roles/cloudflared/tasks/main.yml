@@ -19,6 +19,22 @@
     group: root
     mode: '0644'
 
+# --- NEW: Check if tunnel exists via Cloudflare API ---
+- name: Check if tunnel exists
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel?name={{ tunnel_name }}"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cloudflare_api_token }}"
+      Content-Type: "application/json"
+    return_content: yes
+  register: tunnel_check
+
+- name: Set fact for existing tunnel ID
+  set_fact:
+    existing_tunnel_id: "{{ (tunnel_check.json.result | first).id if (tunnel_check.json.result | length) > 0 else '' }}"
+
+# --- Terraform init ---
 - name: Run Terraform init
   command: terraform init
   args:
@@ -28,6 +44,14 @@
     TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
     TF_VAR_tunnel_name: "{{ tunnel_name }}"
 
+# --- Import if exists ---
+- name: Import existing tunnel into Terraform
+  command: terraform import cloudflare_zero_trust_tunnel_cloudflared.tunnel {{ existing_tunnel_id }}
+  args:
+    chdir: "{{ terraform_dir }}"
+  when: existing_tunnel_id != ""
+
+# --- Apply ---
 - name: Run Terraform apply
   command: terraform apply -auto-approve
   args:
@@ -37,6 +61,7 @@
     TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
     TF_VAR_tunnel_name: "{{ tunnel_name }}"
 
+# --- Outputs ---
 - name: Get tunnel ID from Terraform
   command: terraform output -raw tunnel_id
   args:
@@ -49,6 +74,7 @@
     chdir: "{{ terraform_dir }}"
   register: tunnel_creds_result
 
+# --- Deploy config ---
 - name: Ensure /etc/cloudflared exists
   file:
     path: /etc/cloudflared
@@ -73,6 +99,7 @@
     group: root
     mode: '0644'
 
+# --- systemd ---
 - name: Create systemd service for cloudflared tunnel
   copy:
     dest: /etc/systemd/system/cloudflared.service
@@ -104,7 +131,6 @@
     name: cloudflared
     enabled: yes
     state: started
-
 
 
 - name: Include Cloudflare Access app creation
