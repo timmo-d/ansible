@@ -50,6 +50,7 @@
   args:
     chdir: "{{ terraform_dir }}"
   register: tf_state_list
+  failed_when: false   # Don't fail if state file 
 
 - name: Import existing tunnel into Terraform
   command: terraform import cloudflare_zero_trust_tunnel_cloudflared.tunnel {{ existing_tunnel_id }}
