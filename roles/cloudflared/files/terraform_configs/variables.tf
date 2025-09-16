@@ -18,3 +18,8 @@ variable "cert_validity_days" {
   default     = 5475
   description = "Certificate validity period in days"
 }
+
+variable "cloudflare_account_id" {
+  type        = string
+  description = "Cloudflare account ID"
+}

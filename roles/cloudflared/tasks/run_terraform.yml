@@ -13,6 +13,7 @@
     TF_VAR_cloudflare_global_api_key: "{{ cloudflare_global_api_token }}"
     TF_VAR_cloudflare_hostnames: "{{ cf_hostnames | to_json }}"
     TF_VAR_cert_validity_days: "{{ cf_cert_validity_days }}"
+    TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
   command: terraform apply -auto-approve
   args:
     chdir: "{{ cf_terraform_path }}"
