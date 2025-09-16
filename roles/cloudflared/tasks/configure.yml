@@ -39,3 +39,35 @@
         - hostname: app.example.com
           service: http://localhost:8080
         - service: http_status:404
+
+- name: Create systemd service for cloudflared tunnel
+  copy:
+    dest: /etc/systemd/system/cloudflared.service
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Cloudflare Tunnel
+      After=network.target
+
+      [Service]
+      TimeoutStartSec=0
+      Type=notify
+      ExecStart={{ cloudflared_bin_path | default('/usr/local/bin/cloudflared') }} tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id_result.stdout }}
+      Restart=on-failure
+      RestartSec=5s
+      LimitNOFILE=65536
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start cloudflared service
+  systemd:
+    name: cloudflared
+    enabled: yes
+    state: started
