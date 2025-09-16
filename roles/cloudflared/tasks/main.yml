@@ -40,12 +40,25 @@
     enabled: yes
     state: started
 
-- name: Write tunnel credentials
-  become: true
+- name: Get tunnel credentials JSON
+  command: terraform output -raw tunnel_credentials_json
+  register: tunnel_creds
+
+- name: Write tunnel credentials file
   copy:
-    dest: /etc/cloudflared/{{ cloudflare_tunnel_id }}.json
-    content: "{{ cloudflare_tunnel_secret }}"
+    content: "{{ tunnel_creds.stdout }}"
+    dest: "/etc/cloudflared/{{ tunnel_id }}.json"
+    owner: root
+    group: root
     mode: '0600'
+
+
+#- name: Write tunnel credentials
+#  become: true
+#  copy:
+#    dest: /etc/cloudflared/{{ cloudflare_tunnel_id }}.json
+#    content: "{{ cloudflare_tunnel_secret }}"
+#    mode: '0600'
 
 #- name: Copy tunnel credentials to system path
 #  become: true
@@ -57,17 +70,21 @@
 #    mode: '0600'
 #    remote_src: true
 
-- name: Include CSR generation
-  include_tasks: generate_csr.yml
+#- name: Include CSR generation
+#  include_tasks: generate_csr.yml
 
 - name: Run Terraform to request certificate
   include_tasks: run_terraform.yml
 
+- name: Get tunnel credentials JSON
+  command: terraform output -raw tunnel_credentials_json
+  register: tunnel_creds
+
 #- name: Include certificate request
 #  include_tasks: request_cert.yml
 
-- name: Include certificate installation
-  include_tasks: install_cert.yml
+#- name: Include certificate installation
+#  include_tasks: install_cert.yml
 
 - name: Start cloudflared tunnel
   become: true

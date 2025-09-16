@@ -21,6 +21,4 @@
 #    group: root
 #    mode: '0600'
 
-- name: Get tunnel credentials JSON
-  command: terraform output -raw tunnel_credentials_json
-  register: tunnel_creds
+

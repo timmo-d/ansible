@@ -1,6 +1,8 @@
-resource "cloudflare_origin_ca_certificate" "origin_cert" {
-  csr                = file("${path.module}/origin.csr")
-  hostnames          = var.cloudflare_hostnames
-  requested_validity = var.cert_validity_days
-  request_type       = "origin-rsa"
+output "tunnel_credentials_json" {
+  value = jsonencode({
+    AccountTag   = var.cloudflare_account_id
+    TunnelSecret = base64encode(random_password.tunnel_secret.result)
+    TunnelID     = cloudflare_zero_trust_tunnel_cloudflared.tunnel.id
+  })
+  sensitive = true
 }
