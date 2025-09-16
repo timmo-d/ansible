@@ -2,10 +2,13 @@
   file:
     path: "{{ terraform_dir }}"
     state: directory
+    owner: root
+    group: root
+    mode: '0755'
 
-- name: Copy Terraform configuration to remote
+- name: Push Terraform configuration to remote
   copy:
-    src: ./terraform/cloudflared/
+    src: terraform/
     dest: "{{ terraform_dir }}/"
     owner: root
     group: root
@@ -15,11 +18,19 @@
   command: terraform init
   args:
     chdir: "{{ terraform_dir }}"
+  environment:
+    TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
+    TF_VAR_tunnel_name: "{{ tunnel_name | default('home-edge') }}"
 
 - name: Run Terraform apply
   command: terraform apply -auto-approve
   args:
     chdir: "{{ terraform_dir }}"
+  environment:
+    TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
+    TF_VAR_tunnel_name: "{{ tunnel_name | default('home-edge') }}"
 
 - name: Get tunnel ID from Terraform
   command: terraform output -raw tunnel_id
@@ -88,6 +99,7 @@
     name: cloudflared
     enabled: yes
     state: started
+
 
 - name: Include Cloudflare Access app creation
   include_tasks: create_access_apps.yml

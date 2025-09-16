@@ -23,3 +23,17 @@ variable "cloudflare_account_id" {
   type        = string
   description = "Cloudflare account ID"
 }
+
+
+
+
+
+variable "cloudflare_api_token" {
+  type        = string
+  sensitive   = true
+}
+
+variable "tunnel_name" {
+  type        = string
+  default     = "home-edge"
+}
