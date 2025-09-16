@@ -23,3 +23,5 @@ cloudflare_global_api_token: "{{ lookup('env', 'CLOUDFLARE_GLOBAL_API_TOKEN') }}
 ansible_user: "tim"
 cf_terraform_path: "/opt/terraform/cloudflare_origin_cert"
 cf_hostnames: "[\"*.timmos.com.au\"]"
+cf_email: "internet@timmos.com.au"
+cf_cert_validity_days: "730"

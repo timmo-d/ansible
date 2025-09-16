@@ -6,7 +6,7 @@
 - name: Terraform Apply
   environment:
     TF_VAR_cloudflare_email: "{{ cf_email }}"
-    TF_VAR_cloudflare_global_api_key: "{{ cf_global_api_key }}"
+    TF_VAR_cloudflare_global_api_key: "{{ cloudflare_global_api_token }}"
     TF_VAR_cloudflare_hostnames: "{{ cf_hostnames | to_json }}"
     TF_VAR_cert_validity_days: "{{ cf_cert_validity_days }}"
   command: terraform apply -auto-approve
