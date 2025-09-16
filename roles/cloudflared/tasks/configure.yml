@@ -1,23 +1,41 @@
-- name: Ensure config directory exists
-  ansible.builtin.file:
+- name: Get tunnel ID from Terraform
+  command: terraform output -raw tunnel_id
+  args:
+    chdir: /path/to/terraform/module
+  register: tunnel_id_result
+
+- name: Get tunnel credentials JSON from Terraform
+  command: terraform output -raw tunnel_credentials_json
+  args:
+    chdir: /path/to/terraform/module
+  register: tunnel_creds_result
+
+- name: Ensure /etc/cloudflared exists
+  file:
     path: /etc/cloudflared
     state: directory
     owner: root
     group: root
     mode: '0755'
 
-- name: Deploy config.yml
-  ansible.builtin.template:
-    src: config.yml.j2
-    dest: "{{ cloudflared_config_path }}"
-    owner: root
-    group: root
-    mode: '0644'
-
-- name: Deploy tunnel credentials JSON
-  ansible.builtin.copy:
-    content: "{{ cloudflared_tunnel_credentials_json }}"
-    dest: "/etc/cloudflared/{{ cloudflared_tunnel_id }}.json"
+- name: Write tunnel credentials file
+  copy:
+    content: "{{ tunnel_creds_result.stdout }}"
+    dest: "/etc/cloudflared/{{ tunnel_id_result.stdout }}.json"
     owner: root
     group: root
     mode: '0600'
+
+- name: Write config.yml for cloudflared
+  copy:
+    dest: /etc/cloudflared/config.yml
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      tunnel: {{ tunnel_id_result.stdout }}
+      credentials-file: /etc/cloudflared/{{ tunnel_id_result.stdout }}.json
+      ingress:
+        - hostname: app.example.com
+          service: http://localhost:8080
+        - service: http_status:404
