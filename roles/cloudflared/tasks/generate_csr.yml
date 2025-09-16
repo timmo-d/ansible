@@ -20,6 +20,15 @@
     mode: '0755'
     state: file
 
+- name: Check Terraform version
+  command: terraform version
+  register: tf_version
+  changed_when: false
+
+- name: Show Terraform version
+  debug:
+    msg: "{{ tf_version.stdout }}"
+
 - name: Ensure Terraform directory exists
   file:
     path: "{{ cf_terraform_path }}"
