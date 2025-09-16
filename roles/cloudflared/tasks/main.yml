@@ -45,11 +45,19 @@
     TF_VAR_tunnel_name: "{{ tunnel_name }}"
 
 # --- Import if exists ---
+- name: Check if tunnel is already in Terraform state
+  command: terraform state list
+  args:
+    chdir: "{{ terraform_dir }}"
+  register: tf_state_list
+
 - name: Import existing tunnel into Terraform
   command: terraform import cloudflare_zero_trust_tunnel_cloudflared.tunnel {{ existing_tunnel_id }}
   args:
     chdir: "{{ terraform_dir }}"
-  when: existing_tunnel_id != ""
+  when:
+    - existing_tunnel_id != ""
+    - "'cloudflare_zero_trust_tunnel_cloudflared.tunnel' not in tf_state_list.stdout"
 
 # --- Apply ---
 - name: Run Terraform apply
