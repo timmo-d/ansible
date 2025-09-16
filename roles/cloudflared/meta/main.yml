@@ -1,6 +1,7 @@
 galaxy_info:
+  role_name: cloudflared
   author: T
-  description: Provision Cloudflare Access apps for self-hosted services
+  description: Automates Cloudflare Origin CA certificate issuance using Terraform and installs it securely
   license: MIT
   min_ansible_version: 2.10
   platforms:
