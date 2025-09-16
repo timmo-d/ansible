@@ -12,8 +12,9 @@
     state: present
 
 - name: Check if Terraform configs exist on controller
-  local_action:
-    module: stat
+  delegate_to: localhost
+  become: false
+  stat:
     path: "roles/cloudflared/files/terraform_configs/main.tf"
   register: tf_config_check
   failed_when: not tf_config_check.stat.exists
