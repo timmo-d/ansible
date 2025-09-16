@@ -1,22 +1,26 @@
-- name: Extract Origin Certificate
-  command: terraform output -raw origin_certificate
-  args:
-    chdir: "{{ cf_terraform_path }}"
-  register: origin_cert
+#- name: Extract Origin Certificate
+#  command: terraform output -raw origin_certificate
+#  args:
+#    chdir: "{{ cf_terraform_path }}"
+#  register: origin_cert
 
-- name: Save Origin Certificate
-  copy:
-    content: "{{ origin_cert.stdout }}"
-    dest: "{{ cf_cert_file }}"
-    owner: root
-    group: root
-    mode: '0600'
+#- name: Save Origin Certificate
+#  copy:
+#    content: "{{ origin_cert.stdout }}"
+#    dest: "{{ cf_cert_file }}"
+#    owner: root
+#    group: root
+#    mode: '0600'
 
-- name: Move Origin Key
-  copy:
-    src: "{{ cf_terraform_path }}/origin.key"
-    dest: "{{ cf_key_file }}"
-    remote_src: true
-    owner: root
-    group: root
-    mode: '0600'
+#- name: Move Origin Key
+#  copy:
+#    src: "{{ cf_terraform_path }}/origin.key"
+#    dest: "{{ cf_key_file }}"
+#    remote_src: true
+#    owner: root
+#    group: root
+#    mode: '0600'
+
+- name: Get tunnel credentials JSON
+  command: terraform output -raw tunnel_credentials_json
+  register: tunnel_creds
