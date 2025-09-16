@@ -3,6 +3,14 @@
     path: "{{ terraform_dir }}"
     state: directory
 
+- name: Copy Terraform configuration to remote
+  copy:
+    src: ./terraform/cloudflared/
+    dest: "{{ terraform_dir }}/"
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Run Terraform init
   command: terraform init
   args:
