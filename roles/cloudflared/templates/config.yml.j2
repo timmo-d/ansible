@@ -3,7 +3,7 @@ credentials-file: /etc/cloudflared/{{ tunnel_id_final }}.json
 ingress:
 {% for rule in cloudflared_ingress %}
   - {% if rule.hostname is defined %}hostname: {{ rule.hostname }}
-    service: {{ rule.service }}
-    {% else %}service: {{ rule.service }}
+    service: "{{ rule.service }}"
+    {% else %}service: "{{ rule.service }}"
     {% endif %}
 {% endfor %}
