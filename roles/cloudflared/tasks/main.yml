@@ -5,8 +5,8 @@
     dest: "{{ cloudflared_bin_path }}"
     mode: '0755'
 
-- name: Configure cloudflared
-  include_tasks: configure_tunnel.yml
+#- name: Configure cloudflared
+#  include_tasks: configure_tunnel.yml
   #when: "'ssh' in stig_enabled_tags and not system_is_container | default(false)"
 
 - name: Create Cloudflare Access apps
