@@ -1,4 +1,7 @@
 ---
+# Cloudflare's new tunnel encryption requires token based authentication, which cannot be done directly in Ansible, but can be created using Terraform.
+# Below is a wrapped Terraform project to be run within the Ansible environement.
+
 # Ensure Terraform working directory exists
 - name: Ensure Terraform directory exists
   file:
