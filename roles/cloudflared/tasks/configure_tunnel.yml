@@ -110,9 +110,7 @@
 
 - name: Set unified tunnel_id fact
   set_fact:
-    cloudflared_tunnel_id: >-
-      {{ cloudflared_tunnel_id
-         | default(tunnel_id_result.stdout, true) }}
+    tunnel_id_final: "{{ tunnel_id | default(tunnel_id_result.stdout, true) }}"
 
 # --- 4. Write config.yml ---
 - name: Write config.yml for cloudflared
@@ -138,7 +136,7 @@
       [Service]
       TimeoutStartSec=0
       Type=notify
-      ExecStart={{ cloudflared_bin_path }} tunnel --config /etc/cloudflared/config.yml run {{ cloudflared_tunnel_id }}
+      ExecStart={{ cloudflared_bin_path }} tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id_final }}
 
       Restart=on-failure
       RestartSec=5s
