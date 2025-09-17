@@ -5,7 +5,7 @@
   vars_files:
     - group_vars/all.yml
 
-- name: Confirm Ansible context
+- name: Confirm Ansible context  ### Some debug tasks to check things are in place. Can be removed.
   hosts: all
   gather_facts: false
   tasks:
@@ -16,11 +16,6 @@
     - name: Show playbook_dir
       debug:
         var: playbook_dir
-
-- name: Confirm group_vars loading
-  hosts: all
-  gather_facts: false
-  tasks:
     - name: Show STIG tags
       debug:
         var: stig_enabled_tags
@@ -28,4 +23,4 @@
   roles:
     - role: hardening       # Apply full STIG controls
     - role: firewall
-    - role: ssh
+    - role: ssh             # Harden SSH implementation if not doone during provisioning.
