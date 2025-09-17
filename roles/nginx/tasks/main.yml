@@ -20,6 +20,7 @@
     name: nginx
     state: started
     enabled: yes
+#TODO: Check to see if systemd file is required.
 
 #- name: Configure reverse proxy for Sonarr
 #  become: true
