@@ -1,15 +1,9 @@
-- name: Log access app token
-  debug:
-    #msg: "Access Apps token is: {{ cloudflare_apps_api_token | default('UNATTACHED') }}"
-    msg: "Access Apps token is: {{ cloudflare_account_id | default('UNATTACHED') }}"
-    #msg: "Access Apps token is: {{ cloudflare_access_apps | default('UNATTACHED') }}"
-
 - name: Get existing Cloudflare Access apps
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
     method: GET
     headers:
-      Authorization: "Bearer {{ cloudflare_api_token }}"
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
     return_content: yes
   register: existing_access_apps
 
