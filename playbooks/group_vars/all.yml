@@ -20,6 +20,7 @@ cloudflare_tunnel_id: "{{ lookup('env', 'CLOUDFLARE_TUNNEL_ID') }}"
 cloudflare_tunnel_secret: "{{ lookup('env', 'CLOUDFLARE_TUNNEL_SECRET') }}"
 cloudflared_bin_path: "/usr/local/bin/cloudflared"
 cloudflare_global_api_token: "{{ lookup('env', 'CLOUDFLARE_GLOBAL_API_TOKEN') }}"
+cloudflare_apps_api_token: "{{ lookup('env', 'CLOUDFLARE_APPS_TOKEN') }}"
 ansible_user: "tim"
 
 
