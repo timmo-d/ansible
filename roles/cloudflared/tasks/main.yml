@@ -11,7 +11,12 @@
 
 - name: Start Cloudflared tunnel (headless token mode)
   ansible.builtin.command: >
-    {{ cloudflared_bin_path }} tunnel --config {{ cloudflared_config_path }} run {{ cloudflared_tunnel_id }}
+    "{{ cloudflared_bin_path }}" tunnel --config "{{ cloudflared_config_path }}" run "{{ tunnel_id_final }}"
+  changed_when: false
+  when:
+    - tunnel_id_final is defined
+    - tunnel_id_final | length > 0
+
 
 - name: Create Cloudflare Access apps
   include_tasks: create_access_apps.yml
