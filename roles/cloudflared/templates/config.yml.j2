@@ -1,11 +1,14 @@
+{# Build a proper Python list for ingress first #}
+{% set ingress_list = [] %}
+{% for rule in cloudflared_ingress | default([]) %}
+  {% if rule.hostname is defined and (rule.hostname|string)|length > 0 %}
+    {% set _ = ingress_list.append({'hostname': rule.hostname, 'service': rule.service}) %}
+  {% else %}
+    {% set _ = ingress_list.append({'service': rule.service}) %}
+  {% endif %}
+{% endfor %}
+
 tunnel: {{ tunnel_id_final }}
 credentials-file: /etc/cloudflared/{{ tunnel_id_final }}.json
 ingress:
-{% for rule in cloudflared_ingress %}
-  - {% if rule.hostname is defined %}
-    hostname: {{ rule.hostname }}
-    service: "{{ rule.service }}"
-    {% else %}
-    service: "{{ rule.service }}"
-    {% endif %}
-{% endfor %}
+{{ ingress_list | to_nice_yaml(indent=2) | indent(2, true) }}
