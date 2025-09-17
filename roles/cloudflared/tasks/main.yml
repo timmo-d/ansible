@@ -6,7 +6,7 @@
     mode: '0755'
 
 - name: Configure cloudflared
-  include_tasks: configure.yml
+  include_tasks: configure_tunnel.yml
   #when: "'ssh' in stig_enabled_tags and not system_is_container | default(false)"
 
 - name: Start Cloudflared tunnel (headless token mode)
