@@ -199,7 +199,10 @@
 
       [Install]
       WantedBy=multi-user.target
-
+  when:
+    - tunnel_id_final is defined
+    - tunnel_id_final | length > 0
+    
 - name: Reload systemd daemon
   systemd:
     daemon_reload: yes
