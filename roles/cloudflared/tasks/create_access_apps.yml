@@ -1,10 +1,10 @@
 # 0. Preconditions
 - name: Fail if Cloudflare account ID or API token is missing
   fail:
-    msg: "cloudflare_account_id or cloudflare_api_token is not set — cannot manage Access apps"
+    msg: "cloudflare_account_id or cloudflare_apps_api_token is not set — cannot manage Access apps"
   when:
     - cloudflare_account_id is not defined or cloudflare_account_id | length == 0
-    - cloudflare_api_token is not defined or cloudflare_api_token | length == 0
+    - cloudflare_apps_api_token is not defined or cloudflare_apps_api_token | length == 0
 
 # 1. Get existing Access apps
 - name: Get existing Cloudflare Access apps
@@ -12,7 +12,7 @@
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
     method: GET
     headers:
-      Authorization: "Bearer {{ cloudflare_api_token }}"
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
       Content-Type: "application/json"
     return_content: yes
     status_code: 200
@@ -24,7 +24,7 @@
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
     method: POST
     headers:
-      Authorization: "Bearer {{ cloudflare_api_token }}"
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
       Content-Type: "application/json"
     body_format: json
     body:
