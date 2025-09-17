@@ -22,5 +22,6 @@
 
   roles:
     - role: hardening       # Apply full STIG controls
-    - role: firewall
+    - role: firewall        # Install UFW and configure default rules.
     - role: ssh             # Harden SSH implementation if not doone during provisioning.
+
