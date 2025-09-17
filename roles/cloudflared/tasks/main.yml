@@ -1,4 +1,10 @@
 ---
+- name: Install cloudflared
+  ansible.builtin.get_url:
+    url: https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+    dest: "{{ cloudflared_bin_path }}"
+    mode: '0755'
+
 # Cloudflare's new tunnel encryption requires token based authentication, which cannot be done directly in Ansible, but can be created using Terraform.
 # Below is a wrapped Terraform project to be run within the Ansible environement.
 
@@ -152,6 +158,6 @@
     state: started
 
 
-
+# Create Cloudflare apps that will be accessed through tunnel and proxy
 - name: Include Cloudflare Access app creation
   include_tasks: create_access_apps.yml
