@@ -1,5 +1,5 @@
-tunnel: {{ tunnel_id_result.stdout }}
-credentials-file: /etc/cloudflared/{{ tunnel_id_result.stdout }}.json
+tunnel: {{ tunnel_id_final }}
+credentials-file: /etc/cloudflared/{{ tunnel_id_final }}.json
 ingress:
 {% for rule in cloudflared_ingress %}
   - {% if rule.hostname is defined %}hostname: {{ rule.hostname }}

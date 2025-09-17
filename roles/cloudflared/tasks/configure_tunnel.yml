@@ -108,6 +108,12 @@
     mode: '0600'
   when: tunnel_id is not defined
 
+- name: Set unified tunnel_id fact
+  set_fact:
+    tunnel_id_final: >-
+      {{ tunnel_id
+         | default(tunnel_id_result.stdout, true) }}
+
 # --- 4. Write config.yml ---
 - name: Write config.yml for cloudflared
   template:
@@ -132,7 +138,8 @@
       [Service]
       TimeoutStartSec=0
       Type=notify
-      ExecStart={{ cloudflared_bin_path }} tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id | default(tunnel_id_result.stdout) }}
+      ExecStart={{ cloudflared_bin_path }} tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id_final }}
+
       Restart=on-failure
       RestartSec=5s
       LimitNOFILE=65536
