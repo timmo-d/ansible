@@ -38,14 +38,14 @@
 # --- 2. If tunnel exists, fetch credentials via API ---
 - name: Fetch existing tunnel credentials
   uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ tunnel_id }}/token"
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ cloudflared_tunnel_id }}/token"
     method: GET
     headers:
       Authorization: "Bearer {{ cloudflare_api_token }}"
       Content-Type: "application/json"
     return_content: yes
   register: tunnel_creds
-  when: tunnel_id is defined
+  when: cloudflared_tunnel_id is defined
 
 - name: Ensure /etc/cloudflared exists
   file:
@@ -58,11 +58,11 @@
 - name: Write existing tunnel credentials file
   copy:
     content: "{{ tunnel_creds.content }}"
-    dest: "/etc/cloudflared/{{ tunnel_id }}.json"
+    dest: "/etc/cloudflared/{{ cloudflared_tunnel_id }}.json"
     owner: root
     group: root
     mode: '0600'
-  when: tunnel_id is defined
+  when: cloudflared_tunnel_id is defined
 
 # --- 3. If tunnel does NOT exist, create with Terraform ---
 - name: Run Terraform init
@@ -73,7 +73,7 @@
     TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
     TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
     TF_VAR_tunnel_name: "{{ tunnel_name }}"
-  when: tunnel_id is not defined
+  when: cloudflared_tunnel_id is not defined
 
 - name: Run Terraform apply
   command: terraform apply -auto-approve
@@ -83,21 +83,21 @@
     TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
     TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
     TF_VAR_tunnel_name: "{{ tunnel_name }}"
-  when: tunnel_id is not defined
+  when: cloudflared_tunnel_id is not defined
 
 - name: Get tunnel ID from Terraform
-  command: terraform output -raw tunnel_id
+  command: terraform output -raw cloudflared_tunnel_id
   args:
     chdir: "{{ terraform_dir }}"
-  register: tunnel_id_result
-  when: tunnel_id is not defined
+  register: cloudflared_tunnel_id
+  when: cloudflared_tunnel_id is not defined
 
 - name: Get tunnel credentials JSON from Terraform
   command: terraform output -raw tunnel_credentials_json
   args:
     chdir: "{{ terraform_dir }}"
   register: tunnel_creds_result
-  when: tunnel_id is not defined
+  when: cloudflared_tunnel_id is not defined
 
 - name: Write new tunnel credentials file
   copy:
@@ -106,12 +106,12 @@
     owner: root
     group: root
     mode: '0600'
-  when: tunnel_id is not defined
+  when: cloudflared_tunnel_id is not defined
 
 - name: Set unified tunnel_id fact
   set_fact:
-    tunnel_id_final: >-
-      {{ tunnel_id
+    cloudflared_tunnel_id: >-
+      {{ cloudflared_tunnel_id
          | default(tunnel_id_result.stdout, true) }}
 
 # --- 4. Write config.yml ---
@@ -138,7 +138,7 @@
       [Service]
       TimeoutStartSec=0
       Type=notify
-      ExecStart={{ cloudflared_bin_path }} tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id_final }}
+      ExecStart={{ cloudflared_bin_path }} tunnel --config /etc/cloudflared/config.yml run {{ cloudflared_tunnel_id }}
 
       Restart=on-failure
       RestartSec=5s

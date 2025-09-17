@@ -1,4 +1,4 @@
-output "tunnel_id" {
+output "cloudflared_tunnel_id" {
   value = cloudflare_zero_trust_tunnel_cloudflared.tunnel.id
 }
 
