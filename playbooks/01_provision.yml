@@ -10,7 +10,7 @@
       vars:
         ubuntu_pro_token: "{{ ubuntu_pro_token }}"
     - role: users           # Create admin user and SSH keypair
+    - role: ssh             # Harden SSH configuration
     - role: common          # Update apt cach and packages, and set timezone
     - role: packages        # Install essential packages
-    - role: ssh
     
