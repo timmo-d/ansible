@@ -1,9 +1,6 @@
-- name: Clean Terraform directory
-  file:
-    path: "{{ terraform_dir }}"
-    state: absent
-
-- name: Recreate Terraform directory
+---
+# Ensure Terraform working directory exists
+- name: Ensure Terraform directory exists
   file:
     path: "{{ terraform_dir }}"
     state: directory
@@ -11,6 +8,7 @@
     group: root
     mode: '0755'
 
+# Push Terraform configuration (only needed for creation path)
 - name: Push Terraform configuration to remote
   copy:
     src: terraform/
@@ -19,7 +17,7 @@
     group: root
     mode: '0644'
 
-# --- NEW: Check if tunnel exists via Cloudflare API ---
+# --- 1. Check Cloudflare API for existing tunnel ---
 - name: Check if tunnel exists
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel?name={{ tunnel_name }}"
@@ -32,68 +30,21 @@
 
 - name: Set fact for existing tunnel ID
   set_fact:
-    existing_tunnel_id: "{{ (tunnel_check.json.result | first).id if (tunnel_check.json.result | length) > 0 else '' }}"
+    tunnel_id: "{{ (tunnel_check.json.result | first).id }}"
+  when: (tunnel_check.json.result | length) > 0
 
-# --- Terraform init ---
-- name: Run Terraform init
-  command: terraform init
-  args:
-    chdir: "{{ terraform_dir }}"
-  environment:
-    TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
-    TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
-    TF_VAR_tunnel_name: "{{ tunnel_name }}"
+# --- 2. If tunnel exists, fetch credentials via API ---
+- name: Fetch existing tunnel credentials
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ tunnel_id }}/token"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cloudflare_api_token }}"
+      Content-Type: "application/json"
+    return_content: yes
+  register: tunnel_creds
+  when: tunnel_id is defined
 
-- name: Check if tunnel is already in Terraform state
-  command: terraform state list
-  args:
-    chdir: "{{ terraform_dir }}"
-  register: tf_state_list
-  failed_when: false
-
-- name: Set fact for existing tunnel import ID
-  set_fact:
-    existing_tunnel_import_id: "{{ cloudflare_account_id }}/{{ existing_tunnel_id }}"
-  when: existing_tunnel_id != ""
-
-- name: Import existing tunnel into Terraform
-  command: terraform import cloudflare_zero_trust_tunnel_cloudflared.tunnel {{ existing_tunnel_import_id }}
-  args:
-    chdir: "{{ terraform_dir }}"
-  environment:
-    TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
-    TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
-    TF_VAR_tunnel_name: "{{ tunnel_name }}"
-  timeout: 30
-  when:
-    - existing_tunnel_id != ""
-    - "'cloudflare_zero_trust_tunnel_cloudflared.tunnel' not in tf_state_list.stdout"
-
-
-# --- Apply ---
-- name: Run Terraform apply
-  command: terraform apply -auto-approve
-  args:
-    chdir: "{{ terraform_dir }}"
-  environment:
-    TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
-    TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
-    TF_VAR_tunnel_name: "{{ tunnel_name }}"
-
-# --- Outputs ---
-- name: Get tunnel ID from Terraform
-  command: terraform output -raw tunnel_id
-  args:
-    chdir: "{{ terraform_dir }}"
-  register: tunnel_id_result
-
-- name: Get tunnel credentials JSON from Terraform
-  command: terraform output -raw tunnel_credentials_json
-  args:
-    chdir: "{{ terraform_dir }}"
-  register: tunnel_creds_result
-
-# --- Deploy config ---
 - name: Ensure /etc/cloudflared exists
   file:
     path: /etc/cloudflared
@@ -102,14 +53,60 @@
     group: root
     mode: '0755'
 
-- name: Write tunnel credentials file
+- name: Write existing tunnel credentials file
+  copy:
+    content: "{{ tunnel_creds.content }}"
+    dest: "/etc/cloudflared/{{ tunnel_id }}.json"
+    owner: root
+    group: root
+    mode: '0600'
+  when: tunnel_id is defined
+
+# --- 3. If tunnel does NOT exist, create with Terraform ---
+- name: Run Terraform init
+  command: terraform init
+  args:
+    chdir: "{{ terraform_dir }}"
+  environment:
+    TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
+    TF_VAR_tunnel_name: "{{ tunnel_name }}"
+  when: tunnel_id is not defined
+
+- name: Run Terraform apply
+  command: terraform apply -auto-approve
+  args:
+    chdir: "{{ terraform_dir }}"
+  environment:
+    TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
+    TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
+    TF_VAR_tunnel_name: "{{ tunnel_name }}"
+  when: tunnel_id is not defined
+
+- name: Get tunnel ID from Terraform
+  command: terraform output -raw tunnel_id
+  args:
+    chdir: "{{ terraform_dir }}"
+  register: tunnel_id_result
+  when: tunnel_id is not defined
+
+- name: Get tunnel credentials JSON from Terraform
+  command: terraform output -raw tunnel_credentials_json
+  args:
+    chdir: "{{ terraform_dir }}"
+  register: tunnel_creds_result
+  when: tunnel_id is not defined
+
+- name: Write new tunnel credentials file
   copy:
     content: "{{ tunnel_creds_result.stdout }}"
     dest: "/etc/cloudflared/{{ tunnel_id_result.stdout }}.json"
     owner: root
     group: root
     mode: '0600'
+  when: tunnel_id is not defined
 
+# --- 4. Write config.yml ---
 - name: Write config.yml for cloudflared
   template:
     src: config.yml.j2
@@ -118,7 +115,7 @@
     group: root
     mode: '0644'
 
-# --- systemd ---
+# --- 5. Create systemd service ---
 - name: Create systemd service for cloudflared tunnel
   copy:
     dest: /etc/systemd/system/cloudflared.service
@@ -133,7 +130,7 @@
       [Service]
       TimeoutStartSec=0
       Type=notify
-      ExecStart={{ cloudflared_bin_path }} tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id_result.stdout }}
+      ExecStart={{ cloudflared_bin_path }} tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id | default(tunnel_id_result.stdout) }}
       Restart=on-failure
       RestartSec=5s
       LimitNOFILE=65536
@@ -150,6 +147,7 @@
     name: cloudflared
     enabled: yes
     state: started
+
 
 
 - name: Include Cloudflare Access app creation
