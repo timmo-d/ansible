@@ -51,8 +51,13 @@
   register: tf_state_list
   failed_when: false
 
+- name: Set fact for existing tunnel import ID
+  set_fact:
+    existing_tunnel_import_id: "{{ cloudflare_account_id }}/{{ existing_tunnel_id }}"
+  when: existing_tunnel_id != ""
+
 - name: Import existing tunnel into Terraform
-  command: terraform import cloudflare_zero_trust_tunnel_cloudflared.tunnel {{ existing_tunnel_id }}
+  command: terraform import cloudflare_zero_trust_tunnel_cloudflared.tunnel {{ existing_tunnel_import_id }}
   args:
     chdir: "{{ terraform_dir }}"
   environment:
@@ -63,6 +68,7 @@
   when:
     - existing_tunnel_id != ""
     - "'cloudflare_zero_trust_tunnel_cloudflared.tunnel' not in tf_state_list.stdout"
+
 
 # --- Apply ---
 - name: Run Terraform apply
