@@ -11,6 +11,6 @@
         ubuntu_pro_token: "{{ ubuntu_pro_token }}"
     - role: users           # Create admin user and SSH keypair
     - role: common          # Update apt cach and packages, and set timezone
-    - role: packages
+    - role: packages        # Install essential packages
     - role: ssh
     
