@@ -1,8 +1,13 @@
-# Cloudflare's new tunnel encryption requires token based authentication, which cannot be done directly in Ansible, but can be created using Terraform.
-# Below is a wrapped Terraform project to be run within the Ansible environement.
+---
+# This role creates or reuses a Cloudflare Tunnel in pure headless-token mode.
+# Terraform is used ONLY to create a tunnel if it does not already exist.
+# For existing tunnels, credentials are fetched via the API. No terraform import is used.
 
-# Ensure Terraform working directory exists
-- name: Ensure Terraform directory exists
+# -------------------------
+# 0. Preconditions
+# -------------------------
+
+- name: Ensure Terraform working directory exists
   file:
     path: "{{ terraform_dir }}"
     state: directory
@@ -10,7 +15,16 @@
     group: root
     mode: '0755'
 
-# Push Terraform configuration (only needed for creation path)
+- name: Ensure cloudflared config directory exists
+  file:
+    path: /etc/cloudflared
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+# If your Terraform configuration is shipped with the role, keep this.
+# If it's already placed on the target by another mechanism, remove this task.
 - name: Push Terraform configuration to remote
   copy:
     src: terraform/
@@ -19,8 +33,11 @@
     group: root
     mode: '0644'
 
-# --- 1. Check Cloudflare API for existing tunnel ---
-- name: Check if tunnel exists
+# -------------------------
+# 1. API-first detection
+# -------------------------
+
+- name: Check if tunnel exists by name via Cloudflare API
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel?name={{ tunnel_name }}"
     method: GET
@@ -28,15 +45,21 @@
       Authorization: "Bearer {{ cloudflare_api_token }}"
       Content-Type: "application/json"
     return_content: yes
+    status_code: 200
   register: tunnel_check
 
-- name: Set fact for existing tunnel ID
+- name: Set fact for existing tunnel ID (if present)
   set_fact:
     tunnel_id: "{{ (tunnel_check.json.result | first).id }}"
-  when: (tunnel_check.json.result | length) > 0
+  when:
+    - tunnel_check.json is defined
+    - (tunnel_check.json.result | default([])) | length > 0
 
-# --- 2. If tunnel exists, fetch credentials via API ---
-- name: Fetch existing tunnel credentials
+# -------------------------
+# 2. Existing tunnel path (no Terraform)
+# -------------------------
+
+- name: Fetch existing tunnel credentials (token JSON)
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ tunnel_id }}/token"
     method: GET
@@ -44,28 +67,28 @@
       Authorization: "Bearer {{ cloudflare_api_token }}"
       Content-Type: "application/json"
     return_content: yes
+    status_code: 200
   register: tunnel_creds
-  when: tunnel_id is defined
-
-- name: Ensure /etc/cloudflared exists
-  file:
-    path: /etc/cloudflared
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
+  when:
+    - tunnel_id is defined
+    - tunnel_id | length > 0
 
 - name: Write existing tunnel credentials file
   copy:
     content: "{{ tunnel_creds.content }}"
-    dest: "/etc/cloudflared/{{ cloudflared_tunnel_id }}.json"
+    dest: "/etc/cloudflared/{{ tunnel_id }}.json"
     owner: root
     group: root
     mode: '0600'
-  when: cloudflared_tunnel_id is defined
+  when:
+    - tunnel_id is defined
+    - tunnel_id | length > 0
 
-# --- 3. If tunnel does NOT exist, create with Terraform ---
-- name: Run Terraform init
+# -------------------------
+# 3. Creation path (Terraform only if tunnel not found)
+# -------------------------
+
+- name: Run Terraform init (creation path)
   command: terraform init
   args:
     chdir: "{{ terraform_dir }}"
@@ -73,9 +96,9 @@
     TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
     TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
     TF_VAR_tunnel_name: "{{ tunnel_name }}"
-  when: cloudflared_tunnel_id is not defined
+  when: tunnel_id | default('') | length == 0
 
-- name: Run Terraform apply
+- name: Run Terraform apply (creation path)
   command: terraform apply -auto-approve
   args:
     chdir: "{{ terraform_dir }}"
@@ -83,36 +106,61 @@
     TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
     TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
     TF_VAR_tunnel_name: "{{ tunnel_name }}"
-  when: cloudflared_tunnel_id is not defined
+  when: tunnel_id | default('') | length == 0
 
-- name: Get tunnel ID from Terraform
-  command: terraform output -raw cloudflared_tunnel_id
+- name: Get tunnel ID from Terraform output (creation path)
+  command: terraform output -raw tunnel_id
   args:
     chdir: "{{ terraform_dir }}"
-  register: cloudflared_tunnel_id
-  when: cloudflared_tunnel_id is not defined
+  register: tunnel_id_result
+  changed_when: false
+  when: tunnel_id | default('') | length == 0
 
-- name: Get tunnel credentials JSON from Terraform
+- name: Get tunnel credentials JSON from Terraform output (creation path)
   command: terraform output -raw tunnel_credentials_json
   args:
     chdir: "{{ terraform_dir }}"
   register: tunnel_creds_result
-  when: cloudflared_tunnel_id is not defined
+  changed_when: false
+  when: tunnel_id | default('') | length == 0
 
-- name: Write new tunnel credentials file
+- name: Write new tunnel credentials file (creation path)
   copy:
     content: "{{ tunnel_creds_result.stdout }}"
     dest: "/etc/cloudflared/{{ tunnel_id_result.stdout }}.json"
     owner: root
     group: root
     mode: '0600'
-  when: cloudflared_tunnel_id is not defined
+  when: tunnel_id | default('') | length == 0
 
-- name: Set unified tunnel_id fact
+# -------------------------
+# 4. Unify the tunnel ID and assert
+# -------------------------
+
+- name: Set unified tunnel_id fact (works for both paths)
   set_fact:
-    tunnel_id_final: "{{ tunnel_id | default(tunnel_id_result.stdout, true) }}"
+    tunnel_id_final: >-
+      {{
+        (tunnel_id | default('')) if (tunnel_id | default('') | length > 0)
+        else (tunnel_id_result.stdout | default(''))
+      }}
 
-# --- 4. Write config.yml ---
+- name: Fail if tunnel_id_final is not set or empty
+  fail:
+    msg: "No tunnel ID available — cannot proceed. Check API detection and Terraform creation."
+  when: tunnel_id_final | default('') | length == 0
+
+# -------------------------
+# 5. Render config and validate
+# -------------------------
+
+# Your template must quote service values to avoid YAML errors with colons, e.g. "http_status:404"
+# Example lines in templates/config.yml.j2:
+#   tunnel: {{ tunnel_id_final }}
+#   credentials-file: /etc/cloudflared/{{ tunnel_id_final }}.json
+#   ingress:
+#   - hostname: ...
+#     service: "{{ rule.service }}"
 - name: Write config.yml for cloudflared
   template:
     src: config.yml.j2
@@ -121,7 +169,14 @@
     group: root
     mode: '0644'
 
-# --- 5. Create systemd service ---
+- name: Validate cloudflared config YAML
+  command: python3 -c 'import yaml,sys; yaml.safe_load(open("/etc/cloudflared/config.yml")) or sys.exit(0)'
+  changed_when: false
+
+# -------------------------
+# 6. Systemd service
+# -------------------------
+
 - name: Create systemd service for cloudflared tunnel
   copy:
     dest: /etc/systemd/system/cloudflared.service
@@ -131,15 +186,15 @@
     content: |
       [Unit]
       Description=Cloudflare Tunnel
-      After=network.target
+      After=network-online.target
+      Wants=network-online.target
 
       [Service]
-      TimeoutStartSec=0
       Type=notify
-      ExecStart={{ cloudflared_bin_path }} tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id_final }}
-
+      ExecStart={{ cloudflared_bin_path | default('/usr/local/bin/cloudflared') }} tunnel --config /etc/cloudflared/config.yml run {{ tunnel_id_final }}
       Restart=on-failure
       RestartSec=5s
+      TimeoutStartSec=0
       LimitNOFILE=65536
 
       [Install]
