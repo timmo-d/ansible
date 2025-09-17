@@ -1,5 +1,21 @@
 ---
 - name: Install cloudflared
+  include_tasks: install.yml
+  #when: "'auditd' in stig_enabled_tags and not system_is_container | default(false)"
+
+- name: Configure cloudflared
+  include_tasks: configure.yml
+  #when: "'ssh' in stig_enabled_tags and not system_is_container | default(false)"
+
+- name: Run cloudflared and create tunnel
+  include_tasks: install.yml
+  #when: "'auditd' in stig_enabled_tags and not system_is_container | default(false)"
+
+- name: Create Cloudflare Access apps
+  include_tasks: create_access_apps.yml
+  #when: "'ssh' in stig_enabled_tags and not system_is_container | default(false)"
+
+- name: Install cloudflared
   ansible.builtin.get_url:
     url: https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
     dest: "{{ cloudflared_bin_path }}"
