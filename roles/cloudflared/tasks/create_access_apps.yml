@@ -1,8 +1,8 @@
 - name: Log access app token
   debug:
-    msg: "Access Apps token is: {{ cloudflare_apps_api_token | default('UNATTACHED') }}"
+    #msg: "Access Apps token is: {{ cloudflare_apps_api_token | default('UNATTACHED') }}"
     msg: "Access Apps token is: {{ cloudflare_account_id | default('UNATTACHED') }}"
-    msg: "Access Apps token is: {{ cloudflare_access_apps | default('UNATTACHED') }}"
+    #msg: "Access Apps token is: {{ cloudflare_access_apps | default('UNATTACHED') }}"
 
 - name: Get existing Cloudflare Access apps
   uri:
