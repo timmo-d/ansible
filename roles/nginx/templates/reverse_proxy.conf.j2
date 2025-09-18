@@ -31,7 +31,14 @@ http {
         add_header X-Content-Type-Options nosniff;
         add_header X-Frame-Options DENY;
         add_header Referrer-Policy no-referrer;
-        add_header Content-Security-Policy "default-src 'none';";
+        add_header Content-Security-Policy "
+            default-src 'self';
+            script-src 'self' 'unsafe-inline';
+            style-src 'self' 'unsafe-inline';
+            img-src 'self' data:;
+            font-src 'self' data:;
+            connect-src 'self' ws:;
+        " always;
 
         location / {
             proxy_pass http://{{ app.internal_ip }}:{{ app.internal_port }};
