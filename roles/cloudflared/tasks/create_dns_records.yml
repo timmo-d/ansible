@@ -27,7 +27,7 @@
   set_fact:
     normalized_access_apps: >-
       {{
-        existing_access_apps
+        access_apps_list
         | map('combine', {
             'domain': (
               item.domain
@@ -39,7 +39,7 @@
           })
         | list
       }}
-  loop: "{{ existing_access_apps }}"
+  loop: "{{ access_apps_list }}"
   loop_control:
     loop_var: item
 

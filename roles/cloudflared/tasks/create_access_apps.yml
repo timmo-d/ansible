@@ -16,8 +16,21 @@
       Content-Type: "application/json"
     return_content: yes
     status_code: 200
-  register: existing_access_apps
+  register: access_apps_resp
 
+- name: Fail if API call to get Access apps failed
+  fail:
+    msg: "Failed to retrieve Access apps: {{ access_apps_resp.json.errors }}"
+  when: not access_apps_resp.json.success | default(false)
+
+- name: Set access_apps_list fact to just the result array
+  set_fact:
+    access_apps_list: "{{ access_apps_resp.json.result | default([]) }}"
+
+- name: Debug discovered Access apps
+  debug:
+    var: access_apps_list
+    
 # 2. Create missing Access apps
 - name: Create Cloudflare Access apps if not already present
   uri:
