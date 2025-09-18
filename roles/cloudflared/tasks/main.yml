@@ -11,5 +11,12 @@
 - name: Create Cloudflare Access apps
   include_tasks: create_access_apps.yml
 
-- name: Create Cloudflare Access policy
+- name: Create or update policy for each app
   include_tasks: create_access_policy.yml
+  loop: "{{ app_email_map | dict2items }}"
+  loop_control:
+    loop_var: app_item
+  vars:
+    app_id: "{{ app_item.key }}"
+    app_email: "{{ app_item.value }}"
+  when: app_item.value is defined and app_item.value | length > 0
