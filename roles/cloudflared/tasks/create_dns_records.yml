@@ -18,23 +18,17 @@
   set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
 
-- name: Log existing apps
-  debug:
-    var: existing_access_apps
-  when: existing_access_apps is defined
-
-- name: Normalize Access app hostnames
+# 🔹 Normalise to always have a public_hostname from self_hosted_domains[0]
+- name: Normalise Access app hostnames
   set_fact:
     normalized_access_apps: >-
       {{
         access_apps_list
         | map('combine', {
             'public_hostname': (
-              item.domain
-              if (item.domain is defined and item.domain is match('^[^.]+\\..+\\..+$'))
-              else (item.self_hosted_domains[0]
-                    if (item.self_hosted_domains is defined and item.self_hosted_domains|length > 0)
-                    else omit)
+              item.self_hosted_domains[0]
+              if (item.self_hosted_domains is defined and item.self_hosted_domains|length > 0)
+              else omit
             )
           })
         | list
@@ -68,3 +62,4 @@
 - name: Show DNS creation results
   debug:
     var: dns_create_results.results
+
