@@ -24,3 +24,19 @@ cloudflare_apps_api_token: "{{ lookup('env', 'CLOUDFLARE_APPS_TOKEN') }}"
 ansible_user: "tim"
 tunnel_name: "dmz-tunnel"
 
+cloudflare_access_apps:
+  - name: "Sonarr"
+    domain: "sonarr.timmos.com.au"
+    hostname: "sonarr.timmos.com.au"
+    local_service: "http://192.168.1.100:8989"
+    email: "sonarr@timmos.com.au"
+    sonarr_ip: 192.168.1.100
+    sonarr_port: 7878
+
+  - name: "Radarr"
+    domain: "radarr.timmos.com.au"
+    hostname: "radarr.timmos.com.au"
+    local_service: "http://192.168.1.100:7878"
+    email: "radarr@timmos.com.au"
+    radarr_ip: 192.168.1.100
+    radarr_port: 7878

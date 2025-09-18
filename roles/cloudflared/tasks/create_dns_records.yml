@@ -65,9 +65,21 @@
   debug:
     var: app_hostnames
 
-# Ensure proxied CNAME DNS records exist for each Access app
-# Uses the community.general.cloudflare_dns module for idempotency
+# Build app_hostnames list directly from cloudflare_access_apps
+- name: Build app_hostnames from cloudflare_access_apps
+  set_fact:
+    app_hostnames: "{{ cloudflare_access_apps
+                       | map('combine', {
+                           'public_hostname': item.hostname,
+                           'internal_ip': item[item.name | lower + '_ip'],
+                           'internal_port': item[item.name | lower + '_port']
+                         })
+                       | list }}"
+  loop: "{{ cloudflare_access_apps }}"
+  loop_control:
+    loop_var: item
 
+# Ensure CNAME record exists for each Access app
 - name: Ensure CNAME record exists for each Access app
   community.general.cloudflare_dns:
     zone: "{{ cloudflare_zone }}"
@@ -81,7 +93,25 @@
   loop: "{{ app_hostnames }}"
   loop_control:
     label: "{{ item.public_hostname }}"
-  register: dns_create_results
+
+
+# Ensure proxied CNAME DNS records exist for each Access app
+# Uses the community.general.cloudflare_dns module for idempotency
+
+#- name: Ensure CNAME record exists for each Access app
+#  community.general.cloudflare_dns:
+#    zone: "{{ cloudflare_zone }}"
+#    record: "{{ item.public_hostname }}"
+#    type: CNAME
+#    value: "{{ tunnel_id_final }}.cfargotunnel.com"
+#    proxied: true
+#    ttl: 1
+#    api_token: "{{ cloudflare_api_token }}"
+#    state: present
+#  loop: "{{ app_hostnames }}"
+#  loop_control:
+#    label: "{{ item.public_hostname }}"
+#  register: dns_create_results
 
 # Step 6: Create or update DNS records
 #- name: Ensure proxied CNAME record exists for each Access app
@@ -106,6 +136,6 @@
 #  register: dns_create_results
 
 # Step 7: Show DNS creation results
-- name: Show DNS creation results
-  debug:
-    var: dns_create_results.results
+#- name: Show DNS creation results
+#  debug:
+#    var: dns_create_results.results
