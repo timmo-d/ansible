@@ -111,13 +111,17 @@
 #  loop_control:
 #    loop_var: item
 
-- name: Build app_hostnames from nginx_upstreams
+#- name: Build app_hostnames from nginx_upstreams
+#  set_fact:
+#    app_hostnames: "{{ nginx_upstreams | map('extract', {
+#                      'public_hostname': 'public_hostname',
+#                      'internal_ip': 'internal_ip',
+#                      'internal_port': 'internal_port'
+#                    }) | list }}"
+
+- name: Copy nginx_upstreams to app_hostnames
   set_fact:
-    app_hostnames: "{{ nginx_upstreams | map('extract', {
-                      'public_hostname': 'public_hostname',
-                      'internal_ip': 'internal_ip',
-                      'internal_port': 'internal_port'
-                    }) | list }}"
+    app_hostnames: "{{ nginx_upstreams }}"
 
 
 # Ensure CNAME record exists for each Access app
