@@ -202,7 +202,54 @@
   when:
     - tunnel_id_final is defined
     - tunnel_id_final | length > 0
-    
+
+####################################################
+##### Validate configuration prior to starting #####
+####################################################
+# 1. Ensure credentials file exists
+- name: Check that cloudflared credentials file exists
+  stat:
+    path: "/etc/cloudflared/{{ tunnel_id_final }}.json"
+  register: creds_file
+
+- name: Fail if credentials file is missing
+  fail:
+    msg: "Cloudflared credentials file /etc/cloudflared/{{ tunnel_id_final }}.json is missing."
+  when: not creds_file.stat.exists
+
+# 2. Read tunnel ID from config.yml
+- name: Read tunnel ID from config.yml
+  slurp:
+    path: /etc/cloudflared/config.yml
+  register: config_file_raw
+
+- name: Parse tunnel ID from config.yml
+  set_fact:
+    config_tunnel_id: "{{ (config_file_raw.content | b64decode | from_yaml).tunnel | string }}"
+
+# 3. Read tunnel ID from credentials JSON
+- name: Read tunnel ID from credentials JSON
+  slurp:
+    path: "/etc/cloudflared/{{ tunnel_id_final }}.json"
+  register: creds_file_raw
+
+- name: Parse tunnel ID from credentials JSON
+  set_fact:
+    creds_tunnel_id: "{{ (creds_file_raw.content | b64decode | from_json).TunnelID | string }}"
+
+# 4. Compare IDs and fail if mismatch
+- name: Fail if tunnel ID in config and credentials do not match
+  fail:
+    msg: >-
+      Tunnel ID mismatch:
+      config.yml has {{ config_tunnel_id }},
+      credentials file has {{ creds_tunnel_id }}.
+      These must match for cloudflared to authenticate.
+  when: config_tunnel_id != creds_tunnel_id
+
+###########################################
+##### Reload daemon and start service #####
+###########################################
 - name: Reload systemd daemon
   systemd:
     daemon_reload: yes
