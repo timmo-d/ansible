@@ -233,9 +233,22 @@
     path: "/etc/cloudflared/{{ tunnel_id_final }}.json"
   register: creds_file_raw
 
-- name: Parse tunnel ID from credentials JSON
+- name: Parse credentials JSON
   set_fact:
-    creds_tunnel_id: "{{ (creds_file_raw.content | b64decode | from_json).TunnelID | string }}"
+    creds_json: "{{ creds_file_raw.content | b64decode | from_json }}"
+
+# 4. Check tunnel ID has been added correctly
+- name: Fail if TunnelID is missing
+  fail:
+    msg: >-
+      Credentials file /etc/cloudflared/{{ tunnel_id_final }}.json does not contain 'TunnelID'.
+      Found keys: {{ creds_json.keys() | join(', ') }}
+  when: "'TunnelID' not in creds_json"
+
+- name: Set creds_tunnel_id fact
+  set_fact:
+    creds_tunnel_id: "{{ creds_json.TunnelID }}"
+  when: "'TunnelID' in creds_json"
 
 # 4. Compare IDs and fail if mismatch
 - name: Fail if tunnel ID in config and credentials do not match
