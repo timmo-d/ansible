@@ -1,15 +1,13 @@
-{# Build a proper Python list for ingress first #}
 {% set ingress_list = [] %}
 
-{# 1. Add each Access app's hostname from access_apps_list, force loopback service #}
-{% for app in cloudflare_access_apps | default([]) %}
-  {% set host = app.hostname if app.hostname is defined else app.domain %}
-  {% if host is defined and (host|string)|length > 0 %}
-    {% set _ = ingress_list.append({'hostname': host, 'service': 'http://127.0.0.1:80'}) %}
+# Add ingress rules for each app hostname from app_hostnames
+{% for app in app_hostnames | default([]) %}
+  {% if app.public_hostname is defined and (app.public_hostname|string)|length > 0 %}
+    {% set _ = ingress_list.append({'hostname': app.public_hostname, 'service': 'http://127.0.0.1:80'}) %}
   {% endif %}
 {% endfor %}
 
-{# 2. Add any extra ingress rules passed in via cloudflared_ingress var #}
+# Add any extra ingress rules from cloudflared_ingress var
 {% for rule in cloudflared_ingress | default([]) %}
   {% set host = rule.hostname if rule.hostname is defined else rule.domain %}
   {% set svc = rule.service if (rule.service is defined and rule.service is match('^https?://127\\.0\\.0\\.1(:\\d+)?$')) else 'http://127.0.0.1:80' %}

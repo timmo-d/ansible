@@ -1,3 +1,8 @@
+---
+# Create or update proxied CNAME DNS records for each Access app
+# Always uses the correct tunnel UUID from tunnel_id_final
+# and the first entry in self_hosted_domains[] as the public hostname.
+
 - name: Get Zone ID for base domain
   uri:
     url: "https://api.cloudflare.com/client/v4/zones?name={{ cloudflare_zone }}"
@@ -18,23 +23,31 @@
   set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
 
-# 🔹 Build a list of dicts with just the hostname we want
-- name: Build list of public hostnames for DNS
+# Step 1: Filter only apps that have self_hosted_domains
+- name: Filter apps with self_hosted_domains
   set_fact:
-    app_hostnames: >-
+    apps_with_domains: >-
       {{
         access_apps_list
         | selectattr('self_hosted_domains', 'defined')
         | selectattr('self_hosted_domains', 'length', '>', 0)
-        | map('extract', attribute='self_hosted_domains', 0)
-        | map('community.general.dict_kv', 'public_hostname')
         | list
       }}
 
-- name: Debug hostnames to be created
+# Step 2: Extract the first hostname from self_hosted_domains into app_hostnames list
+- name: Extract first hostname for each app
+  set_fact:
+    app_hostnames: "{{ app_hostnames | default([]) + [ {'public_hostname': item.self_hosted_domains[0]} ] }}"
+  loop: "{{ apps_with_domains }}"
+  loop_control:
+    loop_var: item
+
+# Step 3: Debug to confirm the list
+- name: Show hostnames to be created
   debug:
     var: app_hostnames
 
+# Step 4: Create or update DNS records
 - name: Ensure proxied CNAME record exists for each Access app
   uri:
     url: "https://api.cloudflare.com/client/v4/zones/{{ cloudflare_zone_id }}/dns_records"
