@@ -5,9 +5,6 @@
     dest: "{{ cloudflared_bin_path }}"
     mode: '0755'
 
-- name: Configure cloudflared
-  include_tasks: configure_tunnel.yml
-
 - name: Create Cloudflare Access apps
   include_tasks: create_access_apps.yml
 
@@ -20,3 +17,6 @@
     app_id: "{{ app_item.key }}"
     app_email: "{{ app_item.value }}"
   when: app_item.value is defined and app_item.value | length > 0
+
+- name: Configure cloudflared
+  include_tasks: configure_tunnel.yml
