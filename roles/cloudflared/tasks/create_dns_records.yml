@@ -81,7 +81,7 @@
   loop: "{{ app_hostnames }}"
   loop_control:
     label: "{{ item.public_hostname }}"
-
+  register: dns_create_results
 
 # Step 6: Create or update DNS records
 #- name: Ensure proxied CNAME record exists for each Access app
