@@ -1,22 +1,20 @@
-{# Build a proper Python list for ingress first #}
+{# Build ingress list #}
 {% set ingress_list = [] %}
 
-{# 1. Add each Access app's hostname from access_apps_list, force loopback service #}
+{# Access apps always loopback #}
 {% for app in access_apps_list | default([]) %}
   {% if app.domain is defined and (app.domain|string)|length > 0 %}
     {% set _ = ingress_list.append({'hostname': app.domain, 'service': 'http://127.0.0.1:80'}) %}
   {% endif %}
 {% endfor %}
 
-{# 2. Add any extra ingress rules passed in via cloudflared_ingress var #}
+{# Extra ingress rules, force loopback if not already #}
 {% for rule in cloudflared_ingress | default([]) %}
-  {% if rule.service is defined and not (rule.service | regex_search('^https?://127\\.0\\.0\\.1(:\\d+)?$')) %}
-    {% set _ = (raise('Invalid ingress service "' ~ rule.service ~ '": All services must point to 127.0.0.1')) %}
-  {% endif %}
+  {% set svc = rule.service if (rule.service is defined and rule.service is match('^https?://127\\.0\\.0\\.1(:\\d+)?$')) else 'http://127.0.0.1:80' %}
   {% if rule.hostname is defined and (rule.hostname|string)|length > 0 %}
-    {% set _ = ingress_list.append({'hostname': rule.hostname, 'service': rule.service}) %}
+    {% set _ = ingress_list.append({'hostname': rule.hostname, 'service': svc}) %}
   {% else %}
-    {% set _ = ingress_list.append({'service': rule.service}) %}
+    {% set _ = ingress_list.append({'service': svc}) %}
   {% endif %}
 {% endfor %}
 
