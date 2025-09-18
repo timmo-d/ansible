@@ -22,38 +22,40 @@
   set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
 
-# Step 1: Ensure we have a list of dicts
-- name: Normalise access_apps_list to a list
+# Step 1: Initialise empty list for filtered apps
+- name: Initialise apps_with_domains
   set_fact:
-    access_apps_list: "{{ access_apps_list | default([]) | list }}"
+    apps_with_domains: []
 
-# Step 2: Filter only those with a non‑empty self_hosted_domains
-- name: Filter apps with self_hosted_domains
+# Step 2: Append only apps that have self_hosted_domains
+- name: Collect apps with self_hosted_domains
   set_fact:
-    apps_with_domains: >-
-      {{
-        access_apps_list
-        | selectattr('self_hosted_domains', 'defined')
-        | selectattr('self_hosted_domains', 'length', '>', 0)
-        | list
-      }}
-  when: access_apps_list | length > 0
+    apps_with_domains: "{{ apps_with_domains + [ item ] }}"
+  loop: "{{ access_apps_list | default([]) }}"
+  when:
+    - item is mapping
+    - item.self_hosted_domains is defined
+    - item.self_hosted_domains | length > 0
 
+# Step 3: Debug to confirm filtered apps
+- name: Show filtered apps
+  debug:
+    var: apps_with_domains
 
-# Step 2: Extract the first hostname from self_hosted_domains into app_hostnames list
-- name: Extract first hostname for each app
+# Step 4: Build list of public hostnames
+- name: Build list of public hostnames
   set_fact:
     app_hostnames: "{{ app_hostnames | default([]) + [ {'public_hostname': item.self_hosted_domains[0]} ] }}"
   loop: "{{ apps_with_domains }}"
   loop_control:
     loop_var: item
 
-# Step 3: Debug to confirm the list
+# Step 5: Debug to confirm hostnames
 - name: Show hostnames to be created
   debug:
     var: app_hostnames
 
-# Step 4: Create or update DNS records
+# Step 6: Create or update DNS records
 - name: Ensure proxied CNAME record exists for each Access app
   uri:
     url: "https://api.cloudflare.com/client/v4/zones/{{ cloudflare_zone_id }}/dns_records"
@@ -75,6 +77,7 @@
     label: "{{ item.public_hostname }}"
   register: dns_create_results
 
+# Step 7: Show DNS creation results
 - name: Show DNS creation results
   debug:
     var: dns_create_results.results
