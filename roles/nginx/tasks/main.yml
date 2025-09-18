@@ -5,67 +5,20 @@
     state: present
     update_cache: yes
 
-- name: Configure NGINX for loopback-only access
-  become: true
+- name: Deploy NGINX reverse proxy config from template
   template:
-    src: nginx.conf.j2
+    src: reverse_proxy.conf.j2
     dest: /etc/nginx/nginx.conf
     owner: root
     group: root
     mode: '0644'
-  notify: restart nginx
+  notify: Reload nginx
 
-- name: Ensure NGINX is enabled and running
-  service:
-    name: nginx
-    state: started
-    enabled: yes
-#TODO: Check to see if systemd file is required.
+- name: Test NGINX configuration
+  command: nginx -t
+  register: nginx_test
+  changed_when: false
 
-#- name: Configure reverse proxy for Sonarr
-#  become: true
-#  copy:
-#    dest: /etc/nginx/sites-available/sonarr
-#    content: |
-#      server {
-#        listen 80;
-#        server_name sonarr.timmos.com.au;
-
-#        location / {
-#          proxy_pass http://192.168.1.100:8989;
-#          proxy_set_header Host $host;
-#          proxy_set_header X-Real-IP $remote_addr;
-#        }
-#      }
-
-#- name: Configure reverse proxy for Radarr
-#  become: true
-#  copy:
-#    dest: /etc/nginx/sites-available/radarr
-#    content: |
-#      server {
-#        listen 80;
-#        server_name radarr.timmos.com.au;
-
-#        location / {
-#          proxy_pass http://192.168.1.100:7878;
-#          proxy_set_header Host $host;
-#          proxy_set_header X-Real-IP $remote_addr;
-#        }
-#      }
-
-#- name: Enable sites and reload nginx
-#  become: true
-#  file:
-#    src: "/etc/nginx/sites-available/{{ item }}"
-#    dest: "/etc/nginx/sites-enabled/{{ item }}"
-#    state: link
-#  loop:
-#    - sonarr
-#    - radarr
-
-#- name: Reload nginx
-#  become: true
-#  service:
-#    name: nginx
-#    state: restarted
+- name: Show NGINX config test output
+  debug:
+    var: nginx_test.stdout_lines

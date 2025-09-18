@@ -1,4 +1,7 @@
-user www-data;
+# Auto‑generated NGINX reverse proxy config
+# Generated from app_hostnames to keep DNS, ingress, and NGINX in sync
+
+user  www-data;
 worker_processes auto;
 pid /run/nginx.pid;
 
@@ -22,10 +25,12 @@ http {
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers on;
 
-    # Loopback-only reverse proxy for Cloudflare Tunnel
+    {% for app in app_hostnames | default([]) %}
+    {% set name = app.public_hostname %}
+    {% set port = app.internal_port | default(80) %}
     server {
-        listen 127.0.0.1:80 default_server;
-        server_name localhost;
+        listen 127.0.0.1:80;
+        server_name {{ name }};
 
         # STIG-compliant headers
         add_header X-Content-Type-Options nosniff;
@@ -33,105 +38,8 @@ http {
         add_header Referrer-Policy no-referrer;
         add_header Content-Security-Policy "default-src 'none';";
 
-        # Radarr
-        location /radarr/ {
-            proxy_pass http://192.168.1.100:7878/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-            limit_except GET POST { deny all; }
-        }
-
-        # Sonarr
-        location /sonarr/ {
-            proxy_pass http://192.168.1.100:8989/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-            limit_except GET POST { deny all; }
-        }
-
-        # Prowlarr
-        location /prowlarr/ {
-            proxy_pass http://192.168.1.100:9696/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-            limit_except GET POST { deny all; }
-        }
-
-        # Lidarr
-        location /lidarr/ {
-            proxy_pass http://192.168.1.100:8686/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-            limit_except GET POST { deny all; }
-        }
-
-        # Kodi
-        location /kodi/ {
-            proxy_pass http://192.168.1.100:8888/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-            limit_except GET POST { deny all; }
-        }
-
-        # Whisparr
-        location /whisparr/ {
-            proxy_pass http://192.168.1.100:6969/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-            limit_except GET POST { deny all; }
-        }
-
-        # Readarr
-        location /readarr/ {
-            proxy_pass http://192.168.1.100:8787/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-            limit_except GET POST { deny all; }
-        }
-
-        # Huntarr
-        location /huntarr/ {
-            proxy_pass http://192.168.1.100:9705/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_http_version 1.1;
-            proxy_set_header Connection "";
-            limit_except GET POST { deny all; }
-        }
-
-        # qBittorrent
-        location /qbittorrent/ {
-            proxy_pass http://192.168.1.100:8080/;
+        location / {
+            proxy_pass http://{{ app.internal_ip | default('192.168.1.100') }}:{{ port }};
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -141,4 +49,5 @@ http {
             limit_except GET POST { deny all; }
         }
     }
+    {% endfor %}
 }
