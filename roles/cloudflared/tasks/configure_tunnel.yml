@@ -250,7 +250,7 @@
     creds_tunnel_id: "{{ creds_json.TunnelID }}"
   when: "'TunnelID' in creds_json"
 
-# 4. Compare IDs and fail if mismatch
+# 4. Validate file contents prior to starting service
 - name: Fail if tunnel ID in config and credentials do not match
   fail:
     msg: >-
@@ -259,6 +259,25 @@
       credentials file has {{ creds_tunnel_id }}.
       These must match for cloudflared to authenticate.
   when: config_tunnel_id != creds_tunnel_id
+
+- name: Validate credentials file structure
+  slurp:
+    path: "/etc/cloudflared/{{ tunnel_id_final }}.json"
+  register: creds_file_raw
+
+- set_fact:
+    creds_json: "{{ creds_file_raw.content | b64decode | from_json }}"
+
+- fail:
+    msg: >-
+      Invalid credentials file: expected keys AccountTag, TunnelID, TunnelName, TunnelSecret.
+      Found keys: {{ creds_json.keys() | join(', ') }}
+  when: not (
+          'AccountTag' in creds_json and
+          'TunnelID' in creds_json and
+          'TunnelName' in creds_json and
+          'TunnelSecret' in creds_json
+        )
 
 ###########################################
 ##### Reload daemon and start service #####
