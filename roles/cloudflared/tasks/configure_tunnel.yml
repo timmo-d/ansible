@@ -82,16 +82,28 @@
     msg: "Failed to fetch tunnel token: {{ tunnel_creds.json.errors | to_nice_json }}"
   when: not tunnel_creds.json.success | default(false)
 
-- name: Decode tunnel credentials from API result
+- name: Decode tunnel token payload
   set_fact:
-    tunnel_creds_decoded: "{{ tunnel_creds.json.result | b64decode }}"
+    tunnel_token_decoded: "{{ tunnel_creds.json.result | b64decode | from_json }}"
+
+- name: Build full credentials JSON
+  set_fact:
+    tunnel_creds_full: >-
+      {{
+        {
+          "AccountTag": tunnel_token_decoded.a,
+          "TunnelID": tunnel_token_decoded.t,
+          "TunnelName": tunnel_name,
+          "TunnelSecret": tunnel_token_decoded.s
+        }
+      }}
 
 # -------------------------
 # 5. Write credentials file
 # -------------------------
 - name: Write tunnel credentials file
   copy:
-    content: "{{ tunnel_creds_decoded }}"
+    content: "{{ tunnel_creds_full | to_nice_json }}"
     dest: "/etc/cloudflared/{{ tunnel_id_final }}.json"
     owner: root
     group: root
