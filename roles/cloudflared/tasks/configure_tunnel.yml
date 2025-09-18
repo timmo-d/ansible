@@ -88,15 +88,11 @@
 
 - name: Build full credentials JSON
   set_fact:
-    tunnel_creds_full: >-
-      {{
-        {
-          "AccountTag": tunnel_token_decoded.a,
-          "TunnelID": tunnel_token_decoded.t,
-          "TunnelName": tunnel_name,
-          "TunnelSecret": tunnel_token_decoded.s
-        }
-      }}
+    tunnel_creds_full:
+      AccountTag: "{{ tunnel_token_decoded.a }}"
+      TunnelID: "{{ tunnel_token_decoded.t }}"
+      TunnelName: "{{ tunnel_name }}"
+      TunnelSecret: "{{ tunnel_token_decoded.s }}"
 
 # -------------------------
 # 5. Write credentials file
