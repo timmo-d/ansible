@@ -23,8 +23,6 @@
     group: root
     mode: '0755'
 
-# If your Terraform configuration is shipped with the role, keep this.
-# If it's already placed on the target by another mechanism, remove this task.
 - name: Push Terraform configuration to remote
   copy:
     src: terraform/
@@ -34,7 +32,7 @@
     mode: '0644'
 
 # -------------------------
-# 1. API-first detection
+# 1. API-first detection / creation
 # -------------------------
 
 - name: Check if tunnel exists by name via Cloudflare API
@@ -48,119 +46,67 @@
     status_code: 200
   register: tunnel_check
 
-- name: Set fact for existing tunnel ID (if present)
-  set_fact:
-    tunnel_id: "{{ (tunnel_check.json.result | first).id }}"
-  when:
-    - tunnel_check.json is defined
-    - (tunnel_check.json.result | default([])) | length > 0
-
-# -------------------------
-# 2. Existing tunnel path (no Terraform)
-# -------------------------
-
-- name: Fetch existing tunnel credentials (token JSON)
+- name: Create tunnel if not found
   uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ tunnel_id }}/token"
-    method: GET
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflare_api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "{{ tunnel_name }}"
+    return_content: yes
+    status_code: 200
+  register: tunnel_create
+  when: (tunnel_check.json.result | default([])) | length == 0
+
+- name: Set unified tunnel_id_final fact
+  set_fact:
+    tunnel_id_final: >-
+      {{
+        (tunnel_check.json.result[0].id)
+        if (tunnel_check.json.result | default([])) | length > 0
+        else (tunnel_create.json.result.id)
+      }}
+
+- name: Fail if tunnel_id_final is not set
+  fail:
+    msg: "No tunnel ID available — cannot proceed."
+  when: tunnel_id_final | default('') | length == 0
+
+# -------------------------
+# 2. Fetch credentials for tunnel_id_final
+# -------------------------
+
+- name: Fetch tunnel token JSON
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ tunnel_id_final }}/token"
+    method: POST
     headers:
       Authorization: "Bearer {{ cloudflare_api_token }}"
       Content-Type: "application/json"
     return_content: yes
     status_code: 200
   register: tunnel_creds
-  when:
-    - tunnel_id is defined
-    - tunnel_id | length > 0
 
-- name: Write existing tunnel credentials file
+- name: Fail if API did not return success
+  fail:
+    msg: "Failed to fetch tunnel token: {{ tunnel_creds.json.errors | to_nice_json }}"
+  when: not tunnel_creds.json.success | default(false)
+
+- name: Write tunnel credentials file
   copy:
     content: "{{ tunnel_creds.content }}"
-    dest: "/etc/cloudflared/{{ tunnel_id }}.json"
+    dest: "/etc/cloudflared/{{ tunnel_id_final }}.json"
     owner: root
     group: root
     mode: '0600'
-  when:
-    - tunnel_id is defined
-    - tunnel_id | length > 0
 
 # -------------------------
-# 3. Creation path (Terraform only if tunnel not found)
+# 3. Render config and validate
 # -------------------------
 
-- name: Run Terraform init (creation path)
-  command: terraform init
-  args:
-    chdir: "{{ terraform_dir }}"
-  environment:
-    TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
-    TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
-    TF_VAR_tunnel_name: "{{ tunnel_name }}"
-  when: tunnel_id | default('') | length == 0
-
-- name: Run Terraform apply (creation path)
-  command: terraform apply -auto-approve
-  args:
-    chdir: "{{ terraform_dir }}"
-  environment:
-    TF_VAR_cloudflare_api_token: "{{ cloudflare_api_token }}"
-    TF_VAR_cloudflare_account_id: "{{ cloudflare_account_id }}"
-    TF_VAR_tunnel_name: "{{ tunnel_name }}"
-  when: tunnel_id | default('') | length == 0
-
-- name: Get tunnel ID from Terraform output (creation path)
-  command: terraform output -raw tunnel_id
-  args:
-    chdir: "{{ terraform_dir }}"
-  register: tunnel_id_result
-  changed_when: false
-  when: tunnel_id | default('') | length == 0
-
-- name: Get tunnel credentials JSON from Terraform output (creation path)
-  command: terraform output -raw tunnel_credentials_json
-  args:
-    chdir: "{{ terraform_dir }}"
-  register: tunnel_creds_result
-  changed_when: false
-  when: tunnel_id | default('') | length == 0
-
-- name: Write new tunnel credentials file (creation path)
-  copy:
-    content: "{{ tunnel_creds_result.stdout }}"
-    dest: "/etc/cloudflared/{{ tunnel_id_result.stdout }}.json"
-    owner: root
-    group: root
-    mode: '0600'
-  when: tunnel_id | default('') | length == 0
-
-# -------------------------
-# 4. Unify the tunnel ID and assert
-# -------------------------
-
-- name: Set unified tunnel_id fact (works for both paths)
-  set_fact:
-    tunnel_id_final: >-
-      {{
-        (tunnel_id | default('')) if (tunnel_id | default('') | length > 0)
-        else (tunnel_id_result.stdout | default(''))
-      }}
-
-- name: Fail if tunnel_id_final is not set or empty
-  fail:
-    msg: "No tunnel ID available — cannot proceed. Check API detection and Terraform creation."
-  when: tunnel_id_final | default('') | length == 0
-
-# -------------------------
-# 5. Render config and validate
-# -------------------------
-
-# Your template must quote service values to avoid YAML errors with colons, e.g. "http_status:404"
-# Example lines in templates/config.yml.j2:
-#   tunnel: {{ tunnel_id_final }}
-#   credentials-file: /etc/cloudflared/{{ tunnel_id_final }}.json
-#   ingress:
-#   - hostname: ...
-#     service: "{{ rule.service }}"
 - name: Write config.yml for cloudflared
   template:
     src: config.yml.j2
@@ -174,7 +120,7 @@
   changed_when: false
 
 # -------------------------
-# 6. Systemd service
+# 4. Systemd service
 # -------------------------
 
 - name: Create systemd service for cloudflared tunnel
@@ -199,68 +145,20 @@
 
       [Install]
       WantedBy=multi-user.target
-  when:
-    - tunnel_id_final is defined
-    - tunnel_id_final | length > 0
 
-####################################################
-##### Validate configuration prior to starting #####
-####################################################
-# 1. Ensure credentials file exists
-- name: Check that cloudflared credentials file exists
-  stat:
-    path: "/etc/cloudflared/{{ tunnel_id_final }}.json"
-  register: creds_file
+# -------------------------
+# 5. Validate credentials file structure
+# -------------------------
 
-- name: Fail if credentials file is missing
-  fail:
-    msg: "Cloudflared credentials file /etc/cloudflared/{{ tunnel_id_final }}.json is missing."
-  when: not creds_file.stat.exists
-
-# 2. Read tunnel ID from config.yml
 - name: Read tunnel ID from config.yml
   slurp:
     path: /etc/cloudflared/config.yml
   register: config_file_raw
 
-- name: Parse tunnel ID from config.yml
-  set_fact:
+- set_fact:
     config_tunnel_id: "{{ (config_file_raw.content | b64decode | from_yaml).tunnel | string }}"
 
-# 3. Read tunnel ID from credentials JSON
-- name: Read tunnel ID from credentials JSON
-  slurp:
-    path: "/etc/cloudflared/{{ tunnel_id_final }}.json"
-  register: creds_file_raw
-
-- name: Parse credentials JSON
-  set_fact:
-    creds_json: "{{ creds_file_raw.content | b64decode | from_json }}"
-
-# 4. Check tunnel ID has been added correctly
-- name: Fail if TunnelID is missing
-  fail:
-    msg: >-
-      Credentials file /etc/cloudflared/{{ tunnel_id_final }}.json does not contain 'TunnelID'.
-      Found keys: {{ creds_json.keys() | join(', ') }}
-  when: "'TunnelID' not in creds_json"
-
-- name: Set creds_tunnel_id fact
-  set_fact:
-    creds_tunnel_id: "{{ creds_json.TunnelID }}"
-  when: "'TunnelID' in creds_json"
-
-# 4. Validate file contents prior to starting service
-- name: Fail if tunnel ID in config and credentials do not match
-  fail:
-    msg: >-
-      Tunnel ID mismatch:
-      config.yml has {{ config_tunnel_id }},
-      credentials file has {{ creds_tunnel_id }}.
-      These must match for cloudflared to authenticate.
-  when: config_tunnel_id != creds_tunnel_id
-
-- name: Validate credentials file structure
+- name: Read credentials JSON
   slurp:
     path: "/etc/cloudflared/{{ tunnel_id_final }}.json"
   register: creds_file_raw
@@ -279,9 +177,17 @@
           'TunnelSecret' in creds_json
         )
 
-###########################################
-##### Reload daemon and start service #####
-###########################################
+- fail:
+    msg: >-
+      Tunnel ID mismatch:
+      config.yml has {{ config_tunnel_id }},
+      credentials file has {{ creds_json.TunnelID }}.
+  when: config_tunnel_id != creds_json.TunnelID
+
+# -------------------------
+# 6. Reload daemon and start service
+# -------------------------
+
 - name: Reload systemd daemon
   systemd:
     daemon_reload: yes
