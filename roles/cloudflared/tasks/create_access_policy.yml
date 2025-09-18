@@ -1,10 +1,11 @@
-# 1. Get all Access apps
+# roles/cloudflared/tasks/create_access_policy.yml
+
 - name: Get list of Access apps
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
     method: GET
     headers:
-      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Authorization: "Bearer {{ cloudflare_api_token }}"
       Content-Type: "application/json"
     return_content: yes
     status_code: 200
@@ -19,59 +20,115 @@
     msg: "Found app: {{ item.name }} (UID: {{ item.id }})"
   loop: "{{ access_apps_list }}"
 
-# 2. For each app, get its configured email (if any)
 - name: Get app details to find registered email
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.id }}"
     method: GET
     headers:
-      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Authorization: "Bearer {{ cloudflare_api_token }}"
       Content-Type: "application/json"
     return_content: yes
     status_code: 200
   loop: "{{ access_apps_list }}"
   register: app_details
 
-- name: Build mapping of app → email from API data
+- name: Initialise app_email_map
   set_fact:
-    app_email_map: >-
-      {{
-        dict(
-          app_details.results
-          | selectattr('json.result', 'defined')
-          | selectattr('json.result', '!=', None)
-          | map(attribute='json.result')
-          | map('extract', {'name': 'name', 'email': 'created_by.email'})
-          | map('list')
-        )
-      }}
+    app_email_map: {}
+
+- name: Populate app_email_map from first policy email
+  set_fact:
+    app_email_map: "{{ app_email_map | combine({ item.json.result.id: (item.json.result.policies[0].include[0].email.email | default('')) }) }}"
+  loop: "{{ app_details.results }}"
+  when:
+    - item.json.result.policies is defined
+    - item.json.result.policies | length > 0
+    - item.json.result.policies[0].include is defined
+    - item.json.result.policies[0].include | length > 0
+    - "'email' in item.json.result.policies[0].include[0]"
 
 - name: Debug app_email_map
   debug:
     var: app_email_map
 
-# 3. Create policy for each app with a registered email
-- name: Create email-based Access policy for each app
+# --- Idempotent policy creation/update ---
+- name: Get existing policies for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.key }}/policies"
-    method: POST
+    method: GET
     headers:
-      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Authorization: "Bearer {{ cloudflare_api_token }}"
       Content-Type: "application/json"
-    body_format: json
-    body:
-      name: "Allow {{ item.value }}"
-      decision: "allow"
-      include:
-        - email:
-            email: "{{ item.value }}"
-      precedence: 1
-    status_code: 200
     return_content: yes
+    status_code: 200
   loop: "{{ app_email_map | dict2items }}"
   when: item.value is defined and item.value | length > 0
-  register: policy_create_results
+  register: existing_policies
 
-- name: Show created policies
+- name: Create or update policy for each app
+  block:
+    - name: Set matching_policy_id fact
+      set_fact:
+        matching_policy_id: >-
+          {{
+            (ep.json.result | selectattr('include', 'defined')
+             | selectattr('include', '!=', None)
+             | selectattr('include', 'selectattr', 'email', 'defined')
+             | selectattr('include', 'selectattr', 'email', '!=', None)
+             | selectattr('include', 'selectattr', 'email.email', 'equalto', item.value)
+             | selectattr('require', 'defined')
+             | selectattr('require', 'selectattr', 'service_auth', 'defined')
+             | map(attribute='id') | list | first)
+            | default('')
+          }}
+      vars:
+        ep: "{{ existing_policies.results[loop.index0] }}"
+
+    - name: Update existing policy if found
+      uri:
+        url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.key }}/policies/{{ matching_policy_id }}"
+        method: PUT
+        headers:
+          Authorization: "Bearer {{ cloudflare_api_token }}"
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          name: "Allow and Service Auth for {{ item.value }}"
+          decision: "allow"
+          include:
+            - email:
+                email: "{{ item.value }}"
+          precedence: 1
+          require:
+            - service_auth: {}
+        status_code: 200
+        return_content: yes
+      when: matching_policy_id | length > 0
+
+    - name: Create new policy if none found
+      uri:
+        url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.key }}/policies"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ cloudflare_api_token }}"
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          name: "Allow and Service Auth for {{ item.value }}"
+          decision: "allow"
+          include:
+            - email:
+                email: "{{ item.value }}"
+          precedence: 1
+          require:
+            - service_auth: {}
+        status_code: 200
+        return_content: yes
+      when: matching_policy_id | length == 0
+  loop: "{{ app_email_map | dict2items }}"
+  when: item.value is defined and item.value | length > 0
+  register: policy_results
+
+- name: Show policy results
   debug:
-    var: policy_create_results.results
+    var: policy_results.results
