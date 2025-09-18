@@ -11,3 +11,5 @@
 - name: Create Cloudflare Access apps
   include_tasks: create_access_apps.yml
 
+- name: Create Cloudflare Access policy
+  include_tasks: create_access_policy.yml
