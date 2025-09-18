@@ -31,7 +31,7 @@ cloudflare_access_apps:
     local_service: "http://192.168.1.100:8989"
     email: "sonarr@timmos.com.au"
     sonarr_ip: 192.168.1.100
-    sonarr_port: 7878
+    sonarr_port: 8989
 
   - name: "Radarr"
     domain: "radarr.timmos.com.au"

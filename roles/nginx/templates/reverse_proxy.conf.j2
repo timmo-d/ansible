@@ -25,7 +25,7 @@ http {
     {% for app in app_hostnames %}
     server {
         listen 127.0.0.1:80;
-        server_name {{ app.public_hostname }};
+        server_name localhost;
 
         # STIG-compliant headers
         add_header X-Content-Type-Options nosniff;
