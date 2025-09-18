@@ -26,7 +26,7 @@
     body:
       type: "CNAME"
       name: "{{ item.domain }}"
-      content: "{{ tunnel_name }}.cfargotunnel.com"
+      content: "{{ tunnel_id_final  }}.cfargotunnel.com"
       proxied: true
       ttl: 1
     status_code: 200
