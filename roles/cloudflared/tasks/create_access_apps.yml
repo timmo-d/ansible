@@ -28,9 +28,10 @@
     access_apps_list: "{{ access_apps_resp.json.result | default([]) }}"
 
 # 🔹 Debug: Pretty‑print the list so you can see all fields
-- name: Show discovered Access apps (pretty JSON)
+- name: Show discovered Access apps (YAML pretty print)
   debug:
-    msg: "{{ access_apps_list | to_nice_json }}"
+    var: access_apps_list
+
 
 # 2. Create missing Access apps
 - name: Create Cloudflare Access apps if not already present
