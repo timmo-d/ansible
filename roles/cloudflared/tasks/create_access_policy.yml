@@ -1,4 +1,3 @@
----
 - name: Auto-create email-based Access policies for all Cloudflare Access apps
   hosts: localhost
   gather_facts: no
