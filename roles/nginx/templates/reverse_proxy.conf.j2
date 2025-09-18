@@ -25,7 +25,7 @@ http {
     {% for app in nginx_upstreams  %}
     server {
         listen 127.0.0.1:80;
-        server_name localhost;
+        server_name {{ app.public_hostname }};
 
         # STIG-compliant headers
         add_header X-Content-Type-Options nosniff;
