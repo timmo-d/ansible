@@ -23,10 +23,10 @@
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
 
 # Read the credentials JSON to get the TunnelID
-- name: Read tunnel credentials file
-  slurp:
-    src: "/etc/cloudflared/*.json"
-  register: tunnel_creds_raw
+#- name: Read tunnel credentials file
+#  slurp:
+#    src: "/etc/cloudflared/*.json"
+#  register: tunnel_creds_raw
 
 - name: Set tunnel_id_final fact from credentials file
   set_fact:
