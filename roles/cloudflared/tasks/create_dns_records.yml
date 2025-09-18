@@ -9,6 +9,11 @@
     status_code: 200
   register: zone_lookup
 
+- name: Fail if zone lookup failed
+  fail:
+    msg: "Failed to retrieve zone ID for {{ cloudflare_zone }}: {{ zone_lookup.json.errors }}"
+  when: not zone_lookup.json.success | default(false)
+
 - name: Set zone_id fact
   set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
@@ -17,7 +22,7 @@
   set_fact:
     normalized_access_apps: >-
       {{
-        access_apps_list
+        existing_access_apps
         | map('combine', {
             'domain': (
               item.domain
@@ -29,7 +34,7 @@
           })
         | list
       }}
-  loop: "{{ access_apps_list }}"
+  loop: "{{ existing_access_apps }}"
   loop_control:
     loop_var: item
 
