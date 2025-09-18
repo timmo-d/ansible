@@ -2,7 +2,7 @@
 {% set ingress_list = [] %}
 
 {# 1. Add each Access app's hostname from access_apps_list, force loopback service #}
-{% for app in access_apps_list | default([]) %}
+{% for app in cloudflare_access_apps | default([]) %}
   {% set host = app.hostname if app.hostname is defined else app.domain %}
   {% if host is defined and (host|string)|length > 0 %}
     {% set _ = ingress_list.append({'hostname': host, 'service': 'http://127.0.0.1:80'}) %}

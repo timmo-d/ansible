@@ -27,9 +27,11 @@ cloudflared_service_name: cloudflared
 cloudflare_access_apps:
   - name: "Sonarr"
     domain: "sonarr.timmos.com.au"
+    hostname: "sonarr.timmos.com.au"
     local_service: "http://192.168.1.100:8989"
     email: "sonarr@timmos.com.au"
   - name: "Radarr"
     domain: "radarr.timmos.com.au"
+    hostname: "radarr.timmos.com.au"
     local_service: "http://192.168.1.100:7878"
     email: "radarr@timmos.com.au"
