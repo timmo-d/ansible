@@ -1,82 +1,77 @@
-- name: Auto-create email-based Access policies for all Cloudflare Access apps
-  hosts: localhost
-  gather_facts: no
+# 1. Get all Access apps
+- name: Get list of Access apps
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Content-Type: "application/json"
+    return_content: yes
+    status_code: 200
+  register: access_apps_resp
 
-  tasks:
-    # 1. Get all Access apps
-    - name: Get list of Access apps
-      uri:
-        url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
-        method: GET
-        headers:
-          Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-          Content-Type: "application/json"
-        return_content: yes
-        status_code: 200
-      register: access_apps_resp
+- name: Extract app list
+  set_fact:
+    access_apps_list: "{{ access_apps_resp.json.result | default([]) }}"
 
-    - name: Extract app list
-      set_fact:
-        access_apps_list: "{{ access_apps_resp.json.result | default([]) }}"
+- name: Debug found apps
+  debug:
+    msg: "Found app: {{ item.name }} (UID: {{ item.id }})"
+  loop: "{{ access_apps_list }}"
 
-    - name: Debug found apps
-      debug:
-        msg: "Found app: {{ item.name }} (UID: {{ item.id }})"
-      loop: "{{ access_apps_list }}"
+# 2. For each app, get its configured email (if any)
+- name: Get app details to find registered email
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.id }}"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Content-Type: "application/json"
+    return_content: yes
+    status_code: 200
+  loop: "{{ access_apps_list }}"
+  register: app_details
 
-    # 2. For each app, get its configured email (if any)
-    - name: Get app details to find registered email
-      uri:
-        url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.id }}"
-        method: GET
-        headers:
-          Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-          Content-Type: "application/json"
-        return_content: yes
-        status_code: 200
-      loop: "{{ access_apps_list }}"
-      register: app_details
+- name: Build mapping of app → email from API data
+  set_fact:
+    app_email_map: >-
+      {{
+        dict(
+          app_details.results
+          | selectattr('json.result', 'defined')
+          | selectattr('json.result', '!=', None)
+          | map(attribute='json.result')
+          | map('extract', {'name': 'name', 'email': 'created_by.email'})
+          | map('list')
+        )
+      }}
 
-    - name: Build mapping of app → email from API data
-      set_fact:
-        app_email_map: >-
-          {{
-            dict(
-              app_details.results
-              | selectattr('json.result', 'defined')
-              | selectattr('json.result', '!=', None)
-              | map(attribute='json.result')
-              | map('extract', {'name': 'name', 'email': 'created_by.email'})
-              | map('list')
-            )
-          }}
+- name: Debug app_email_map
+  debug:
+    var: app_email_map
 
-    - name: Debug app_email_map
-      debug:
-        var: app_email_map
+# 3. Create policy for each app with a registered email
+- name: Create email-based Access policy for each app
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.key }}/policies"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "Allow {{ item.value }}"
+      decision: "allow"
+      include:
+        - email:
+            email: "{{ item.value }}"
+      precedence: 1
+    status_code: 200
+    return_content: yes
+  loop: "{{ app_email_map | dict2items }}"
+  when: item.value is defined and item.value | length > 0
+  register: policy_create_results
 
-    # 3. Create policy for each app with a registered email
-    - name: Create email-based Access policy for each app
-      uri:
-        url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.key }}/policies"
-        method: POST
-        headers:
-          Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-          Content-Type: "application/json"
-        body_format: json
-        body:
-          name: "Allow {{ item.value }}"
-          decision: "allow"
-          include:
-            - email:
-                email: "{{ item.value }}"
-          precedence: 1
-        status_code: 200
-        return_content: yes
-      loop: "{{ app_email_map | dict2items }}"
-      when: item.value is defined and item.value | length > 0
-      register: policy_create_results
-
-    - name: Show created policies
-      debug:
-        var: policy_create_results.results
+- name: Show created policies
+  debug:
+    var: policy_create_results.results
