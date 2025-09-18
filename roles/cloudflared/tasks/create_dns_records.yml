@@ -18,24 +18,22 @@
   set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
 
-# 🔹 Normalise to always have a public_hostname from self_hosted_domains[0]
-- name: Normalise Access app hostnames
+# 🔹 Build a list of dicts with just the hostname we want
+- name: Build list of public hostnames for DNS
   set_fact:
-    normalized_access_apps: >-
+    app_hostnames: >-
       {{
         access_apps_list
-        | map('combine', {
-            'public_hostname': (
-              item.self_hosted_domains[0]
-              if (item.self_hosted_domains is defined and item.self_hosted_domains|length > 0)
-              else omit
-            )
-          })
+        | selectattr('self_hosted_domains', 'defined')
+        | selectattr('self_hosted_domains', 'length', '>', 0)
+        | map('extract', attribute='self_hosted_domains', 0)
+        | map('community.general.dict_kv', 'public_hostname')
         | list
       }}
-  loop: "{{ access_apps_list }}"
-  loop_control:
-    loop_var: item
+
+- name: Debug hostnames to be created
+  debug:
+    var: app_hostnames
 
 - name: Ensure proxied CNAME record exists for each Access app
   uri:
@@ -47,19 +45,17 @@
     body_format: json
     body:
       type: "CNAME"
-      name: "{{ app.public_hostname }}"
+      name: "{{ item.public_hostname }}"
       content: "{{ tunnel_id_final }}.cfargotunnel.com"
       proxied: true
       ttl: 1
     status_code: 200
     return_content: yes
-  loop: "{{ normalized_access_apps }}"
+  loop: "{{ app_hostnames }}"
   loop_control:
-    loop_var: app
-  when: app.public_hostname is defined and app.public_hostname | length > 0
+    label: "{{ item.public_hostname }}"
   register: dns_create_results
 
 - name: Show DNS creation results
   debug:
     var: dns_create_results.results
-
