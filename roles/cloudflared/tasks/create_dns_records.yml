@@ -18,9 +18,10 @@
   set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
 
-- name: Display existing_access_apps
+- name: Log existing apps
   debug:
-    msg: "existing_access_apps"
+    var: existing_access_apps
+  when: existing_access_apps is defined
 
 - name: Normalize Access app hostnames
   set_fact:
