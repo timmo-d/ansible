@@ -70,7 +70,7 @@
 
 - name: Ensure CNAME record exists for each Access app
   community.general.cloudflare_dns:
-    zone: "{{ base_domain }}"
+    zone: "{{ cloudflare_zone }}"
     record: "{{ item.public_hostname }}"
     type: CNAME
     value: "{{ tunnel_id_final }}.cfargotunnel.com"
