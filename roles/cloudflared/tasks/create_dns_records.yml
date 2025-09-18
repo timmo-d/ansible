@@ -29,9 +29,9 @@
       {{
         access_apps_list
         | map('combine', {
-            'domain': (
+            'public_hostname': (
               item.domain
-              if (item.domain is defined and item.domain|length > 0)
+              if (item.domain is defined and item.domain is match('^[^.]+\\..+\\..+$'))
               else (item.self_hosted_domains[0]
                     if (item.self_hosted_domains is defined and item.self_hosted_domains|length > 0)
                     else omit)
@@ -43,7 +43,6 @@
   loop_control:
     loop_var: item
 
-
 - name: Ensure proxied CNAME record exists for each Access app
   uri:
     url: "https://api.cloudflare.com/client/v4/zones/{{ cloudflare_zone_id }}/dns_records"
@@ -54,7 +53,7 @@
     body_format: json
     body:
       type: "CNAME"
-      name: "{{ app.domain }}"
+      name: "{{ app.public_hostname }}"
       content: "{{ tunnel_id_final }}.cfargotunnel.com"
       proxied: true
       ttl: 1
@@ -63,7 +62,7 @@
   loop: "{{ normalized_access_apps }}"
   loop_control:
     loop_var: app
-  when: app.domain is defined and app.domain | length > 0
+  when: app.public_hostname is defined and app.public_hostname | length > 0
   register: dns_create_results
 
 - name: Show DNS creation results
