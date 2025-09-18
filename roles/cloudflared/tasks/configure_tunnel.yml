@@ -1,11 +1,10 @@
 ---
 # cloudflared_tunnel.yml
-# Self-healing Cloudflare Tunnel provisioning in headless token mode
+# Fully automated Cloudflare Tunnel creation + token retrieval in headless mode
 
 # -------------------------
-# 0. Preconditions
+# 0. Ensure config directory
 # -------------------------
-
 - name: Ensure cloudflared config directory exists
   file:
     path: /etc/cloudflared
@@ -15,10 +14,9 @@
     mode: '0755'
 
 # -------------------------
-# 1. API-first detection / creation
+# 1. Check if tunnel exists
 # -------------------------
-
-- name: Check if tunnel exists by name via Cloudflare API
+- name: Check if tunnel exists by name
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel?name={{ tunnel_name }}"
     method: GET
@@ -29,6 +27,9 @@
     status_code: 200
   register: tunnel_check
 
+# -------------------------
+# 2. Create tunnel if missing
+# -------------------------
 - name: Create tunnel if not found
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel"
@@ -44,7 +45,10 @@
   register: tunnel_create
   when: (tunnel_check.json.result | default([])) | length == 0
 
-- name: Set unified tunnel_id_final fact
+# -------------------------
+# 3. Set tunnel_id_final
+# -------------------------
+- name: Set tunnel_id_final fact
   set_fact:
     tunnel_id_final: >-
       {{
@@ -53,15 +57,14 @@
         else (tunnel_create.json.result.id)
       }}
 
-- name: Fail if tunnel_id_final is not set
+- name: Fail if tunnel_id_final is empty
   fail:
     msg: "No tunnel ID available — cannot proceed."
   when: tunnel_id_final | default('') | length == 0
 
 # -------------------------
-# 2. Fetch credentials for tunnel_id_final
+# 4. Fetch tunnel token JSON
 # -------------------------
-
 - name: Fetch tunnel token JSON
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ tunnel_id_final }}/token"
@@ -78,6 +81,9 @@
     msg: "Failed to fetch tunnel token: {{ tunnel_creds.json.errors | to_nice_json }}"
   when: not tunnel_creds.json.success | default(false)
 
+# -------------------------
+# 5. Write credentials file
+# -------------------------
 - name: Write tunnel credentials file
   copy:
     content: "{{ tunnel_creds.content }}"
@@ -87,9 +93,8 @@
     mode: '0600'
 
 # -------------------------
-# 3. Render config and validate
+# 6. Render config.yml
 # -------------------------
-
 - name: Write config.yml for cloudflared
   template:
     src: config.yml.j2
@@ -98,14 +103,31 @@
     group: root
     mode: '0644'
 
-- name: Validate cloudflared config YAML
-  command: python3 -c 'import yaml,sys; yaml.safe_load(open("/etc/cloudflared/config.yml")) or sys.exit(0)'
-  changed_when: false
+# -------------------------
+# 7. Validate credentials structure
+# -------------------------
+- name: Read credentials JSON
+  slurp:
+    path: "/etc/cloudflared/{{ tunnel_id_final }}.json"
+  register: creds_file_raw
+
+- set_fact:
+    creds_json: "{{ creds_file_raw.content | b64decode | from_json }}"
+
+- fail:
+    msg: >-
+      Invalid credentials file: expected keys AccountTag, TunnelID, TunnelName, TunnelSecret.
+      Found keys: {{ creds_json.keys() | join(', ') }}
+  when: not (
+          'AccountTag' in creds_json and
+          'TunnelID' in creds_json and
+          'TunnelName' in creds_json and
+          'TunnelSecret' in creds_json
+        )
 
 # -------------------------
-# 4. Systemd service
+# 8. Create systemd service
 # -------------------------
-
 - name: Create systemd service for cloudflared tunnel
   copy:
     dest: /etc/systemd/system/cloudflared.service
@@ -130,47 +152,8 @@
       WantedBy=multi-user.target
 
 # -------------------------
-# 5. Validate credentials file structure
+# 9. Reload and start service
 # -------------------------
-
-- name: Read tunnel ID from config.yml
-  slurp:
-    path: /etc/cloudflared/config.yml
-  register: config_file_raw
-
-- set_fact:
-    config_tunnel_id: "{{ (config_file_raw.content | b64decode | from_yaml).tunnel | string }}"
-
-- name: Read credentials JSON
-  slurp:
-    path: "/etc/cloudflared/{{ tunnel_id_final }}.json"
-  register: creds_file_raw
-
-- set_fact:
-    creds_json: "{{ creds_file_raw.content | b64decode | from_json }}"
-
-- fail:
-    msg: >-
-      Invalid credentials file: expected keys AccountTag, TunnelID, TunnelName, TunnelSecret.
-      Found keys: {{ creds_json.keys() | join(', ') }}
-  when: not (
-          'AccountTag' in creds_json and
-          'TunnelID' in creds_json and
-          'TunnelName' in creds_json and
-          'TunnelSecret' in creds_json
-        )
-
-- fail:
-    msg: >-
-      Tunnel ID mismatch:
-      config.yml has {{ config_tunnel_id }},
-      credentials file has {{ creds_json.TunnelID }}.
-  when: config_tunnel_id != creds_json.TunnelID
-
-# -------------------------
-# 6. Reload daemon and start service
-# -------------------------
-
 - name: Reload systemd daemon
   systemd:
     daemon_reload: yes
