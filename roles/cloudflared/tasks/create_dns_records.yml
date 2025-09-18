@@ -18,6 +18,10 @@
   set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
 
+- name: Display existing_access_apps
+  debug:
+    msg: "existing_access_apps"
+
 - name: Normalize Access app hostnames
   set_fact:
     normalized_access_apps: >-
@@ -37,6 +41,7 @@
   loop: "{{ existing_access_apps }}"
   loop_control:
     loop_var: item
+
 
 - name: Ensure proxied CNAME record exists for each Access app
   uri:
