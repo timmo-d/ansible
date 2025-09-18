@@ -1,6 +1,7 @@
 ---
 # cloudflared_tunnel.yml
-# Fully automated Cloudflare Tunnel creation + token retrieval in headless mode
+# Fully automated Cloudflare Tunnel provisioning in headless token mode
+# Outputs tunnel hostname and credentials as facts
 
 # -------------------------
 # 0. Ensure config directory
@@ -126,7 +127,26 @@
         )
 
 # -------------------------
-# 8. Create systemd service
+# 8. Output tunnel facts for later roles
+# -------------------------
+- name: Set tunnel facts for downstream tasks
+  set_fact:
+    cf_tunnel_id: "{{ creds_json.TunnelID }}"
+    cf_tunnel_name: "{{ creds_json.TunnelName }}"
+    cf_tunnel_secret: "{{ creds_json.TunnelSecret }}"
+    cf_tunnel_account_tag: "{{ creds_json.AccountTag }}"
+    cf_tunnel_hostname: "{{ creds_json.TunnelName }}.cfargotunnel.com"
+
+- name: Debug tunnel facts
+  debug:
+    msg:
+      - "Tunnel ID: {{ cf_tunnel_id }}"
+      - "Tunnel Name: {{ cf_tunnel_name }}"
+      - "Tunnel Hostname: {{ cf_tunnel_hostname }}"
+      - "Account Tag: {{ cf_tunnel_account_tag }}"
+
+# -------------------------
+# 9. Create systemd service
 # -------------------------
 - name: Create systemd service for cloudflared tunnel
   copy:
@@ -152,7 +172,7 @@
       WantedBy=multi-user.target
 
 # -------------------------
-# 9. Reload and start service
+# 10. Reload and start service
 # -------------------------
 - name: Reload systemd daemon
   systemd:
