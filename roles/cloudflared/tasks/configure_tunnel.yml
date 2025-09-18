@@ -1,19 +1,10 @@
 ---
-# This role creates or reuses a Cloudflare Tunnel in pure headless-token mode.
-# Terraform is used ONLY to create a tunnel if it does not already exist.
-# For existing tunnels, credentials are fetched via the API. No terraform import is used.
+# cloudflared_tunnel.yml
+# Self-healing Cloudflare Tunnel provisioning in headless token mode
 
 # -------------------------
 # 0. Preconditions
 # -------------------------
-
-- name: Ensure Terraform working directory exists
-  file:
-    path: "{{ terraform_dir }}"
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
 
 - name: Ensure cloudflared config directory exists
   file:
@@ -22,14 +13,6 @@
     owner: root
     group: root
     mode: '0755'
-
-- name: Push Terraform configuration to remote
-  copy:
-    src: terraform/
-    dest: "{{ terraform_dir }}/"
-    owner: root
-    group: root
-    mode: '0644'
 
 # -------------------------
 # 1. API-first detection / creation
