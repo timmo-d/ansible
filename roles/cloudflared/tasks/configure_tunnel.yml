@@ -82,7 +82,7 @@
 - name: Fetch tunnel token JSON
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/cfd_tunnel/{{ tunnel_id_final }}/token"
-    method: POST
+    method: GET
     headers:
       Authorization: "Bearer {{ cloudflare_api_token }}"
       Content-Type: "application/json"
