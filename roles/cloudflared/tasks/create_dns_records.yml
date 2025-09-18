@@ -22,6 +22,16 @@
   set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
 
+# Read the credentials JSON to get the TunnelID
+- name: Read tunnel credentials file
+  slurp:
+    src: "/etc/cloudflared/*.json"
+  register: tunnel_creds_raw
+
+- name: Set tunnel_id_final fact from credentials file
+  set_fact:
+    tunnel_id_final: "{{ (tunnel_creds_raw.content | b64decode | from_json).TunnelID }}"
+
 # Step 1: Initialise empty list for filtered apps
 - name: Initialise apps_with_domains
   set_fact:
