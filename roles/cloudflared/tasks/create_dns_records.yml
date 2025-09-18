@@ -79,6 +79,17 @@
 #  loop_control:
 #    loop_var: item
 
+#- name: Build app_hostnames from cloudflare_access_apps
+#  set_fact:
+#    app_hostnames: "{{ app_hostnames | default([]) + [ {
+#        'public_hostname': item.hostname,
+#        'internal_ip': item.local_service | regex_replace('^https?://([^:/]+):.*$', '\\1'),
+#        'internal_port': item.local_service | regex_replace('^https?://[^:/]+:(\\d+).*$', '\\1')
+#      } ] }}"
+#  loop: "{{ cloudflare_access_apps }}"
+#  loop_control:
+#    loop_var: item
+
 - name: Build app_hostnames from cloudflare_access_apps
   set_fact:
     app_hostnames: "{{ app_hostnames | default([]) + [ {
