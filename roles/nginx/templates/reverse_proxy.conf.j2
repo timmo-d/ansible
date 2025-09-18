@@ -22,7 +22,7 @@ http {
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers on;
 
-    {% for app in app_hostnames %}
+    {% for app in nginx_upstreams  %}
     server {
         listen 127.0.0.1:80;
         server_name localhost;

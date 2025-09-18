@@ -30,13 +30,18 @@ cloudflare_access_apps:
     hostname: "sonarr.timmos.com.au"
     local_service: "http://192.168.1.100:8989"
     email: "sonarr@timmos.com.au"
-    sonarr_ip: 192.168.1.100
-    sonarr_port: 8989
 
   - name: "Radarr"
     domain: "radarr.timmos.com.au"
     hostname: "radarr.timmos.com.au"
     local_service: "http://192.168.1.100:7878"
     email: "radarr@timmos.com.au"
-    radarr_ip: 192.168.1.100
-    radarr_port: 7878
+
+nginx_upstreams:
+  - public_hostname: sonarr.timmos.com.au
+    internal_ip: 192.168.1.100
+    internal_port: 8989
+  - public_hostname: radarr.timmos.com.au
+    internal_ip: 192.168.1.100
+    internal_port: 7878
+
