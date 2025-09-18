@@ -22,5 +22,5 @@ cloudflared_bin_path: "/usr/local/bin/cloudflared"
 cloudflare_global_api_token: "{{ lookup('env', 'CLOUDFLARE_GLOBAL_API_TOKEN') }}"
 cloudflare_apps_api_token: "{{ lookup('env', 'CLOUDFLARE_APPS_TOKEN') }}"
 ansible_user: "tim"
-tunnel_name: "home-edge"
+tunnel_name: "home-tunnel"
 
