@@ -22,13 +22,23 @@
   set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
 
-# Step 1: Filter only apps that have self_hosted_domains
+# Step 1: Ensure we have a list of dicts
+- name: Normalise access_apps_list to a list
+  set_fact:
+    access_apps_list: "{{ access_apps_list | default([]) | list }}"
+
+# Step 2: Filter only those with a non‑empty self_hosted_domains
 - name: Filter apps with self_hosted_domains
   set_fact:
-    apps_with_domains: "{{ (access_apps_list | default([]))
-                           | selectattr('self_hosted_domains', 'defined')
-                           | selectattr('self_hosted_domains', 'length', '>', 0)
-                           | list }}"
+    apps_with_domains: >-
+      {{
+        access_apps_list
+        | selectattr('self_hosted_domains', 'defined')
+        | selectattr('self_hosted_domains', 'length', '>', 0)
+        | list
+      }}
+  when: access_apps_list | length > 0
+
 
 # Step 2: Extract the first hostname from self_hosted_domains into app_hostnames list
 - name: Extract first hostname for each app
