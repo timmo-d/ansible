@@ -1,6 +1,18 @@
 {# Build a proper Python list for ingress first #}
 {% set ingress_list = [] %}
+
+{# 1. Add each Access app's hostname from access_apps_list, force loopback service #}
+{% for app in access_apps_list | default([]) %}
+  {% if app.domain is defined and (app.domain|string)|length > 0 %}
+    {% set _ = ingress_list.append({'hostname': app.domain, 'service': 'http://127.0.0.1:80'}) %}
+  {% endif %}
+{% endfor %}
+
+{# 2. Add any extra ingress rules passed in via cloudflared_ingress var #}
 {% for rule in cloudflared_ingress | default([]) %}
+  {% if rule.service is defined and not (rule.service | regex_search('^https?://127\\.0\\.0\\.1(:\\d+)?$')) %}
+    {% set _ = (raise('Invalid ingress service "' ~ rule.service ~ '": All services must point to 127.0.0.1')) %}
+  {% endif %}
   {% if rule.hostname is defined and (rule.hostname|string)|length > 0 %}
     {% set _ = ingress_list.append({'hostname': rule.hostname, 'service': rule.service}) %}
   {% else %}
