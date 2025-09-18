@@ -65,7 +65,6 @@
   debug:
     var: app_hostnames
 
----
 # Ensure proxied CNAME DNS records exist for each Access app
 # Uses the community.general.cloudflare_dns module for idempotency
 
