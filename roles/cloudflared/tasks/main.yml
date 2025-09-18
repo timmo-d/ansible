@@ -18,5 +18,8 @@
     app_email: "{{ app_item.value }}"
   when: app_item.value is defined and app_item.value | length > 0
 
+- name: Create or update DNS records for each app
+  include_tasks: create_dns_records.yml
+
 - name: Configure cloudflared
   include_tasks: configure_tunnel.yml
