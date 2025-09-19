@@ -121,9 +121,8 @@
       name: "SMS OTP Policy"
       decision: allow
       include:
-        - login_method: "onetimepin"
         - phone:
-            phone_number: "{{ access_otp_phone }}"
+            phone_number: ["{{ access_otp_phone }}"]
       require:
         - login_method: "onetimepin"
       precedence: 1
