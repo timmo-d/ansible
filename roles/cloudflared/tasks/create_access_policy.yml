@@ -1,71 +1,119 @@
-# roles/cloudflared/tasks/create_or_update_policy.yml
-# Expects vars: app_id, app_email
+# 3. Build list of {name, app_id, email} for policy creation
+- name: Extract app IDs from creation/update results
+  set_fact:
+    created_apps: "{{ created_apps | default([]) + [ {
+        'name': item.item.name,
+        'app_id': (item.json.result.id | default(item.json.result.uid)),
+        'email': item.item.email
+      } ] }}"
+  loop: "{{ app_create_results.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
 
-- name: Get existing policies for app {{ app_id }}
+# 4. Get existing policies for each app
+- name: Get existing policies for each app
   uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ app_id }}/policies"
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
     method: GET
     headers:
-      Authorization: "Bearer {{ cloudflare_api_token }}"
-      Content-Type: "application/json"
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
     return_content: yes
-    status_code: 200
-  register: existing_policies_for_app
+  register: existing_policies
+  loop: "{{ created_apps }}"
+  loop_control:
+    label: "{{ item.name }}"
 
-- name: Find matching policy ID
+# 4.1 Normalise policy lists
+- name: Normalise policy lists
   set_fact:
-    matching_policy_id: >-
-      {{
-        (existing_policies_for_app.json.result
-         | selectattr('include', 'defined')
-         | selectattr('include', '!=', None)
-         | selectattr('include', 'selectattr', 'email', 'defined')
-         | selectattr('include', 'selectattr', 'email', '!=', None)
-         | selectattr('include', 'selectattr', 'email.email', 'equalto', app_email)
-         | selectattr('require', 'defined')
-         | selectattr('require', 'selectattr', 'service_auth', 'defined')
-         | map(attribute='id') | list | first)
-        | default('')
-      }}
+    normalised_policies: "{{ existing_policies.results | map(attribute='json.result') | map('default', []) | map('list') | list }}"
 
-- name: Update existing policy if found
+# 4.2 Combine apps and policies for subelements
+- name: Build apps_with_policies list
+  set_fact:
+    apps_with_policies: "{{ apps_with_policies | default([]) + [ {
+        'name': item.0.name,
+        'app_id': item.0.app_id,
+        'policies': item.1 | default([])
+      } ] }}"
+  loop: "{{ created_apps | zip(normalised_policies) | list }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+
+# 5. Delete existing 'Email OTP Policy' if present
+- name: Delete existing 'Email OTP Policy' if present
   uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ app_id }}/policies/{{ matching_policy_id }}"
-    method: PUT
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
+    method: DELETE
     headers:
-      Authorization: "Bearer {{ cloudflare_api_token }}"
-      Content-Type: "application/json"
-    body_format: json
-    body:
-      name: "Allow and Service Auth for {{ app_email }}"
-      decision: "allow"
-      include:
-        - email:
-            email: "{{ app_email }}"
-      precedence: 1
-      require:
-        - service_auth: {}
-    status_code: 200
-    return_content: yes
-  when: matching_policy_id | length > 0
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+    status_code: 200,204
+  loop: "{{ query('subelements', apps_with_policies, 'policies', {'skip_missing': True}) }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+  when:
+    - item.1 is mapping
+    - "'name' in item.1"
+    - item.1.name == "Email OTP Policy"
 
-- name: Create new policy if none found
+# 6. DEBUG: Show JSON body for each new policy
+- name: Show JSON body for Email OTP policy
+  debug:
+    msg: "{{ {
+      'name': 'Email OTP Policy',
+      'decision': 'allow',
+      'include': [ { 'email': { 'email': [ item.email ] } } ],
+      'require': [ { 'login_method': 'onetimepin' } ],
+      'precedence': 1
+    } | to_nice_json }}"
+  loop: "{{ created_apps }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# 7. Create new Email OTP policy for each app
+- name: Create Email OTP policy for each app
   uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ app_id }}/policies"
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
     method: POST
     headers:
-      Authorization: "Bearer {{ cloudflare_api_token }}"
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
       Content-Type: "application/json"
     body_format: json
     body:
-      name: "Allow and Service Auth for {{ app_email }}"
-      decision: "allow"
+      name: "Email OTP Policy"
+      decision: allow
       include:
         - email:
-            email: "{{ app_email }}"
-      precedence: 1
+            email:
+              - "{{ item.email }}"
       require:
+        #- login_method: "onetimepin"
         - service_auth: {}
-    status_code: 200
-    return_content: yes
-  when: matching_policy_id | length == 0
+      precedence: 1
+    status_code: [200, 201]
+  loop: "{{ created_apps }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+
+
+#- name: Create new policy if none found
+#  uri:
+#    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ app_id }}/policies"
+#    method: POST
+#    headers:
+#      Authorization: "Bearer {{ cloudflare_api_token }}"
+#      Content-Type: "application/json"
+#    body_format: json
+#    body:
+#      name: "Allow and Service Auth for {{ app_email }}"
+#      decision: "allow"
+#      include:
+#        - email:
+#            email: "{{ app_email }}"
+#      precedence: 1
+#      require:
+#        - service_auth: {}
+#    status_code: 200
+#    return_content: yes
+#  when: matching_policy_id | length == 0
