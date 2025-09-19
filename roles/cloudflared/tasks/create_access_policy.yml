@@ -32,19 +32,18 @@
         if unverified_domains | length == 0
         else 'Unverified domains ❌: ' ~ (unverified_domains | join(', '))
       }}
+  warn: "{{ unverified_domains | length > 0 }}"
 
-# 1. Build domain_status_map from manual list
-- name: Initialise domain_status_map
+# 1. Build domain_status_map (always complete)
+- name: Initialise all domains as unverified
   set_fact:
-    domain_status_map: >-
-      {{
-        (unique_domains | map('community.general.dict_kv', 'verified') | list | combine)
-        | combine(
-            (unique_domains | difference(verified_email_domains | default([]))
-             | map('community.general.dict_kv', 'unverified') | list | combine)
-          )
-      }}
+    domain_status_map: "{{ dict(unique_domains | zip(['unverified'] * (unique_domains | length))) }}"
 
+- name: Mark verified domains
+  set_fact:
+    domain_status_map: "{{ domain_status_map | combine(
+      dict(verified_email_domains | default([]) | zip(['verified'] * (verified_email_domains | length)))
+    ) }}"
 
 # 2. Get existing policies for each app
 - name: Get existing policies for each app
@@ -105,7 +104,7 @@
       App '{{ item.name }}':
       {{
         'Using exact email match — domain is verified ✅'
-        if domain_status_map[item.domain] == 'verified'
+        if domain_status_map.get(item.domain, 'unverified') == 'verified'
         else 'Using domain-wide match — domain not verified ❌ (fallback applied)'
       }}
   loop: "{{ apps_with_policies }}"
@@ -120,7 +119,7 @@
       'decision': 'allow',
       'include': (
         [ { 'email': { 'email': [ item.email ] } } ]
-        if domain_status_map[item.domain] == 'verified'
+        if domain_status_map.get(item.domain, 'unverified') == 'verified'
         else [ { 'email_domain': { 'domain': [ item.domain ] } } ]
       ),
       'require': [ { 'login_method': 'onetimepin' } ],
@@ -146,7 +145,7 @@
           'decision': 'allow',
           'include': (
             [ { 'email': { 'email': [ item.email ] } } ]
-            if domain_status_map[item.domain] == 'verified'
+            if domain_status_map.get(item.domain, 'unverified') == 'verified'
             else [ { 'email_domain': { 'domain': [ item.domain ] } } ]
           ),
           'require': [ { 'login_method': 'onetimepin' } ],
