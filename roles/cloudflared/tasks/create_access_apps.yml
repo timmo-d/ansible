@@ -82,27 +82,23 @@
 
 # 5. Delete existing 'SMS OTP Policy' if present
 - name: Delete existing 'SMS OTP Policy' if present
-  vars:
-    apps_with_policies: "{{ created_apps | zip(normalised_policies) | list }}"
-  loop: "{{ apps_with_policies }}"
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ app.app_id }}/policies/{{ policy.id }}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+    status_code: 200,204
+  loop: "{{ created_apps | zip(normalised_policies) | list | map('list') | list }}"
   loop_control:
     loop_var: app_pair
     label: "{{ app_pair.0.name }}"
   vars:
     app: "{{ app_pair.0 }}"
-    policies: "{{ app_pair.1 | default([]) }}"
-  when: policies | selectattr('name', 'equalto', 'SMS OTP Policy') | list | length > 0
-  block:
-    - name: Delete each matching policy
-      uri:
-        url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ app.app_id }}/policies/{{ policy.id }}"
-        method: DELETE
-        headers:
-          Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-        status_code: 200,204
-      loop: "{{ policies | selectattr('name', 'equalto', 'SMS OTP Policy') | list }}"
-      loop_control:
-        loop_var: policy
+  when: app_pair.1 | selectattr('name', 'equalto', 'SMS OTP Policy') | list | length > 0
+  with_items: "{{ app_pair.1 | selectattr('name', 'equalto', 'SMS OTP Policy') | list }}"
+  loop_control:
+    loop_var: policy
+
 
 # 6. Create new SMS OTP policy for each app
 - name: Create SMS OTP policy for each app
