@@ -110,6 +110,17 @@
     - "'name' in item.1"
     - item.1.name == "SMS OTP Policy"
 
+- name: Show created_apps structure
+  debug:
+    var: created_apps
+    
+- name: Show each created_app entry
+  debug:
+    msg: "App: {{ item.name }}, ID: {{ item.app_id }}, Email: {{ item.email | default('N/A') }}"
+  loop: "{{ created_apps }}"
+
+
+
 # 6. Create new Email OTP policy for each app
 - name: Create Email OTP policy for each app
   uri:
@@ -133,6 +144,7 @@
   loop: "{{ created_apps }}"
   loop_control:
     label: "{{ item.name }}"
+
 
 
 
