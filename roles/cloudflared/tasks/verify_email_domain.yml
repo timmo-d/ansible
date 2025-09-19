@@ -1,0 +1,47 @@
+---
+# roles/cloudflared/tasks/verify_email_domain.yml
+
+- name: Create email domain verification request
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/email/domains"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      domain: "{{ email_domain_to_verify }}"
+    return_content: yes
+    status_code: [200, 201]
+  register: domain_create_resp
+
+- name: Set verification details
+  set_fact:
+    cf_email_domain_id: "{{ domain_create_resp.json.result.id }}"
+    cf_verification_name: "{{ domain_create_resp.json.result.verification_name }}"
+    cf_verification_value: "{{ domain_create_resp.json.result.verification_value }}"
+
+- name: Show DNS TXT record to add
+  debug:
+    msg: "Add this TXT record to verify {{ email_domain_to_verify }}: Name='{{ cf_verification_name }}', Value='{{ cf_verification_value }}'"
+
+- pause:
+    prompt: "Press Enter once the TXT record is added and propagated"
+
+- name: Verify the email domain
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/email/domains/{{ cf_email_domain_id }}/verify"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Content-Type: "application/json"
+    return_content: yes
+    status_code: [200, 201]
+  register: verify_resp
+  until: verify_resp.json.result.status is defined and verify_resp.json.result.status == "verified"
+  retries: 10
+  delay: 30
+
+- name: Show final verification status
+  debug:
+    var: verify_resp.json

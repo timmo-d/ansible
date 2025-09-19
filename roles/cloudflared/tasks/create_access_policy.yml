@@ -1,13 +1,63 @@
 ---
 # roles/cloudflared/tasks/create_email_otp_policies.yml
 
-# 0. Preconditions
 - name: Fail if created_apps is missing
   fail:
     msg: "created_apps variable is not defined — run create_access_apps.yml first"
   when: created_apps is not defined
 
-# 1. Get existing policies for each app
+# 1. Extract unique domains from created_apps
+- name: Extract unique domains from created_apps
+  set_fact:
+    unique_domains: "{{ created_apps
+                        | map(attribute='email')
+                        | map('regex_replace', '.*@', '')
+                        | unique }}"
+
+# 2. Get current verification status
+- name: Get email domain verification status
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/email/domains"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+    return_content: yes
+    status_code: 200
+  register: email_domains_resp
+
+- name: Set verified_domains fact
+  set_fact:
+    verified_domains: "{{ email_domains_resp.json.result
+                          | selectattr('status', 'equalto', 'verified')
+                          | map(attribute='domain')
+                          | list }}"
+
+# 3. Verify any unverified domains
+- name: Loop over unverified domains
+  include_tasks: verify_email_domain.yml
+  loop: "{{ unique_domains | difference(verified_domains) }}"
+  loop_control:
+    loop_var: email_domain_to_verify
+
+# 4. Refresh verification status after attempts
+- name: Refresh email domain verification status
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/email/domains"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+    return_content: yes
+    status_code: 200
+  register: email_domains_resp_after
+
+- name: Set final_verified_domains fact
+  set_fact:
+    final_verified_domains: "{{ email_domains_resp_after.json.result
+                                | selectattr('status', 'equalto', 'verified')
+                                | map(attribute='domain')
+                                | list }}"
+
+# 5. Get existing policies for each app
 - name: Get existing policies for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
@@ -20,24 +70,30 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 2. Normalise policy lists
+# 6. Normalise policy lists
 - name: Normalise policy lists
   set_fact:
-    normalised_policies: "{{ existing_policies.results | map(attribute='json.result') | map('default', []) | map('list') | list }}"
+    normalised_policies: "{{ existing_policies.results
+                             | map(attribute='json.result')
+                             | map('default', [])
+                             | map('list')
+                             | list }}"
 
-# 3. Combine apps and policies
+# 7. Combine apps and policies
 - name: Build apps_with_policies list
   set_fact:
     apps_with_policies: "{{ apps_with_policies | default([]) + [ {
         'name': item.0.name,
         'app_id': item.0.app_id,
+        'email': item.0.email,
+        'domain': (item.0.email | regex_replace('.*@', '')),
         'policies': item.1 | default([])
       } ] }}"
   loop: "{{ created_apps | zip(normalised_policies) | list }}"
   loop_control:
     label: "{{ item.0.name }}"
 
-# 4. Delete existing 'Email OTP Policy' if present
+# 8. Delete existing 'Email OTP Policy' if present
 - name: Delete existing 'Email OTP Policy' if present
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
@@ -53,22 +109,40 @@
     - "'name' in item.1"
     - item.1.name == "Email OTP Policy"
 
-# 5. DEBUG: Show JSON body for each new policy
+# 9. DEBUG: Show rule type and reason
+- name: Show rule type and reason for each app
+  debug:
+    msg: >-
+      App '{{ item.name }}':
+      {{
+        'Using exact email match — domain is verified ✅'
+        if item.domain in final_verified_domains
+        else 'Using domain-wide match — domain not verified ❌ (fallback applied)'
+      }}
+  loop: "{{ apps_with_policies }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# 10. DEBUG: Show JSON body for each new policy
 - name: Show JSON body for Email OTP policy
   debug:
     msg: "{{ {
       'name': 'Email OTP Policy',
       'decision': 'allow',
-      'include': [ { 'email': { 'email': [ item.email ] } } ],
+      'include': (
+        [ { 'email': { 'email': [ item.email ] } } ]
+        if item.domain in final_verified_domains
+        else [ { 'email_domain': { 'domain': [ item.domain ] } } ]
+      ),
       'require': [ { 'login_method': 'onetimepin' } ],
       'precedence': 1
     } | to_nice_json }}"
-  loop: "{{ created_apps }}"
+  loop: "{{ apps_with_policies }}"
   loop_control:
     label: "{{ item.name }}"
 
-# 6. Create new Email OTP policy for each app
-- name: Create Email OTP policy for each app
+# 11. Create new Email OTP policy for each app (with fallback)
+- name: Create Email OTP policy for each app (with fallback)
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
     method: POST
@@ -76,17 +150,21 @@
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
       Content-Type: "application/json"
     body_format: json
-    body:
-      name: "Email OTP Policy"
-      decision: allow
-      include:
-        - email:
-            email:
-              - "{{ item.email }}"
-      require:
-        - login_method: "onetimepin"
-      precedence: 1
+    body: >-
+      {{
+        {
+          'name': 'Email OTP Policy',
+          'decision': 'allow',
+          'include': (
+            [ { 'email': { 'email': [ item.email ] } } ]
+            if item.domain in final_verified_domains
+            else [ { 'email_domain': { 'domain': [ item.domain ] } } ]
+          ),
+          'require': [ { 'login_method': 'onetimepin' } ],
+          'precedence': 1
+        }
+      }}
     status_code: [200, 201]
-  loop: "{{ created_apps }}"
+  loop: "{{ apps_with_policies }}"
   loop_control:
     label: "{{ item.name }}"
