@@ -1,14 +1,14 @@
 # Headless token mode defaults
-cloudflare_api_token: "{{ cloudflare_api_token }}"
-cloudflare_account_id: "{{ cloudflare_account_id }}"
-tunnel_name: "home-edge"
-terraform_dir: /opt/terraform/cloudflared # Path to Terraform working directory containing .tfstate
-cloudflared_bin_path: /usr/local/bin/cloudflared
+#cloudflare_api_token: "{{ cloudflare_api_token }}"
+#cloudflare_account_id: "{{ cloudflare_account_id }}"
+#tunnel_name: "home-edge"
+#terraform_dir: /opt/terraform/cloudflared # Path to Terraform working directory containing .tfstate
+#cloudflared_bin_path: /usr/local/bin/cloudflared
 # Hostname/service mapping for ingress
-cloudflared_ingress:
-  - hostname: proxy.timmos.com.au
-    service: http://localhost:80
-  - service: http_status:404
+#cloudflared_ingress:
+#  - hostname: proxy.timmos.com.au
+#    service: http://localhost:80
+#  - service: http_status:404
   
 
 
