@@ -113,7 +113,7 @@
 - name: Show created_apps structure
   debug:
     var: created_apps
-    
+
 - name: Show each created_app entry
   debug:
     msg: "App: {{ item.name }}, ID: {{ item.app_id }}, Email: {{ item.email | default('N/A') }}"
@@ -135,7 +135,7 @@
       decision: allow
       include:
         - email:
-            emails:
+            email:
               - "{{ item.email }}"
       require:
         - login_method: "onetimepin"
@@ -144,6 +144,7 @@
   loop: "{{ created_apps }}"
   loop_control:
     label: "{{ item.name }}"
+
 
 
 
