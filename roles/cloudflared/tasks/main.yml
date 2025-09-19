@@ -40,7 +40,7 @@
 # 2. Build a list of {name, app_id} for policy creation
 - name: Extract app IDs from creation results
   set_fact:
-    created_apps: "{{ created_apps | default([]) + [ {
+    created_apps: "{{ cloudflare_access_apps | default([]) + [ {
         'name': item.item.name,
         'app_id': (item.json.result.id | default(item.json.result.uid))
       } ] }}"
