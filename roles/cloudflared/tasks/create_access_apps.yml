@@ -6,7 +6,7 @@
     - cloudflare_account_id is not defined or cloudflare_account_id | length == 0
     - cloudflare_apps_api_token is not defined or cloudflare_apps_api_token | length == 0
 
-# 1. Fetch all Access apps
+# 1. Fetch all Access apps once
 - name: Get list of Access apps
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
@@ -31,11 +31,11 @@
   debug:
     var: access_apps_list
 
-# 2. Create or update each Access app
+# 2. Create or update each app
 - name: Create or update Cloudflare Access apps
   uri:
     url: >-
-      https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps{{ '/' + (existing_app.id | default('')) if existing_app is defined else '' }}
+      https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps{{ '/' + existing_app.id if existing_app is defined else '' }}
     method: "{{ 'PUT' if existing_app is defined else 'POST' }}"
     headers:
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
