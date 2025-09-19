@@ -14,19 +14,19 @@
                         | map('regex_replace', '.*@', '')
                         | unique }}"
 
-# 2. Initialise domain_status_map
+# 2. Build domain_status_map from manual list
 - name: Initialise domain_status_map
   set_fact:
-    domain_status_map: {}
+    domain_status_map: >-
+      {{
+        dict(unique_domains | map('community.general.dict_kv', 'verified'))
+        | combine(
+            dict(unique_domains | difference(verified_email_domains | default([]))
+                 | map('community.general.dict_kv', 'unverified'))
+          )
+      }}
 
-# 3. Verify or create each domain (no GET calls, non-interactive)
-- name: Ensure/verify each domain
-  include_tasks: verify_single_domain.yml
-  loop: "{{ unique_domains }}"
-  loop_control:
-    loop_var: domain_item
-
-# 4. Get existing policies for each app
+# 3. Get existing policies for each app
 - name: Get existing policies for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
@@ -39,7 +39,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 5. Normalise policy lists
+# 4. Normalise policy lists
 - name: Normalise policy lists
   set_fact:
     normalised_policies: "{{ existing_policies.results
@@ -48,7 +48,7 @@
                              | map('list')
                              | list }}"
 
-# 6. Combine apps and policies
+# 5. Combine apps and policies
 - name: Build apps_with_policies list
   set_fact:
     apps_with_policies: "{{ apps_with_policies | default([]) + [ {
@@ -62,7 +62,7 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 7. Delete existing 'Email OTP Policy' if present
+# 6. Delete existing 'Email OTP Policy' if present
 - name: Delete existing 'Email OTP Policy' if present
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
@@ -78,7 +78,7 @@
     - "'name' in item.1"
     - item.1.name == "Email OTP Policy"
 
-# 8. DEBUG: Show rule type and reason
+# 7. DEBUG: Show rule type and reason
 - name: Show rule type and reason for each app
   debug:
     msg: >-
@@ -92,7 +92,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 9. DEBUG: Show JSON body for each new policy
+# 8. DEBUG: Show JSON body for each new policy
 - name: Show JSON body for Email OTP policy
   debug:
     msg: "{{ {
@@ -110,7 +110,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 10. Create new Email OTP policy for each app (with fallback)
+# 9. Create new Email OTP policy for each app (with fallback)
 - name: Create Email OTP policy for each app (with fallback)
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"

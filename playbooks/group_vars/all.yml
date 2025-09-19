@@ -25,7 +25,9 @@ cloudflare_apps_api_token: "{{ lookup('env', 'CLOUDFLARE_APPS_TOKEN') }}"
 access_otp_phone:  "{{ lookup('env', 'ACCESS_OTP_PHONE') }}"
 ansible_user: "tim"
 tunnel_name: "dmz-tunnel"
-
+verified_email_domains:
+  - timmos.com.au
+  
 cloudflare_access_apps:
   - name: "Sonarr"
     domain: "sonarr.timmos.com.au"
