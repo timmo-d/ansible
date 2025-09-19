@@ -134,9 +134,9 @@
       name: "Email OTP Policy"
       decision: allow
       include:
-        - email:
-            email:
-              - "{{ item.email }}"
+        - email_domain:
+            domain:
+              - "{{ item.email.split('@')[1] }}"
       require:
         - login_method: "onetimepin"
       precedence: 1
