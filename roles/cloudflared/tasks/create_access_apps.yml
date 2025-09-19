@@ -51,8 +51,8 @@
 # 2. Create missing Access apps
 - name: Create Cloudflare Access apps if not already present
   uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
-    method: POST
+    url: https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps{{ '/' + (app_lookup.results[loop.index0].json.result[0].id | default('')) if (app_lookup.results[loop.index0].json.result | length > 0) else '' }}
+    method: "{{ 'PUT' if (app_lookup.results[loop.index0].json.result | length > 0) else 'POST' }}"
     headers:
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
       Content-Type: "application/json"
@@ -61,13 +61,9 @@
       name: "{{ item.name }}"
       domain: "{{ item.domain }}"
       type: "self_hosted"
-      session_duration: "24h"
-      policies:
-        - decision: allow
-          include:
-            - email:
-                email: "{{ item.email }}"
+      session_duration: "1h"
     status_code: [200, 201]
+    return_content: yes
   loop: "{{ cloudflare_access_apps }}"
   loop_control:
     label: "{{ item.name }}"
@@ -75,6 +71,32 @@
     - existing_access_apps.json.success | default(false)
     - item.domain not in (existing_access_apps.json.result | map(attribute='domain') | list | default([]))
   register: created_access_apps
+#- name: Create Cloudflare Access apps if not already present
+#  uri:
+#    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
+#    method: POST
+#    headers:
+#      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+#      Content-Type: "application/json"
+#    body_format: json
+#    body:
+#      name: "{{ item.name }}"
+#      domain: "{{ item.domain }}"
+#      type: "self_hosted"
+#      session_duration: "24h"
+#      policies:
+#        - decision: allow
+#          include:
+#            - email:
+#                email: "{{ item.email }}"
+#    status_code: [200, 201]
+#  loop: "{{ cloudflare_access_apps }}"
+#  loop_control:
+#    label: "{{ item.name }}"
+#  when:
+#    - existing_access_apps.json.success | default(false)
+#    - item.domain not in (existing_access_apps.json.result | map(attribute='domain') | list | default([]))
+#  register: created_access_apps
 
 # 3. Log newly created apps
 - name: Log newly created apps
