@@ -51,16 +51,18 @@
     existing_app: "{{ access_apps_list | selectattr('domain', 'equalto', item.domain) | first | default(omit) }}"
   register: app_create_results
 
-# 3. Build list of {name, app_id} for policy creation
+# 3. Build list of {name, app_id, email} for policy creation
 - name: Extract app IDs from creation/update results
   set_fact:
     created_apps: "{{ created_apps | default([]) + [ {
         'name': item.item.name,
-        'app_id': (item.json.result.id | default(item.json.result.uid))
+        'app_id': (item.json.result.id | default(item.json.result.uid)),
+        'email': item.item.email
       } ] }}"
   loop: "{{ app_create_results.results }}"
   loop_control:
     label: "{{ item.item.name }}"
+
 
 # 4. Get existing policies for each app
 - name: Get existing policies for each app
@@ -121,8 +123,8 @@
       name: "SMS OTP Policy"
       decision: allow
       include:
-        - phone:
-            phone_number: ["{{ access_otp_phone }}"]
+        - email:
+            emails: ["{{ item.email }}"]
       require:
         - login_method: "onetimepin"
       precedence: 1
@@ -130,3 +132,4 @@
   loop: "{{ created_apps }}"
   loop_control:
     label: "{{ item.name }}"
+
