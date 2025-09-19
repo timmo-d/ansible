@@ -110,8 +110,8 @@
     - "'name' in item.1"
     - item.1.name == "SMS OTP Policy"
 
-# 6. Create new SMS OTP policy for each app
-- name: Create SMS OTP policy for each app
+# 6. Create new Email OTP policy for each app
+- name: Create Email OTP policy for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
     method: POST
@@ -120,7 +120,7 @@
       Content-Type: "application/json"
     body_format: json
     body:
-      name: "SMS OTP Policy"
+      name: "Email OTP Policy"
       decision: allow
       include:
         - email:
@@ -133,5 +133,6 @@
   loop: "{{ created_apps }}"
   loop_control:
     label: "{{ item.name }}"
+
 
 
