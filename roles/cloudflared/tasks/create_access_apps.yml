@@ -109,7 +109,21 @@
     - "'name' in item.1"
     - item.1.name == "Email OTP Policy"
 
-# 6. Create new Email OTP policy for each app
+# 6. DEBUG: Show JSON body for each new policy
+- name: Show JSON body for Email OTP policy
+  debug:
+    msg: "{{ {
+      'name': 'Email OTP Policy',
+      'decision': 'allow',
+      'include': [ { 'email': { 'email': [ item.email ] } } ],
+      'require': [ { 'login_method': 'onetimepin' } ],
+      'precedence': 1
+    } | to_nice_json }}"
+  loop: "{{ created_apps }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# 7. Create new Email OTP policy for each app
 - name: Create Email OTP policy for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
