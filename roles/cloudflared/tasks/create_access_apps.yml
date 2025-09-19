@@ -1,4 +1,7 @@
-# Preconditions
+---
+# roles/cloudflared/tasks/create_access_apps.yml
+
+# 0. Preconditions
 - name: Fail if Cloudflare account ID or API token is missing
   fail:
     msg: "cloudflare_account_id or cloudflare_apps_api_token is not set — cannot manage Access apps"
@@ -6,7 +9,7 @@
     - cloudflare_account_id is not defined or cloudflare_account_id | length == 0
     - cloudflare_apps_api_token is not defined or cloudflare_apps_api_token | length == 0
 
-# Fetch all Access apps once
+# 1. Fetch all Access apps once
 - name: Get list of Access apps
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
@@ -27,12 +30,12 @@
   set_fact:
     access_apps_list: "{{ access_apps_resp.json.result | default([]) }}"
 
-# Create or update each app (idempotent)
+# 2. Create or update each app (patched to avoid .id error)
 - name: Create or update Cloudflare Access apps
   uri:
     url: >-
-      https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps{{ '/' + existing_app.id if existing_app is defined else '' }}
-    method: "{{ 'PUT' if existing_app is defined else 'POST' }}"
+      https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps{{ '/' + existing_app.id if (existing_app is mapping and 'id' in existing_app) else '' }}
+    method: "{{ 'PUT' if (existing_app is mapping and 'id' in existing_app) else 'POST' }}"
     headers:
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
       Content-Type: "application/json"
@@ -48,6 +51,26 @@
   loop_control:
     label: "{{ item.name }}"
   vars:
-    existing_app: "{{ access_apps_list | selectattr('domain', 'equalto', item.domain) | first | default(omit) }}"
+    existing_app: >-
+      {{ access_apps_list
+         | selectattr('domain', 'equalto', item.domain)
+         | first
+         | default({}, true) }}
   register: app_create_results
 
+# 3. Build list of {name, app_id, email} for policy creation
+- name: Extract app IDs from creation/update results
+  set_fact:
+    created_apps: "{{ created_apps | default([]) + [ {
+        'name': item.item.name,
+        'app_id': (item.json.result.id | default(item.json.result.uid)),
+        'email': item.item.email
+      } ] }}"
+  loop: "{{ app_create_results.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+# 4. Show created_apps for verification
+- name: Show created_apps structure
+  debug:
+    var: created_apps

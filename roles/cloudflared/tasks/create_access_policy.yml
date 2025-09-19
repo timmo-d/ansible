@@ -1,16 +1,13 @@
-# 3. Build list of {name, app_id, email} for policy creation
-- name: Extract app IDs from creation/update results
-  set_fact:
-    created_apps: "{{ created_apps | default([]) + [ {
-        'name': item.item.name,
-        'app_id': (item.json.result.id | default(item.json.result.uid)),
-        'email': item.item.email
-      } ] }}"
-  loop: "{{ app_create_results.results }}"
-  loop_control:
-    label: "{{ item.item.name }}"
+---
+# roles/cloudflared/tasks/create_email_otp_policies.yml
 
-# 4. Get existing policies for each app
+# 0. Preconditions
+- name: Fail if created_apps is missing
+  fail:
+    msg: "created_apps variable is not defined — run create_access_apps.yml first"
+  when: created_apps is not defined
+
+# 1. Get existing policies for each app
 - name: Get existing policies for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
@@ -23,12 +20,12 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 4.1 Normalise policy lists
+# 2. Normalise policy lists
 - name: Normalise policy lists
   set_fact:
     normalised_policies: "{{ existing_policies.results | map(attribute='json.result') | map('default', []) | map('list') | list }}"
 
-# 4.2 Combine apps and policies for subelements
+# 3. Combine apps and policies
 - name: Build apps_with_policies list
   set_fact:
     apps_with_policies: "{{ apps_with_policies | default([]) + [ {
@@ -40,7 +37,7 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 5. Delete existing 'Email OTP Policy' if present
+# 4. Delete existing 'Email OTP Policy' if present
 - name: Delete existing 'Email OTP Policy' if present
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
@@ -56,7 +53,7 @@
     - "'name' in item.1"
     - item.1.name == "Email OTP Policy"
 
-# 6. DEBUG: Show JSON body for each new policy
+# 5. DEBUG: Show JSON body for each new policy
 - name: Show JSON body for Email OTP policy
   debug:
     msg: "{{ {
@@ -70,7 +67,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 7. Create new Email OTP policy for each app
+# 6. Create new Email OTP policy for each app
 - name: Create Email OTP policy for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
@@ -87,33 +84,9 @@
             email:
               - "{{ item.email }}"
       require:
-        #- login_method: "onetimepin"
-        - service_auth: {}
+        - login_method: "onetimepin"
       precedence: 1
     status_code: [200, 201]
   loop: "{{ created_apps }}"
   loop_control:
     label: "{{ item.name }}"
-
-
-
-#- name: Create new policy if none found
-#  uri:
-#    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ app_id }}/policies"
-#    method: POST
-#    headers:
-#      Authorization: "Bearer {{ cloudflare_api_token }}"
-#      Content-Type: "application/json"
-#    body_format: json
-#    body:
-#      name: "Allow and Service Auth for {{ app_email }}"
-#      decision: "allow"
-#      include:
-#        - email:
-#            email: "{{ app_email }}"
-#      precedence: 1
-#      require:
-#        - service_auth: {}
-#    status_code: 200
-#    return_content: yes
-#  when: matching_policy_id | length == 0
