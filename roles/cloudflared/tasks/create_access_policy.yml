@@ -38,12 +38,13 @@
   set_fact:
     domain_status_map: >-
       {{
-        dict(unique_domains | map('community.general.dict_kv', 'verified'))
+        (unique_domains | map('community.general.dict_kv', 'verified') | list | combine)
         | combine(
-            dict(unique_domains | difference(verified_email_domains | default([]))
-                 | map('community.general.dict_kv', 'unverified'))
+            (unique_domains | difference(verified_email_domains | default([]))
+             | map('community.general.dict_kv', 'unverified') | list | combine)
           )
       }}
+
 
 # 2. Get existing policies for each app
 - name: Get existing policies for each app
