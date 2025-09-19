@@ -37,6 +37,30 @@ cloudflare_access_apps:
     local_service: "http://192.168.1.100:7878"
     email: "radarr@timmos.com.au"
 
+  - name: "Lidarr"
+    domain: "lidarr.timmos.com.au"
+    hostname: "lidarr.timmos.com.au"
+    local_service: "http://192.168.1.100:8686"
+    email: "lidarr@timmos.com.au"
+
+  - name: "Prowlarr"
+    domain: "prowlarr.timmos.com.au"
+    hostname: "prowlarr.timmos.com.au"
+    local_service: "http://192.168.1.100:9696"
+    email: "prowlarr@timmos.com.au"
+
+  - name: "VueTorrent"
+    domain: "vuetorrent.timmos.com.au"
+    hostname: "vuetorrent.timmos.com.au"
+    local_service: "http://192.168.1.100:8080"
+    email: "vuetorrent@timmos.com.au"
+
+  - name: "Readarr"
+    domain: "readarr.timmos.com.au"
+    hostname: "readarr.timmos.com.au"
+    local_service: "http://192.168.1.100:8787"
+    email: "readarr@timmos.com.au"
+
 nginx_upstreams:
   - public_hostname: sonarr.timmos.com.au
     internal_ip: 192.168.1.100
@@ -44,4 +68,16 @@ nginx_upstreams:
   - public_hostname: radarr.timmos.com.au
     internal_ip: 192.168.1.100
     internal_port: 7878
-
+  - public_hostname: lidarr.timmos.com.au
+    internal_ip: 192.168.1.100
+    internal_port: 8686
+  - public_hostname: prowlarr.timmos.com.au
+    internal_ip: 192.168.1.100
+    internal_port: 9696
+  - public_hostname: vuetorrent.timmos.com.au
+    internal_ip: 192.168.1.100
+    internal_port: 8080
+  - public_hostname: readarr.timmos.com.au
+    internal_ip: 192.168.1.100
+    internal_port: 8787
+    
