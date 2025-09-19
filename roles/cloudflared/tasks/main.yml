@@ -31,7 +31,7 @@
       include:
         - email_domain:
             domain:
-              - "{{ item.email.split('@')[1] }}"
+              - "{{ test_email.split('@')[1] }}"
         - email:
             email:
               - "{{ test_email }}"
