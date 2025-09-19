@@ -63,7 +63,6 @@
   loop_control:
     label: "{{ item.item.name }}"
 
-
 # 4. Get existing policies for each app
 - name: Get existing policies for each app
   uri:
@@ -77,12 +76,12 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 4.1 Normalise policy lists so each element is always a list
+# 4.1 Normalise policy lists
 - name: Normalise policy lists
   set_fact:
     normalised_policies: "{{ existing_policies.results | map(attribute='json.result') | map('default', []) | map('list') | list }}"
 
-# 4.2 Combine apps and policies into a list-of-dicts for subelements
+# 4.2 Combine apps and policies for subelements
 - name: Build apps_with_policies list
   set_fact:
     apps_with_policies: "{{ apps_with_policies | default([]) + [ {
@@ -94,8 +93,8 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 5. Delete existing 'SMS OTP Policy' if present (safe conditional)
-- name: Delete existing 'SMS OTP Policy' if present
+# 5. Delete existing 'Email OTP Policy' if present
+- name: Delete existing 'Email OTP Policy' if present
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
     method: DELETE
@@ -108,18 +107,7 @@
   when:
     - item.1 is mapping
     - "'name' in item.1"
-    - item.1.name == "SMS OTP Policy"
-
-- name: Show created_apps structure
-  debug:
-    var: created_apps
-
-- name: Show each created_app entry
-  debug:
-    msg: "App: {{ item.name }}, ID: {{ item.app_id }}, Email: {{ item.email | default('N/A') }}"
-  loop: "{{ created_apps }}"
-
-
+    - item.1.name == "Email OTP Policy"
 
 # 6. Create new Email OTP policy for each app
 - name: Create Email OTP policy for each app
@@ -134,9 +122,9 @@
       name: "Email OTP Policy"
       decision: allow
       include:
-        - email_domain:
-            domain:
-              - "{{ item.email.split('@')[1] }}"
+        - email:
+            email:
+              - "{{ item.email }}"
       require:
         - login_method: "onetimepin"
       precedence: 1
@@ -144,8 +132,3 @@
   loop: "{{ created_apps }}"
   loop_control:
     label: "{{ item.name }}"
-
-
-
-
-
