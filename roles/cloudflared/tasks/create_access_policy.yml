@@ -14,58 +14,19 @@
                         | map('regex_replace', '.*@', '')
                         | unique }}"
 
-# 2. Verify or create each domain (no GET calls, non-interactive)
+# 2. Initialise domain_status_map
 - name: Initialise domain_status_map
   set_fact:
     domain_status_map: {}
 
+# 3. Verify or create each domain (no GET calls, non-interactive)
 - name: Ensure/verify each domain
-  block:
-    - name: Ensure email domain exists (create if missing)
-      uri:
-        url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/email/domains"
-        method: POST
-        headers:
-          Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-          Content-Type: "application/json"
-        body_format: json
-        body:
-          domain: "{{ item }}"
-        return_content: yes
-        status_code: [200, 201]
-      register: domain_create_resp
-
-    - name: Record TXT record if not verified
-      debug:
-        msg: "Domain {{ item }} not verified. Add TXT record: Name='{{ domain_create_resp.json.result.verification_name }}', Value='{{ domain_create_resp.json.result.verification_value }}'"
-      when: domain_create_resp.json.result.status != "verified"
-
-    - name: Attempt verification immediately (non-interactive)
-      uri:
-        url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/email/domains/{{ domain_create_resp.json.result.id }}/verify"
-        method: POST
-        headers:
-          Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-          Content-Type: "application/json"
-        return_content: yes
-        status_code: [200, 201]
-      register: verify_resp
-      when: domain_create_resp.json.result.status != "verified"
-
-    - name: Record final domain status
-      set_fact:
-        domain_status_map: "{{ domain_status_map | combine({
-          item: (
-            'verified'
-            if domain_create_resp.json.result.status == 'verified'
-            else verify_resp.json.result.status | default('unverified')
-          )
-        }) }}"
+  include_tasks: verify_single_domain.yml
   loop: "{{ unique_domains }}"
   loop_control:
-    label: "{{ item }}"
+    loop_var: domain_item
 
-# 3. Get existing policies for each app
+# 4. Get existing policies for each app
 - name: Get existing policies for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
@@ -78,7 +39,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 4. Normalise policy lists
+# 5. Normalise policy lists
 - name: Normalise policy lists
   set_fact:
     normalised_policies: "{{ existing_policies.results
@@ -87,7 +48,7 @@
                              | map('list')
                              | list }}"
 
-# 5. Combine apps and policies
+# 6. Combine apps and policies
 - name: Build apps_with_policies list
   set_fact:
     apps_with_policies: "{{ apps_with_policies | default([]) + [ {
@@ -101,7 +62,7 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 6. Delete existing 'Email OTP Policy' if present
+# 7. Delete existing 'Email OTP Policy' if present
 - name: Delete existing 'Email OTP Policy' if present
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
@@ -117,7 +78,7 @@
     - "'name' in item.1"
     - item.1.name == "Email OTP Policy"
 
-# 7. DEBUG: Show rule type and reason
+# 8. DEBUG: Show rule type and reason
 - name: Show rule type and reason for each app
   debug:
     msg: >-
@@ -131,7 +92,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 8. DEBUG: Show JSON body for each new policy
+# 9. DEBUG: Show JSON body for each new policy
 - name: Show JSON body for Email OTP policy
   debug:
     msg: "{{ {
@@ -149,7 +110,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 9. Create new Email OTP policy for each app (with fallback)
+# 10. Create new Email OTP policy for each app (with fallback)
 - name: Create Email OTP policy for each app (with fallback)
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"

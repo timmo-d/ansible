@@ -1,0 +1,43 @@
+---
+# roles/cloudflared/tasks/verify_single_domain.yml
+
+- name: Ensure email domain exists (create if missing)
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/email/domains"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      domain: "{{ domain_item }}"
+    return_content: yes
+    status_code: [200, 201]
+  register: domain_create_resp
+
+- name: Record TXT record if not verified
+  debug:
+    msg: "Domain {{ domain_item }} not verified. Add TXT record: Name='{{ domain_create_resp.json.result.verification_name }}', Value='{{ domain_create_resp.json.result.verification_value }}'"
+  when: domain_create_resp.json.result.status != "verified"
+
+- name: Attempt verification immediately (non-interactive)
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/email/domains/{{ domain_create_resp.json.result.id }}/verify"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Content-Type: "application/json"
+    return_content: yes
+    status_code: [200, 201]
+  register: verify_resp
+  when: domain_create_resp.json.result.status != "verified"
+
+- name: Record final domain status
+  set_fact:
+    domain_status_map: "{{ domain_status_map | combine({
+      domain_item: (
+        'verified'
+        if domain_create_resp.json.result.status == 'verified'
+        else verify_resp.json.result.status | default('unverified')
+      )
+    }) }}"
