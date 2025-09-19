@@ -118,9 +118,9 @@
       'name': 'Email OTP Policy',
       'decision': 'allow',
       'include': (
-        [ { 'email': { 'emails': [ item.email ] } } ]
+        [ { 'email': { 'emails': [ item.email | trim ] } } ]
         if domain_status_map.get(item.domain, 'unverified') == 'verified'
-        else [ { 'email_domain': { 'domains': [ item.domain ] } } ]
+        else [ { 'email_domain': { 'domains': [ item.domain | trim ] } } ]
       ),
       'require': [ { 'login_method': 'onetimepin' } ],
       'precedence': 1
@@ -144,9 +144,9 @@
           'name': 'Email OTP Policy',
           'decision': 'allow',
           'include': (
-            [ { 'email': { 'emails': [ item.email ] } } ]
+            [ { 'email': { 'emails': [ item.email | trim ] } } ]
             if domain_status_map.get(item.domain, 'unverified') == 'verified'
-            else [ { 'email_domain': { 'domains': [ item.domain ] } } ]
+            else [ { 'email_domain': { 'domains': [ item.domain | trim ] } } ]
           ),
           'require': [ { 'login_method': 'onetimepin' } ],
           'precedence': 1
