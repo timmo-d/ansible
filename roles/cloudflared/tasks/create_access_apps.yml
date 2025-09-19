@@ -6,8 +6,7 @@
     - cloudflare_account_id is not defined or cloudflare_account_id | length == 0
     - cloudflare_apps_api_token is not defined or cloudflare_apps_api_token | length == 0
 
-# Fetch all Access apps and store them as a clean list in access_apps_list
-
+# 1. Fetch all Access apps
 - name: Get list of Access apps
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
@@ -24,35 +23,20 @@
     msg: "Failed to retrieve Access apps: {{ access_apps_resp.json.errors }}"
   when: not access_apps_resp.json.success | default(false)
 
-# ✅ This ensures access_apps_list is a LIST, not the whole uri result dict
 - name: Set access_apps_list fact to just the result array
   set_fact:
     access_apps_list: "{{ access_apps_resp.json.result | default([]) }}"
 
-- name: Debug discovered Access apps (YAML pretty print)
+- name: Debug discovered Access apps
   debug:
     var: access_apps_list
 
-- name: Fail if API call to get Access apps failed
-  fail:
-    msg: "Failed to retrieve Access apps: {{ access_apps_resp.json.errors }}"
-  when: not access_apps_resp.json.success | default(false)
-
-- name: Set access_apps_list fact to just the result array
-  set_fact:
-    access_apps_list: "{{ access_apps_resp.json.result | default([]) }}"
-
-# 🔹 Debug: Pretty‑print the list so you can see all fields
-- name: Show discovered Access apps (YAML pretty print)
-  debug:
-    var: access_apps_list
-
-
-# 2. Create missing Access apps
-- name: Create Cloudflare Access apps if not already present
+# 2. Create or update each Access app
+- name: Create or update Cloudflare Access apps
   uri:
-    url: https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps{{ '/' + (app_lookup.results[loop.index0].json.result[0].id | default('')) if (app_lookup.results[loop.index0].json.result | length > 0) else '' }}
-    method: "{{ 'PUT' if (app_lookup.results[loop.index0].json.result | length > 0) else 'POST' }}"
+    url: >-
+      https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps{{ '/' + (existing_app.id | default('')) if existing_app is defined else '' }}
+    method: "{{ 'PUT' if existing_app is defined else 'POST' }}"
     headers:
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
       Content-Type: "application/json"
@@ -67,40 +51,21 @@
   loop: "{{ cloudflare_access_apps }}"
   loop_control:
     label: "{{ item.name }}"
-  when:
-    - existing_access_apps.json.success | default(false)
-    - item.domain not in (existing_access_apps.json.result | map(attribute='domain') | list | default([]))
-  register: created_access_apps
-#- name: Create Cloudflare Access apps if not already present
-#  uri:
-#    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
-#    method: POST
-#    headers:
-#      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-#      Content-Type: "application/json"
-#    body_format: json
-#    body:
-#      name: "{{ item.name }}"
-#      domain: "{{ item.domain }}"
-#      type: "self_hosted"
-#      session_duration: "24h"
-#      policies:
-#        - decision: allow
-#          include:
-#            - email:
-#                email: "{{ item.email }}"
-#    status_code: [200, 201]
-#  loop: "{{ cloudflare_access_apps }}"
-#  loop_control:
-#    label: "{{ item.name }}"
-#  when:
-#    - existing_access_apps.json.success | default(false)
-#    - item.domain not in (existing_access_apps.json.result | map(attribute='domain') | list | default([]))
-#  register: created_access_apps
+  vars:
+    existing_app: "{{ access_apps_list | selectattr('domain', 'equalto', item.domain) | first | default(omit) }}"
+  register: created_or_updated_apps
 
-# 3. Log newly created apps
-- name: Log newly created apps
+# 3. Build list of apps with IDs for downstream tasks
+- name: Build created_apps fact
+  set_fact:
+    created_apps: "{{ created_apps | default([]) + [ {
+        'name': item.item.name,
+        'app_id': (item.json.result.id | default(item.json.result.uid))
+      } ] }}"
+  loop: "{{ created_or_updated_apps.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Debug created_apps
   debug:
-    var: created_access_apps
-  when: created_access_apps is defined
-
+    var: created_apps
