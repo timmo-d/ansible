@@ -118,9 +118,9 @@
       'name': 'Email OTP Policy',
       'decision': 'allow',
       'include': (
-        [ { 'email': { 'email': [ item.email ] } } ]
+        [ { 'email': { 'emails': [ item.email ] } } ]
         if domain_status_map.get(item.domain, 'unverified') == 'verified'
-        else [ { 'email_domain': { 'domain': [ item.domain ] } } ]
+        else [ { 'email_domain': { 'domains': [ item.domain ] } } ]
       ),
       'require': [ { 'login_method': 'onetimepin' } ],
       'precedence': 1
