@@ -17,25 +17,25 @@
 #    app_id: "{{ app_item.key }}"
 #    app_email: "{{ app_item.value }}"
 #  when: app_item.value is defined and app_item.value | length > 0
-- name: Create or update Cloudflare Access App
-  uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
-    method: POST
-    headers:
-      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-      Content-Type: "application/json"
-    body_format: json
-    body:
-      name: "{{ item.name }}"
-      domain: "{{ item.domain }}"
-      type: self_hosted
-      session_duration: "24h"
-    status_code: 200,201
-    return_content: yes
-  register: app_create_results
-  loop: "{{ cloudflare_access_apps }}"
-  loop_control:
-    label: "{{ item.name }}"
+#- name: Create or update Cloudflare Access App
+#  uri:
+#    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
+#    method: POST
+#    headers:
+#      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+#      Content-Type: "application/json"
+#    body_format: json
+#    body:
+#      name: "{{ item.name }}"
+#      domain: "{{ item.domain }}"
+#      type: self_hosted
+#      session_duration: "24h"
+#    status_code: 200,201
+#    return_content: yes
+#  register: app_create_results
+#  loop: "{{ cloudflare_access_apps }}"
+#  loop_control:
+#    label: "{{ item.name }}"
 
 # 2. Build a list of {name, app_id} for policy creation
 - name: Extract app IDs from creation results
