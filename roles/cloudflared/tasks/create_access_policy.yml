@@ -24,15 +24,15 @@
   set_fact:
     unverified_domains: "{{ unique_domains | difference(verified_email_domains) }}"
 
-- name: Report verification status
+- name: Report unverified domains
   debug:
-    msg: >-
-      {{
-        'All domains are verified ✅'
-        if unverified_domains | length == 0
-        else 'Unverified domains ❌: ' ~ (unverified_domains | join(', '))
-      }}
-  warn: "{{ unverified_domains | length > 0 }}"
+    msg: "Unverified domains ❌: {{ unverified_domains | join(', ') }}"
+  when: unverified_domains | length > 0
+
+- name: Report all verified
+  debug:
+    msg: "All domains are verified ✅"
+  when: unverified_domains | length == 0
 
 # 1. Build domain_status_map (always complete)
 - name: Initialise all domains as unverified
