@@ -21,6 +21,7 @@ cloudflare_tunnel_secret: "{{ lookup('env', 'CLOUDFLARE_TUNNEL_SECRET') }}"
 cloudflared_bin_path: "/usr/local/bin/cloudflared"
 cloudflare_global_api_token: "{{ lookup('env', 'CLOUDFLARE_GLOBAL_API_TOKEN') }}"
 cloudflare_apps_api_token: "{{ lookup('env', 'CLOUDFLARE_APPS_TOKEN') }}"
+access_otp_phone:  "{{ lookup('env', 'ACCESS_OTP_PHONE') }}"
 ansible_user: "tim"
 tunnel_name: "dmz-tunnel"
 
@@ -80,4 +81,3 @@ nginx_upstreams:
   - public_hostname: readarr.timmos.com.au
     internal_ip: 192.168.1.100
     internal_port: 8787
-    

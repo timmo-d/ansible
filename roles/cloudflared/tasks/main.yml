@@ -8,15 +8,81 @@
 - name: Create Cloudflare Access apps
   include_tasks: create_access_apps.yml
 
-- name: Create or update policy for each app
-  include_tasks: create_access_policy.yml
-  loop: "{{ app_email_map | dict2items }}"
+#- name: Create or update policy for each app
+#  include_tasks: create_access_policy.yml
+#  loop: "{{ app_email_map | dict2items }}"
+#  loop_control:
+#    loop_var: app_item
+#  vars:
+#    app_id: "{{ app_item.key }}"
+#    app_email: "{{ app_item.value }}"
+#  when: app_item.value is defined and app_item.value | length > 0
+- name: Create or update Cloudflare Access App
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "{{ item.name }}"
+      domain: "{{ item.domain }}"
+      type: self_hosted
+      session_duration: "24h"
+    status_code: 200,201
+    return_content: yes
+  register: app_create_results
+  loop: "{{ cloudflare_access_apps }}"
   loop_control:
-    loop_var: app_item
-  vars:
-    app_id: "{{ app_item.key }}"
-    app_email: "{{ app_item.value }}"
-  when: app_item.value is defined and app_item.value | length > 0
+    label: "{{ item.name }}"
+
+# 2. Build a list of {name, app_id} for policy creation
+- name: Extract app IDs from creation results
+  set_fact:
+    created_apps: "{{ created_apps | default([]) + [ {
+        'name': item.item.name,
+        'app_id': (item.json.result.id | default(item.json.result.uid))
+      } ] }}"
+  loop: "{{ app_create_results.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+
+- name: Delete existing 'SMS OTP Policy' if present
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.item.app_id }}/policies/{{ policy.id }}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+    status_code: 200,204
+  loop: "{{ existing_policies.results | subelements('json.result') }}"
+  loop_control:
+    label: "{{ item.0.item.name }}"
+  when: item.1.name == "SMS OTP Policy"
+
+# 3. Create or update the OTP via SMS policy for each app
+- name: Create or update SMS OTP policy for each app
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "SMS OTP Policy"
+      decision: allow
+      include:
+        - login_method: "onetimepin"
+        - phone:
+            phone_number: "{{ access_otp_phone }}"
+      require:
+        - login_method: "onetimepin"
+      precedence: 1
+    status_code: 200,201
+  loop: "{{ created_apps }}"
+  loop_control:
+    label: "{{ item.name }}"
 
 - name: Configure cloudflared
   include_tasks: configure_tunnel.yml
