@@ -6,7 +6,12 @@
     msg: "created_apps variable is not defined — run create_access_apps.yml first"
   when: created_apps is not defined
 
-# 1. Extract unique domains from created_apps
+- name: Fail if verified_email_domains is missing
+  fail:
+    msg: "verified_email_domains variable is not defined — set it in your vars file"
+  when: verified_email_domains is not defined
+
+# 0. Extract unique domains from created_apps
 - name: Extract unique domains from created_apps
   set_fact:
     unique_domains: "{{ created_apps
@@ -14,7 +19,21 @@
                         | map('regex_replace', '.*@', '')
                         | unique }}"
 
-# 2. Build domain_status_map from manual list
+# 0.1 Check for unverified domains
+- name: Find unverified domains
+  set_fact:
+    unverified_domains: "{{ unique_domains | difference(verified_email_domains) }}"
+
+- name: Report verification status
+  debug:
+    msg: >-
+      {{
+        'All domains are verified ✅'
+        if unverified_domains | length == 0
+        else 'Unverified domains ❌: ' ~ (unverified_domains | join(', '))
+      }}
+
+# 1. Build domain_status_map from manual list
 - name: Initialise domain_status_map
   set_fact:
     domain_status_map: >-
@@ -26,7 +45,7 @@
           )
       }}
 
-# 3. Get existing policies for each app
+# 2. Get existing policies for each app
 - name: Get existing policies for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
@@ -39,7 +58,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 4. Normalise policy lists
+# 3. Normalise policy lists
 - name: Normalise policy lists
   set_fact:
     normalised_policies: "{{ existing_policies.results
@@ -48,7 +67,7 @@
                              | map('list')
                              | list }}"
 
-# 5. Combine apps and policies
+# 4. Combine apps and policies
 - name: Build apps_with_policies list
   set_fact:
     apps_with_policies: "{{ apps_with_policies | default([]) + [ {
@@ -62,7 +81,7 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 6. Delete existing 'Email OTP Policy' if present
+# 5. Delete existing 'Email OTP Policy' if present
 - name: Delete existing 'Email OTP Policy' if present
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
@@ -78,7 +97,7 @@
     - "'name' in item.1"
     - item.1.name == "Email OTP Policy"
 
-# 7. DEBUG: Show rule type and reason
+# 6. DEBUG: Show rule type and reason
 - name: Show rule type and reason for each app
   debug:
     msg: >-
@@ -92,7 +111,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 8. DEBUG: Show JSON body for each new policy
+# 7. DEBUG: Show JSON body for each new policy
 - name: Show JSON body for Email OTP policy
   debug:
     msg: "{{ {
@@ -110,7 +129,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 9. Create new Email OTP policy for each app (with fallback)
+# 8. Create new Email OTP policy for each app (with fallback)
 - name: Create Email OTP policy for each app (with fallback)
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
