@@ -8,7 +8,7 @@
     - cloudflare_account_id is not defined or cloudflare_account_id | length == 0
     - cloudflare_apps_api_token is not defined or cloudflare_apps_api_token | length == 0
 
-# 1. Fetch all Access apps once
+# 1. Fetch all Access apps
 - name: Get list of Access apps
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps"
@@ -62,3 +62,63 @@
 - name: Show created/updated apps
   debug:
     var: app_create_results
+
+# 4. Get App Launcher application
+- name: Get App Launcher application
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps?type=app_launcher"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+    return_content: yes
+    status_code: 200
+  register: launcher_resp
+
+- name: Fail if no App Launcher found
+  fail:
+    msg: "No App Launcher application found in this account."
+  when: (launcher_resp.json.result | length) == 0
+
+- name: Set launcher_app fact
+  set_fact:
+    launcher_app: "{{ launcher_resp.json.result[0] }}"
+
+# 5. Get policies for App Launcher
+- name: Get App Launcher policies
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ launcher_app.id }}/policies"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+    return_content: yes
+    status_code: 200
+  register: launcher_policies_resp
+
+- name: Set launcher_policies fact
+  set_fact:
+    launcher_policies: "{{ launcher_policies_resp.json.result | default([]) }}"
+
+# 6. Ensure timmos.com.au email_domain rule exists
+- name: Add timmos.com.au allow policy if missing
+  uri:
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ launcher_app.id }}/policies"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "Email Domain Allow Policy"
+      decision: "allow"
+      include:
+        - email_domain:
+            domain: "timmos.com.au"
+      precedence: >-
+        {{
+          ((launcher_policies | map(attribute='precedence') | list) | default([0]))
+          | max
+          + 1
+        }}
+    status_code: [200, 201]
+  when: >
+    (launcher_policies | selectattr('include', 'defined') | selectattr('include', 'string') | select('search', 'timmos.com.au') | list | length) == 0
