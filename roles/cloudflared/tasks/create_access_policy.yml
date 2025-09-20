@@ -40,7 +40,7 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 4. Build list of incorrect policies to update
+# 4. Build incorrect_policies list
 - name: Build incorrect_policies list
   set_fact:
     incorrect_policies: >-
@@ -102,4 +102,10 @@
   loop_control:
     label: "{{ item.name }}"
   when: >
-    item.policies | selectattr('name', 'equalto', 'Email OTP Policy') | list | length == 0
+    (
+      item.policies
+      | select('mapping')
+      | selectattr('name', 'equalto', 'Email OTP Policy')
+      | list
+      | length
+    ) == 0
