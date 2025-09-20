@@ -8,8 +8,8 @@
 - name: Create Cloudflare Access apps
   include_tasks: create_access_apps.yml
 
-- name: Assign Cloudflare Access apps' policy
-  include_tasks: create_access_policy.yml
+#- name: Assign Cloudflare Access apps' policy
+#  include_tasks: create_access_policy.yml
 
 - name: Configure cloudflared
   include_tasks: configure_tunnel.yml
