@@ -40,7 +40,21 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 4. Update incorrect Email OTP Policy in place
+# 4. Build list of incorrect policies to update
+- name: Build incorrect_policies list
+  set_fact:
+    incorrect_policies: >-
+      {{
+        query('subelements', apps_with_policies, 'policies', {'skip_missing': True})
+        | selectattr('1', 'mapping')
+        | selectattr('1.name', 'defined')
+        | selectattr('1.include', 'defined')
+        | selectattr('1.name', 'equalto', 'Email OTP Policy')
+        | rejectattr('1.include', 'equalto', [ { 'email_domain': { 'domains': ['timmos.com.au'] } } ])
+        | list
+      }}
+
+# 5. Update incorrect Email OTP Policy in place
 - name: Update incorrect Email OTP Policy
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
@@ -60,18 +74,11 @@
         - login_method: "onetimepin"
       precedence: 1
     status_code: [200, 201]
-  loop: >-
-    {{
-      query('subelements', apps_with_policies, 'policies', {'skip_missing': True})
-      | selectattr('1', 'mapping')
-      | selectattr('1.name', 'equalto', 'Email OTP Policy')
-      | selectattr('1.include', 'ne', [ { 'email_domain': { 'domains': ['timmos.com.au'] } } ])
-      | list
-    }}
+  loop: "{{ incorrect_policies }}"
   loop_control:
     label: "{{ item.0.name }}"
 
-# 5. Create Email OTP Policy if missing
+# 6. Create Email OTP Policy if missing
 - name: Create Email OTP Policy for timmos.com.au if missing
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
