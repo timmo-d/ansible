@@ -195,3 +195,12 @@
         - email_domain:
             domain: "timmos.com.au"
       precedence: >-
+        {{
+          ((item.policies | map(attribute='precedence') | list) | default([0]))
+          | max
+          + 1
+        }}
+    status_code: [200, 201]
+  loop: "{{ apps_to_create }}"
+  loop_control:
+    label: "{{ item.app.name }}"
