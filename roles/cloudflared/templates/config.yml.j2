@@ -1,7 +1,7 @@
 {% set ingress_list = [] %}
 
 # Add ingress rules for each app hostname from app_hostnames
-{% for app in app_hostnames | default([]) %}
+{% for app in nginx_upstreams | default([]) %}
   {% if app.public_hostname is defined and (app.public_hostname|string)|length > 0 %}
     {% set _ = ingress_list.append({'hostname': app.public_hostname, 'service': 'http://127.0.0.1:80'}) %}
   {% endif %}
