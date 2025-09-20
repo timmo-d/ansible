@@ -91,8 +91,8 @@
     apps_to_update: []
     apps_to_create: []
 
-# 7. Classify apps into update/create lists based on any timmos.com.au rule
-- name: Classify apps needing update
+# 7. Classify apps into update/create lists based on any timmos.com.au include
+- name: Classify apps needing update/replace
   set_fact:
     apps_to_update: "{{ apps_to_update + [ {'app': item.0, 'policies': item.1} ] }}"
   when: >
@@ -129,6 +129,7 @@
   loop: "{{ created_apps | zip(existing_policies.results | map(attribute='json.result') | list) | list }}"
   loop_control:
     label: "{{ item.0.name }}"
+
 
 # 8. Delete single-email timmos.com.au policies
 - name: Delete single-email timmos.com.au policy
