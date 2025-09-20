@@ -83,14 +83,13 @@
       Content-Type: "application/json"
     body_format: json
     body:
-      name: "Email OTP Policy"
+      name: "Email Domain Allow Policy"
       decision: "allow"
       include:
         - email_domain:
             domain: "timmos.com.au"
-      require:
-        - login_method: "onetimepin"
       precedence: 1
+
     status_code: [200, 201]
   loop: "{{ created_apps }}"
   loop_control:
