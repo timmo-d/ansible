@@ -28,9 +28,9 @@ tunnel_name: "dmz-tunnel"
 verified_email_domains:
   - timmos.com.au
 
-github_user_name:  "{{ lookup('env', 'GITHUB_USER_NAME') }}"
-github_assets_repo_name:  "{{ lookup('env', 'SITE_ASSETS_REPO_NAME') }}"
-site_assets_branch:  "{{ lookup('env', 'SITE_ASSETS_BRANCH') }}"
+github_username:  "{{ lookup('env', 'GITHUB_USER_NAME') }}"
+github_repo:  "{{ lookup('env', 'SITE_ASSETS_REPO_NAME') }}"
+github_branch:  "{{ lookup('env', 'SITE_ASSETS_BRANCH') }}"
 
 cloudflare_access_apps:
   - name: "Sonarr"
