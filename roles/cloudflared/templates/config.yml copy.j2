@@ -10,15 +10,13 @@
 # Add any extra ingress rules from cloudflared_ingress var
 {% for rule in cloudflared_ingress | default([]) %}
   {% set host = rule.hostname if rule.hostname is defined else rule.domain %}
+  {% set svc = rule.service if (rule.service is defined and rule.service is match('^https?://127\\.0\\.0\\.1(:\\d+)?$')) else 'http://127.0.0.1:80' %}
   {% if host is defined and (host|string)|length > 0 %}
-    {% set _ = ingress_list.append({'hostname': host, 'service': 'http://127.0.0.1:80'}) %}
+    {% set _ = ingress_list.append({'hostname': host, 'service': svc}) %}
   {% else %}
-    {% set _ = ingress_list.append({'service': 'http://127.0.0.1:80'}) %}
+    {% set _ = ingress_list.append({'service': svc}) %}
   {% endif %}
 {% endfor %}
-
-# Always add a catch‑all rule last
-{% set _ = ingress_list.append({'service': 'http_status:404'}) %}
 
 tunnel: {{ tunnel_id_final }}
 credentials-file: /etc/cloudflared/{{ tunnel_id_final }}.json
