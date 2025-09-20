@@ -25,7 +25,7 @@
     msg: "Failed to retrieve Access apps: {{ access_apps_resp.json.errors }}"
   when: not access_apps_resp.json.success | default(false)
 
-- name: Set access_apps_list fact to just the result array
+- name: Set access_apps_list fact
   set_fact:
     access_apps_list: "{{ access_apps_resp.json.result | default([]) }}"
 
@@ -44,6 +44,7 @@
       domain: "{{ item.domain }}"
       type: "self_hosted"
       session_duration: "1h"
+      app_launcher_visible: true   # ensures it shows in the App Launcher
     status_code: [200, 201]
     return_content: yes
   loop: "{{ cloudflare_access_apps }}"
@@ -57,150 +58,7 @@
          | default({}, true) }}
   register: app_create_results
 
-# 3. Build list of {name, app_id} for policy creation
-- name: Extract app IDs from creation/update results
-  set_fact:
-    created_apps: "{{ created_apps | default([]) + [ {
-        'name': item.item.name,
-        'app_id': (item.json.result.id | default(item.json.result.uid))
-      } ] }}"
-  loop: "{{ app_create_results.results }}"
-  loop_control:
-    label: "{{ item.item.name }}"
-
-# 4. Show created_apps for verification
-- name: Show created_apps structure
+# 3. Show results
+- name: Show created/updated apps
   debug:
-    var: created_apps
-
-# 5. Get existing policies for each app
-- name: Get existing policies for each app
-  uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
-    method: GET
-    headers:
-      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-    return_content: yes
-  register: existing_policies
-  loop: "{{ created_apps }}"
-  loop_control:
-    label: "{{ item.name }}"
-
-# 6. Initialise empty lists
-- set_fact:
-    apps_to_replace: []
-    apps_to_update: []
-    apps_to_create: []
-
-# 7. Classify apps
-- name: Classify apps to replace (single-email timmos.com.au)
-  set_fact:
-    apps_to_replace: "{{ apps_to_replace + [ {'app': item.0, 'policy': match} ] }}"
-  vars:
-    match: "{{ (item.1 | select('mapping') | selectattr('include', 'defined') | selectattr('include', 'string') | select('search', 'timmos.com.au') | list | first) | default({}) }}"
-  when: >
-    match != {} and
-    (match.include[0] | dict2items | map(attribute='key') | first) == 'email'
-  loop: "{{ created_apps | zip(existing_policies.results | map(attribute='json.result') | list) | list }}"
-  loop_control:
-    label: "{{ item.0.name }}"
-
-- name: Classify apps to update (already domain policy)
-  set_fact:
-    apps_to_update: "{{ apps_to_update + [ {'app': item.0, 'policy': match} ] }}"
-  vars:
-    match: "{{ (item.1 | select('mapping') | selectattr('include', 'defined') | selectattr('include', 'string') | select('search', 'timmos.com.au') | list | first) | default({}) }}"
-  when: >
-    match != {} and
-    (match.include[0] | dict2items | map(attribute='key') | first) == 'email_domain'
-  loop: "{{ created_apps | zip(existing_policies.results | map(attribute='json.result') | list) | list }}"
-  loop_control:
-    label: "{{ item.0.name }}"
-
-- name: Classify apps to create (no timmos.com.au policy)
-  set_fact:
-    apps_to_create: "{{ apps_to_create + [ {'app': item.0, 'policies': item.1} ] }}"
-  when: >
-    (item.1 | select('mapping') | selectattr('include', 'defined') | selectattr('include', 'string') | select('search', 'timmos.com.au') | list | length) == 0
-  loop: "{{ created_apps | zip(existing_policies.results | map(attribute='json.result') | list) | list }}"
-  loop_control:
-    label: "{{ item.0.name }}"
-
-# 8. Replace single-email with domain policy
-- name: Delete single-email timmos.com.au policy
-  uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies/{{ item.policy.id }}"
-    method: DELETE
-    headers:
-      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-    status_code: [200, 201, 204]
-  loop: "{{ apps_to_replace }}"
-  loop_control:
-    label: "{{ item.app.name }}"
-
-- name: Create Email Domain Allow Policy after delete
-  uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies"
-    method: POST
-    headers:
-      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-      Content-Type: "application/json"
-    body_format: json
-    body:
-      name: "Email Domain Allow Policy"
-      decision: "allow"
-      include:
-        - email_domain:
-            domain: "timmos.com.au"
-      precedence: "{{ item.policy.precedence }}"
-    status_code: [200, 201]
-  loop: "{{ apps_to_replace }}"
-  loop_control:
-    label: "{{ item.app.name }}"
-
-# 9. Update existing domain policy
-- name: Update existing Email Domain Allow Policy
-  uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies/{{ item.policy.id }}"
-    method: PUT
-    headers:
-      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-      Content-Type: "application/json"
-    body_format: json
-    body:
-      name: "Email Domain Allow Policy"
-      decision: "allow"
-      include:
-        - email_domain:
-            domain: "timmos.com.au"
-      precedence: "{{ item.policy.precedence }}"
-    status_code: [200, 201]
-  loop: "{{ apps_to_update }}"
-  loop_control:
-    label: "{{ item.app.name }}"
-
-# 10. Create new domain policy
-- name: Create Email Domain Allow Policy (new apps)
-  uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies"
-    method: POST
-    headers:
-      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-      Content-Type: "application/json"
-    body_format: json
-    body:
-      name: "Email Domain Allow Policy"
-      decision: "allow"
-      include:
-        - email_domain:
-            domain: "timmos.com.au"
-      precedence: >-
-        {{
-          ((item.policies | map(attribute='precedence') | list) | default([0]))
-          | max
-          + 1
-        }}
-    status_code: [200, 201]
-  loop: "{{ apps_to_create }}"
-  loop_control:
-    label: "{{ item.app.name }}"
+    var: app_create_results
