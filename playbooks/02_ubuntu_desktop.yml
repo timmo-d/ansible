@@ -1,0 +1,18 @@
+---
+- name: Provision New Ubuntu 24.04 Desktop
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/all.yml
+
+  roles:
+    - role: ubuntu_pro_attach   # Attach Ubuntu Pro if not already, and enable USG
+      vars:
+        ubuntu_pro_token: "{{ ubuntu_pro_token }}"
+    - role: users               # Create admin user and SSH keypair
+    - role: ssh                 # Harden SSH configuration
+    - role: common              # Update apt cach and packages, and set timezone
+    - role: packages            # Install essential packages
+    - role: hardening       # Apply full STIG controls
+    - role: firewall        # Install UFW and configure default rules.
+    - role: ssh             # Harden SSH implementation if not doone during provisioning.

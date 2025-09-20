@@ -13,4 +13,6 @@
     - role: ssh                 # Harden SSH configuration
     - role: common              # Update apt cach and packages, and set timezone
     - role: packages            # Install essential packages
-    
+    - role: hardening       # Apply full STIG controls
+    - role: firewall        # Install UFW and configure default rules.
+    - role: ssh             # Harden SSH implementation if not doone during provisioning.
