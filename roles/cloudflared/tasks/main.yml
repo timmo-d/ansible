@@ -11,8 +11,8 @@
 #- name: Assign Cloudflare Access apps' policy
 #  include_tasks: create_access_policy.yml
 
-- name: Configure cloudflared
-  include_tasks: configure_tunnel.yml
-  
 - name: Create or update DNS records for each app
   include_tasks: create_dns_records.yml
+
+- name: Configure cloudflared
+  include_tasks: configure_tunnel.yml
