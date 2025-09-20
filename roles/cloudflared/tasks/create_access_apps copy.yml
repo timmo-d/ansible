@@ -1,3 +1,4 @@
+---
 # roles/cloudflared/tasks/create_access_apps.yml
 
 # 0. Preconditions
@@ -29,7 +30,7 @@
   set_fact:
     access_apps_list: "{{ access_apps_resp.json.result | default([]) }}"
 
-# 2. Create or update each app
+# 2. Create or update each app (patched to avoid .id error)
 - name: Create or update Cloudflare Access apps
   uri:
     url: >-
@@ -73,24 +74,3 @@
 - name: Show created_apps structure
   debug:
     var: created_apps
-
-# 5. Create authentication policy for each app to allow its associated email
-- name: Create Email Allow Policy for each app
-  uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
-    method: POST
-    headers:
-      Authorization: "Bearer {{ cloudflare_apps_api_token }}"
-      Content-Type: "application/json"
-    body_format: json
-    body:
-      name: "Allow {{ item.email }}"
-      decision: "allow"
-      include:
-        - email:
-            email: "{{ item.email }}"
-      precedence: 1
-    status_code: [200, 201]
-  loop: "{{ created_apps }}"
-  loop_control:
-    label: "{{ item.name }}"
