@@ -73,8 +73,7 @@
   debug:
     var: created_apps
 
-# 5. Create Email Domain Allow Policy for timmos.com.au
-# Get existing policies for each app
+# 5. Get existing policies for each app
 - name: Get existing policies for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
@@ -87,33 +86,52 @@
   loop_control:
     label: "{{ item.name }}"
 
-# Build list of apps needing create vs update
-- name: Separate apps into update/create lists
-  set_fact:
-    apps_to_update: >-
-      {{
-        query('zip', created_apps, existing_policies.results | map(attribute='json.result') | list)
-        | selectattr('1', 'defined')
-        | selectattr('1', 'iterable')
-        | select(lambda pair:
-            pair[1] | select('mapping')
-                    | selectattr('name', 'equalto', 'Email Domain Allow Policy')
-                    | list
-                    | length > 0
-          )
-        | list
-      }}
-    apps_to_create: >-
-      {{
-        query('zip', created_apps, existing_policies.results | map(attribute='json.result') | list)
-        | rejectattr('1', 'defined')
-        | list
-      }}
+# 6. Initialise empty lists
+- set_fact:
+    apps_to_update: []
+    apps_to_create: []
 
-# Update existing policy
+# 7. Classify apps into update/create lists
+- name: Classify apps needing update
+  set_fact:
+    apps_to_update: "{{ apps_to_update + [ {'app': item.0, 'policies': item.1} ] }}"
+  when: >
+    item.1 is iterable and
+    (
+      item.1
+      | select('mapping')
+      | selectattr('name', 'defined')
+      | selectattr('name', 'equalto', 'Email Domain Allow Policy')
+      | list
+      | length
+    ) > 0
+  loop: "{{ created_apps | zip(existing_policies.results | map(attribute='json.result') | list) | list }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+
+- name: Classify apps needing create
+  set_fact:
+    apps_to_create: "{{ apps_to_create + [ {'app': item.0, 'policies': item.1} ] }}"
+  when: >
+    not (
+      item.1 is iterable and
+      (
+        item.1
+        | select('mapping')
+        | selectattr('name', 'defined')
+        | selectattr('name', 'equalto', 'Email Domain Allow Policy')
+        | list
+        | length
+      ) > 0
+    )
+  loop: "{{ created_apps | zip(existing_policies.results | map(attribute='json.result') | list) | list }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+
+# 8. Update existing Email Domain Allow Policy
 - name: Update Email Domain Allow Policy
   uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ (item.1 | selectattr('name', 'equalto', 'Email Domain Allow Policy') | first).id }}"
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies/{{ (item.policies | selectattr('name', 'equalto', 'Email Domain Allow Policy') | first).id }}"
     method: PUT
     headers:
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
@@ -125,16 +143,16 @@
       include:
         - email_domain:
             domain: "timmos.com.au"
-      precedence: "{{ (item.1 | selectattr('name', 'equalto', 'Email Domain Allow Policy') | first).precedence }}"
+      precedence: "{{ (item.policies | selectattr('name', 'equalto', 'Email Domain Allow Policy') | first).precedence }}"
     status_code: [200, 201]
   loop: "{{ apps_to_update }}"
   loop_control:
-    label: "{{ item.0.name }}"
+    label: "{{ item.app.name }}"
 
-# Create new policy with precedence 1 if free, else next available
+# 9. Create Email Domain Allow Policy for missing apps
 - name: Create Email Domain Allow Policy
   uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies"
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies"
     method: POST
     headers:
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
@@ -149,10 +167,10 @@
       precedence: >-
         {{
           (
-            (item.1 | map(attribute='precedence') | list) | max(default=0)
+            (item.policies | map(attribute='precedence') | list) | max(default=0)
           ) + 1
         }}
     status_code: [200, 201]
   loop: "{{ apps_to_create }}"
   loop_control:
-    label: "{{ item.0.name }}"
+    label: "{{ item.app.name }}"
