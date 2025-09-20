@@ -1,6 +1,4 @@
 ---
-# roles/cloudflared/tasks/enforce_email_domain_policy_timmos.yml
-
 - name: Fail if created_apps is missing
   fail:
     msg: "created_apps variable is not defined — run create_access_apps.yml first"
