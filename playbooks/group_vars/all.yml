@@ -27,43 +27,43 @@ ansible_user: "tim"
 tunnel_name: "dmz-tunnel"
 verified_email_domains:
   - timmos.com.au
-  
+
 cloudflare_access_apps:
   - name: "Sonarr"
     domain: "sonarr.timmos.com.au"
     hostname: "sonarr.timmos.com.au"
     local_service: "http://192.168.1.100:8989"
-    email: "sonarr@timmos.com.au"
+    email: "apps@timmos.com.au"
 
   - name: "Radarr"
     domain: "radarr.timmos.com.au"
     hostname: "radarr.timmos.com.au"
     local_service: "http://192.168.1.100:7878"
-    email: "radarr@timmos.com.au"
+    email: "apps@timmos.com.au"
 
   - name: "Lidarr"
     domain: "lidarr.timmos.com.au"
     hostname: "lidarr.timmos.com.au"
     local_service: "http://192.168.1.100:8686"
-    email: "lidarr@timmos.com.au"
+    email: "apps@timmos.com.au"
 
   - name: "Prowlarr"
     domain: "prowlarr.timmos.com.au"
     hostname: "prowlarr.timmos.com.au"
     local_service: "http://192.168.1.100:9696"
-    email: "prowlarr@timmos.com.au"
+    email: "apps@timmos.com.au"
 
   - name: "VueTorrent"
     domain: "vuetorrent.timmos.com.au"
     hostname: "vuetorrent.timmos.com.au"
     local_service: "http://192.168.1.100:8080"
-    email: "vuetorrent@timmos.com.au"
+    email: "apps@timmos.com.au"
 
   - name: "Readarr"
     domain: "readarr.timmos.com.au"
     hostname: "readarr.timmos.com.au"
     local_service: "http://192.168.1.100:8787"
-    email: "readarr@timmos.com.au"
+    email: "apps@timmos.com.au"
 
 nginx_upstreams:
   - public_hostname: sonarr.timmos.com.au
