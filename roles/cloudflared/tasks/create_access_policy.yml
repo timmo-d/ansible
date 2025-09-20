@@ -1,51 +1,12 @@
 ---
-# roles/cloudflared/tasks/create_email_otp_policies.yml
+# roles/cloudflared/tasks/enforce_email_domain_policy_timmos.yml
 
 - name: Fail if created_apps is missing
   fail:
     msg: "created_apps variable is not defined — run create_access_apps.yml first"
   when: created_apps is not defined
 
-- name: Fail if verified_email_domains is missing
-  fail:
-    msg: "verified_email_domains variable is not defined — set it in your vars file"
-  when: verified_email_domains is not defined
-
-# 0. Extract unique domains from created_apps
-- name: Extract unique domains from created_apps
-  set_fact:
-    unique_domains: "{{ created_apps
-                        | map(attribute='email')
-                        | map('regex_replace', '.*@', '')
-                        | unique }}"
-
-# 0.1 Check for unverified domains
-- name: Find unverified domains
-  set_fact:
-    unverified_domains: "{{ unique_domains | difference(verified_email_domains) }}"
-
-- name: Report unverified domains
-  debug:
-    msg: "Unverified domains ❌: {{ unverified_domains | join(', ') }}"
-  when: unverified_domains | length > 0
-
-- name: Report all verified
-  debug:
-    msg: "All domains are verified ✅"
-  when: unverified_domains | length == 0
-
-# 1. Build domain_status_map (always complete)
-- name: Initialise all domains as unverified
-  set_fact:
-    domain_status_map: "{{ dict(unique_domains | zip(['unverified'] * (unique_domains | length))) }}"
-
-- name: Mark verified domains
-  set_fact:
-    domain_status_map: "{{ domain_status_map | combine(
-      dict(verified_email_domains | default([]) | zip(['verified'] * (verified_email_domains | length)))
-    ) }}"
-
-# 2. Get existing policies for each app
+# 1. Get existing policies for each app
 - name: Get existing policies for each app
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
@@ -58,7 +19,7 @@
   loop_control:
     label: "{{ item.name }}"
 
-# 3. Normalise policy lists
+# 2. Normalise policy lists
 - name: Normalise policy lists
   set_fact:
     normalised_policies: "{{ existing_policies.results
@@ -67,70 +28,38 @@
                              | map('list')
                              | list }}"
 
-# 4. Combine apps and policies
+# 3. Combine apps and their policies
 - name: Build apps_with_policies list
   set_fact:
     apps_with_policies: "{{ apps_with_policies | default([]) + [ {
         'name': item.0.name,
         'app_id': item.0.app_id,
-        'email': item.0.email,
-        'domain': (item.0.email | regex_replace('.*@', '')),
         'policies': item.1 | default([])
       } ] }}"
   loop: "{{ created_apps | zip(normalised_policies) | list }}"
   loop_control:
     label: "{{ item.0.name }}"
 
-# 5. Delete existing 'Email OTP Policy' if present
-- name: Delete existing 'Email OTP Policy' if present
+# 4. Delete non‑matching Email OTP Policy
+- name: Delete incorrect Email OTP Policy
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
     method: DELETE
     headers:
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
     status_code: 200,204
-  loop: "{{ query('subelements', apps_with_policies, 'policies', {'skip_missing': True}) }}"
+  loop: >-
+    {{
+      query('subelements', apps_with_policies, 'policies', {'skip_missing': True})
+      | selectattr('1.name', 'equalto', 'Email OTP Policy')
+      | selectattr('1.include', 'ne', [ { 'email_domain': { 'domains': ['timmos.com.au'] } } ])
+      | list
+    }}
   loop_control:
     label: "{{ item.0.name }}"
-  when:
-    - item.1 is mapping
-    - "'name' in item.1"
-    - item.1.name == "Email OTP Policy"
 
-# 6. DEBUG: Show rule type and reason
-- name: Show rule type and reason for each app
-  debug:
-    msg: >-
-      App '{{ item.name }}':
-      {{
-        'Using exact email match — domain is verified ✅'
-        if domain_status_map.get(item.domain, 'unverified') == 'verified'
-        else 'Using domain-wide match — domain not verified ❌ (fallback applied)'
-      }}
-  loop: "{{ apps_with_policies }}"
-  loop_control:
-    label: "{{ item.name }}"
-
-# 7. DEBUG: Show JSON body for each new policy
-- name: Show JSON body for Email OTP policy
-  debug:
-    msg: "{{ {
-      'name': 'Email OTP Policy',
-      'decision': 'allow',
-      'include': (
-        [ { 'email': { 'emails': [ item.email | trim ] } } ]
-        if domain_status_map.get(item.domain, 'unverified') == 'verified'
-        else [ { 'email_domain': { 'domains': [ item.domain | trim ] } } ]
-      ),
-      'require': [ { 'login_method': 'onetimepin' } ],
-      'precedence': 1
-    } | to_nice_json }}"
-  loop: "{{ apps_with_policies }}"
-  loop_control:
-    label: "{{ item.name }}"
-
-# 8. Create new Email OTP policy for each app (with fallback)
-- name: Create Email OTP policy for each app (with fallback)
+# 5. Create Email OTP Policy if missing or deleted
+- name: Create Email OTP Policy for timmos.com.au
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
     method: POST
@@ -138,21 +67,27 @@
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
       Content-Type: "application/json"
     body_format: json
-    body: >-
-      {{
-        {
-          'name': 'Email OTP Policy',
-          'decision': 'allow',
-          'include': (
-            [ { 'email': { 'emails': [ item.email | trim ] } } ]
-            if domain_status_map.get(item.domain, 'unverified') == 'verified'
-            else [ { 'email_domain': { 'domains': [ item.domain | trim ] } } ]
-          ),
-          'require': [ { 'login_method': 'onetimepin' } ],
-          'precedence': 1
-        }
-      }}
+    body:
+      name: "Email OTP Policy"
+      decision: "allow"
+      include:
+        - email_domain:
+            domains:
+              - "timmos.com.au"
+      require:
+        - login_method: "onetimepin"
+      precedence: 1
     status_code: [200, 201]
   loop: "{{ apps_with_policies }}"
   loop_control:
     label: "{{ item.name }}"
+  when: >
+    (
+      item.policies | selectattr('name', 'equalto', 'Email OTP Policy') | list | length == 0
+    )
+    or
+    (
+      item.policies | selectattr('name', 'equalto', 'Email OTP Policy')
+      | selectattr('include', 'ne', [ { 'email_domain': { 'domains': ['timmos.com.au'] } } ])
+      | list | length > 0
+    )
