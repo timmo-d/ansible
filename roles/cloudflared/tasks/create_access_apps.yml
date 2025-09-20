@@ -57,13 +57,12 @@
          | default({}, true) }}
   register: app_create_results
 
-# 3. Build list of {name, app_id, email} for policy creation
+# 3. Build list of {name, app_id} for policy creation
 - name: Extract app IDs from creation/update results
   set_fact:
     created_apps: "{{ created_apps | default([]) + [ {
         'name': item.item.name,
-        'app_id': (item.json.result.id | default(item.json.result.uid)),
-        'email': item.item.email
+        'app_id': (item.json.result.id | default(item.json.result.uid))
       } ] }}"
   loop: "{{ app_create_results.results }}"
   loop_control:
@@ -74,8 +73,8 @@
   debug:
     var: created_apps
 
-# 5. Create authentication policy for each app to allow its associated email
-- name: Create Email Allow Policy for each app
+# 5. Create Email Domain Allow Policy for timmos.com.au
+- name: Create Email Domain Allow Policy for timmos.com.au
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
     method: POST
@@ -84,11 +83,14 @@
       Content-Type: "application/json"
     body_format: json
     body:
-      name: "Allow {{ item.email }}"
+      name: "Email OTP Policy"
       decision: "allow"
       include:
-        - email:
-            email: "{{ item.email }}"
+        - email_domain:
+            domains:
+              - "timmos.com.au"
+      require:
+        - login_method: "onetimepin"
       precedence: 1
     status_code: [200, 201]
   loop: "{{ created_apps }}"
