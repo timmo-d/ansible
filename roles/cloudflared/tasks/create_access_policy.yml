@@ -78,7 +78,7 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 6. Initialise empty list
+# 6. Initialise empty list for missing policy apps
 - set_fact:
     apps_missing_policy: []
 
@@ -90,11 +90,15 @@
   when: >
     item.policies is not none and
     (
-      item.policies | select('mapping') | map(attribute='name') | select('equalto', 'Email OTP Policy') | list | length
+      item.policies
+      | select('mapping')
+      | selectattr('name', 'defined')
+      | selectattr('name', 'equalto', 'Email OTP Policy')
+      | list
+      | length
     ) == 0
   loop_control:
     label: "{{ item.name }}"
-
 
 # 7. Create Email OTP Policy if missing
 - name: Create Email OTP Policy for timmos.com.au if missing
