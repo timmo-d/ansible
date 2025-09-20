@@ -28,42 +28,52 @@ tunnel_name: "dmz-tunnel"
 verified_email_domains:
   - timmos.com.au
 
+github_user_name:  "{{ lookup('env', 'GITHUB_USER_NAME') }}"
+github_assets_repo_name:  "{{ lookup('env', 'SITE_ASSETS_REPO_NAME') }}"
+site_assets_branch:  "{{ lookup('env', 'SITE_ASSETS_BRANCH') }}"
+
 cloudflare_access_apps:
   - name: "Sonarr"
     domain: "sonarr.timmos.com.au"
     hostname: "sonarr.timmos.com.au"
     local_service: "http://192.168.1.100:8989"
     email: "apps@timmos.com.au"
+    logo_file: "sonarr.svg"
 
   - name: "Radarr"
     domain: "radarr.timmos.com.au"
     hostname: "radarr.timmos.com.au"
     local_service: "http://192.168.1.100:7878"
     email: "apps@timmos.com.au"
+    logo_file: "radarr.svg"
 
   - name: "Lidarr"
     domain: "lidarr.timmos.com.au"
     hostname: "lidarr.timmos.com.au"
     local_service: "http://192.168.1.100:8686"
     email: "apps@timmos.com.au"
+    logo_file: "lidarr.svg"
 
   - name: "Prowlarr"
     domain: "prowlarr.timmos.com.au"
     hostname: "prowlarr.timmos.com.au"
     local_service: "http://192.168.1.100:9696"
     email: "apps@timmos.com.au"
+    logo_file: "prowlarr.svg"
 
   - name: "VueTorrent"
     domain: "vuetorrent.timmos.com.au"
     hostname: "vuetorrent.timmos.com.au"
     local_service: "http://192.168.1.100:8080"
     email: "apps@timmos.com.au"
+    logo_file: "vuetorrent.png"
 
   - name: "Readarr"
     domain: "readarr.timmos.com.au"
     hostname: "readarr.timmos.com.au"
     local_service: "http://192.168.1.100:8787"
     email: "apps@timmos.com.au"
+    logo_file: "readarr.svg"
 
 nginx_upstreams:
   - public_hostname: sonarr.timmos.com.au

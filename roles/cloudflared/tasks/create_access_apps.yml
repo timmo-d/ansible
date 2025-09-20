@@ -45,6 +45,7 @@
       type: "self_hosted"
       session_duration: "1h"
       app_launcher_visible: true
+      logo_url: "https://raw.githubusercontent.com/{{ github_username }}/{{ github_repo }}/{{ github_branch }}/{{ item.logo_file }}"
     status_code: [200, 201]
     return_content: yes
   loop: "{{ cloudflare_access_apps }}"
