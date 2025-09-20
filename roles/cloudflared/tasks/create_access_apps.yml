@@ -87,8 +87,7 @@
       decision: "allow"
       include:
         - email_domain:
-            domains:
-              - "timmos.com.au"
+            domain: "timmos.com.au"
       require:
         - login_method: "onetimepin"
       precedence: 1
@@ -96,3 +95,4 @@
   loop: "{{ created_apps }}"
   loop_control:
     label: "{{ item.name }}"
+
