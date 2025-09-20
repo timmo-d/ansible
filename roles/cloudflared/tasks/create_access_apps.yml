@@ -29,7 +29,7 @@
   set_fact:
     access_apps_list: "{{ access_apps_resp.json.result | default([]) }}"
 
-# 2. Create or update each app
+# 2. Create or update each app (launcher‑visible, no per‑app policy)
 - name: Create or update Cloudflare Access apps
   uri:
     url: >-
@@ -44,7 +44,7 @@
       domain: "{{ item.domain }}"
       type: "self_hosted"
       session_duration: "1h"
-      app_launcher_visible: true   # ensures it shows in the App Launcher
+      app_launcher_visible: true
     status_code: [200, 201]
     return_content: yes
   loop: "{{ cloudflare_access_apps }}"
