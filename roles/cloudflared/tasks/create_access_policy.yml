@@ -78,7 +78,21 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 6. Create Email OTP Policy if missing
+# 6. Mark apps missing the policy
+- name: Mark apps missing the Email OTP Policy
+  set_fact:
+    apps_missing_policy: >-
+      {{
+        apps_with_policies
+        | selectattr('policies', 'defined')
+        | selectattr('policies', 'iterable')
+        | selectattr('policies', 'ne', None)
+        | selectattr('policies', 'ne', [])
+        | rejectattr('policies', 'selectattr', 'name', 'equalto', 'Email OTP Policy')
+        | list
+      }}
+
+# 7. Create Email OTP Policy if missing
 - name: Create Email OTP Policy for timmos.com.au if missing
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app_id }}/policies"
@@ -98,14 +112,6 @@
         - login_method: "onetimepin"
       precedence: 1
     status_code: [200, 201]
-  loop: "{{ apps_with_policies }}"
+  loop: "{{ apps_missing_policy }}"
   loop_control:
     label: "{{ item.name }}"
-  when: >
-    (
-      item.policies
-      | select('mapping')
-      | selectattr('name', 'equalto', 'Email OTP Policy')
-      | list
-      | length
-    ) == 0
