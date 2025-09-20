@@ -40,10 +40,10 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 4. Delete non‑matching Email OTP Policy
+# 4. Delete incorrect Email OTP Policy
 - name: Delete incorrect Email OTP Policy
   uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ item.0.app_id }}/access/apps/{{ item.0.app_id }}/policies/{{ item.1.id }}"
     method: DELETE
     headers:
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
@@ -51,12 +51,14 @@
   loop: >-
     {{
       query('subelements', apps_with_policies, 'policies', {'skip_missing': True})
+      | selectattr('1', 'mapping')  # only keep items where the policy is a dict
       | selectattr('1.name', 'equalto', 'Email OTP Policy')
       | selectattr('1.include', 'ne', [ { 'email_domain': { 'domains': ['timmos.com.au'] } } ])
       | list
     }}
   loop_control:
     label: "{{ item.0.name }}"
+
 
 # 5. Create Email OTP Policy if missing or deleted
 - name: Create Email OTP Policy for timmos.com.au
