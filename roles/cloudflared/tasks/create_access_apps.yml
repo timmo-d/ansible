@@ -130,7 +130,7 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 8. Replace single-email timmos.com.au policies with domain policy
+# 8. Delete single-email timmos.com.au policies
 - name: Delete single-email timmos.com.au policy
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies/{{ (item.policies | selectattr('include', 'string') | select('search', 'timmos.com.au') | first).id }}"
@@ -149,7 +149,8 @@
   loop_control:
     label: "{{ item.app.name }}"
 
-- name: Create Email Domain Allow Policy after delete
+# 9. Create Email Domain Allow Policy after delete
+- name: Create Email Domain Allow Policy (after delete)
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies"
     method: POST
@@ -176,9 +177,8 @@
   loop_control:
     label: "{{ item.app.name }}"
 
-
-# 9. Create Email Domain Allow Policy for missing apps
-- name: Create Email Domain Allow Policy
+# 10. Create Email Domain Allow Policy for apps with no timmos.com.au policy
+- name: Create Email Domain Allow Policy (new apps)
   uri:
     url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies"
     method: POST
