@@ -91,7 +91,7 @@
     apps_to_update: []
     apps_to_create: []
 
-# 7. Classify apps into update/create lists
+# 7. Classify apps into update/create lists based on any timmos.com.au rule
 - name: Classify apps needing update
   set_fact:
     apps_to_update: "{{ apps_to_update + [ {'app': item.0, 'policies': item.1} ] }}"
@@ -100,8 +100,9 @@
     (
       item.1
       | select('mapping')
-      | selectattr('name', 'defined')
-      | selectattr('name', 'equalto', 'Email Domain Allow Policy')
+      | selectattr('include', 'defined')
+      | selectattr('include', 'string')
+      | select('search', 'timmos.com.au')
       | list
       | length
     ) > 0
@@ -118,8 +119,9 @@
       (
         item.1
         | select('mapping')
-        | selectattr('name', 'defined')
-        | selectattr('name', 'equalto', 'Email Domain Allow Policy')
+        | selectattr('include', 'defined')
+        | selectattr('include', 'string')
+        | select('search', 'timmos.com.au')
         | list
         | length
       ) > 0
@@ -128,10 +130,10 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 8. Update existing Email Domain Allow Policy
-- name: Update Email Domain Allow Policy
+# 8. Update existing timmos.com.au policy to domain rule
+- name: Update timmos.com.au policy to domain rule
   uri:
-    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies/{{ (item.policies | selectattr('name', 'equalto', 'Email Domain Allow Policy') | first).id }}"
+    url: "https://api.cloudflare.com/client/v4/accounts/{{ cloudflare_account_id }}/access/apps/{{ item.app.app_id }}/policies/{{ (item.policies | selectattr('include', 'string') | select('search', 'timmos.com.au') | first).id }}"
     method: PUT
     headers:
       Authorization: "Bearer {{ cloudflare_apps_api_token }}"
@@ -143,7 +145,7 @@
       include:
         - email_domain:
             domain: "timmos.com.au"
-      precedence: "{{ (item.policies | selectattr('name', 'equalto', 'Email Domain Allow Policy') | first).precedence }}"
+      precedence: "{{ (item.policies | selectattr('include', 'string') | select('search', 'timmos.com.au') | first).precedence }}"
     status_code: [200, 201]
   loop: "{{ apps_to_update }}"
   loop_control:
