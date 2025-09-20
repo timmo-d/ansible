@@ -78,24 +78,23 @@
   loop_control:
     label: "{{ item.0.name }}"
 
-# 6. Build list of apps missing the Email OTP Policy
-- name: Build apps_missing_policy list
+# 6. Initialise empty list
+- set_fact:
+    apps_missing_policy: []
+
+# 6.1 Append apps missing the Email OTP Policy
+- name: Identify apps missing the Email OTP Policy
   set_fact:
-    apps_missing_policy: >-
-      {{
-        apps_with_policies
-        | selectattr('policies', 'defined')
-        | selectattr('policies', 'iterable')
-        | select(lambda app:
-            (
-              app.policies | select('mapping')
-              | selectattr('name', 'equalto', 'Email OTP Policy')
-              | list
-              | length
-            ) == 0
-          )
-        | list
-      }}
+    apps_missing_policy: "{{ apps_missing_policy + [ item ] }}"
+  loop: "{{ apps_with_policies }}"
+  when: >
+    (
+      item.policies | select('mapping')
+      | selectattr('name', 'equalto', 'Email OTP Policy')
+      | list
+      | length
+    ) == 0
+
 
 # 7. Create Email OTP Policy if missing
 - name: Create Email OTP Policy for timmos.com.au if missing
