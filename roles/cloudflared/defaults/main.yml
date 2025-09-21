@@ -1,21 +1,21 @@
 cloudflared_config_path: /etc/cloudflared/config.yml
-cloudflared_tunnel_id: ""                # From Terraform output
-cloudflared_tunnel_credentials_json: ""  # From Terraform output (JSON string)
+#cloudflared_tunnel_id: ""                # From Terraform output
+#cloudflared_tunnel_credentials_json: ""  # From Terraform output (JSON string)
 cloudflared_service_name: cloudflared
 
 
 cloudflare_api_token: "{{ lookup('env', 'CLOUDFLARE_API_TOKEN') }}"
 cloudflare_zone: "{{ lookup('env', 'CLOUDFLARE_ZONE') }}"
 cloudflare_account_id: "{{ lookup('env', 'CLOUDFLARE_ACCOUNT_ID') }}"
-cloudflare_tunnel_name: "{{ lookup('env', 'CLOUDFLARE_TUNNEL_NAME') }}"
-cloudflare_tunnel_id: "{{ lookup('env', 'CLOUDFLARE_TUNNEL_ID') }}"
+#cloudflare_tunnel_name: "{{ lookup('env', 'CLOUDFLARE_TUNNEL_NAME') }}"
+#cloudflare_tunnel_id: "{{ lookup('env', 'CLOUDFLARE_TUNNEL_ID') }}"
 cloudflare_tunnel_secret: "{{ lookup('env', 'CLOUDFLARE_TUNNEL_SECRET') }}"
 cloudflared_bin_path: "/usr/local/bin/cloudflared"
 cloudflare_global_api_token: "{{ lookup('env', 'CLOUDFLARE_GLOBAL_API_TOKEN') }}"
 cloudflare_global_api_email: "internet@timmos.com.au"
 cloudflare_apps_api_token: "{{ lookup('env', 'CLOUDFLARE_APPS_TOKEN') }}"
-access_otp_phone:  "{{ lookup('env', 'ACCESS_OTP_PHONE') }}"
-ansible_user: "tim"
+#access_otp_phone:  "{{ lookup('env', 'ACCESS_OTP_PHONE') }}"
+ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
 tunnel_name: "dmz-tunnel"
 
 github_username:  "{{ lookup('env', 'GITHUB_USER_NAME') }}"
@@ -24,66 +24,67 @@ github_branch:  "{{ lookup('env', 'SITE_ASSETS_BRANCH') }}"
 
 cloudflare_access_apps:
   - name: "Sonarr"
-    domain: "sonarr.timmos.com.au"
-    hostname: "sonarr.timmos.com.au"
+    domain: "{{ lookup('env', 'SONARR_HOSTNAME') }}"
+    hostname: "{{ lookup('env', 'SONARR_HOSTNAME') }}"
     local_service: "http://192.168.1.100:8989"
-    email: "apps@timmos.com.au"
+    email: "{{ lookup('env', 'APP_EMAIL') }}"
     logo_file: "sonarr.svg"
 
   - name: "Radarr"
-    domain: "radarr.timmos.com.au"
-    hostname: "radarr.timmos.com.au"
+    domain: "{{ lookup('env', 'RADARR_HOSTNAME') }}"
+    hostname: "{{ lookup('env', 'RADARR_HOSTNAME') }}"
     local_service: "http://192.168.1.100:7878"
-    email: "apps@timmos.com.au"
+    email: "{{ lookup('env', 'APP_EMAIL') }}"
     logo_file: "radarr.svg"
 
   - name: "Lidarr"
-    domain: "lidarr.timmos.com.au"
-    hostname: "lidarr.timmos.com.au"
+    domain: "{{ lookup('env', 'LIDARR_HOSTNAME') }}"
+    hostname: "{{ lookup('env', 'LIDARR_HOSTNAME') }}"
     local_service: "http://192.168.1.100:8686"
-    email: "apps@timmos.com.au"
+    email: "{{ lookup('env', 'APP_EMAIL') }}"
     logo_file: "lidarr.svg"
 
   - name: "Prowlarr"
-    domain: "prowlarr.timmos.com.au"
-    hostname: "prowlarr.timmos.com.au"
+    domain: "{{ lookup('env', 'PROWLARR_HOSTNAME') }}"
+    hostname: "{{ lookup('env', 'PROWLARR_HOSTNAME') }}"
     local_service: "http://192.168.1.100:9696"
-    email: "apps@timmos.com.au"
+    email: "{{ lookup('env', 'APP_EMAIL') }}"
     logo_file: "prowlarr.svg"
 
   - name: "VueTorrent"
-    domain: "vuetorrent.timmos.com.au"
-    hostname: "vuetorrent.timmos.com.au"
+    domain: "{{ lookup('env', 'VUETORRENT_HOSTNAME') }}"
+    hostname: "{{ lookup('env', 'VUETORRENT_HOSTNAME') }}"
     local_service: "http://192.168.1.100:8080"
-    email: "apps@timmos.com.au"
+    email: "{{ lookup('env', 'APP_EMAIL') }}"
     logo_file: "vuetorrent.png"
 
   - name: "Readarr"
-    domain: "readarr.timmos.com.au"
-    hostname: "readarr.timmos.com.au"
+    domain: "{{ lookup('env', 'READARR_HOSTNAME') }}"
+    hostname: "{{ lookup('env', 'READARR_HOSTNAME') }}"
     local_service: "http://192.168.1.100:8787"
-    email: "apps@timmos.com.au"
+    email: "{{ lookup('env', 'APP_EMAIL') }}"
     logo_file: "readarr.svg"
 
 nginx_upstreams:
-  - public_hostname: sonarr.timmos.com.au
+  - public_hostname: "{{ lookup('env', 'SONARR_HOSTNAME') }}"
     internal_ip: 192.168.1.100
     internal_port: 8989
-  - public_hostname: radarr.timmos.com.au
+  - public_hostname: "{{ lookup('env', 'RADARR_HOSTNAME') }}"
     internal_ip: 192.168.1.100
     internal_port: 7878
-  - public_hostname: lidarr.timmos.com.au
+  - public_hostname: "{{ lookup('env', 'LIDARR_HOSTNAME') }}"
     internal_ip: 192.168.1.100
     internal_port: 8686
-  - public_hostname: prowlarr.timmos.com.au
+  - public_hostname: "{{ lookup('env', 'PROWLARR_HOSTNAME') }}"
     internal_ip: 192.168.1.100
     internal_port: 9696
-  - public_hostname: vuetorrent.timmos.com.au
+  - public_hostname: "{{ lookup('env', 'VUETORRENT_HOSTNAME') }}"
     internal_ip: 192.168.1.100
     internal_port: 8080
-  - public_hostname: readarr.timmos.com.au
+  - public_hostname: "{{ lookup('env', 'READARR_HOSTNAME') }}"
     internal_ip: 192.168.1.100
     internal_port: 8787
+
 
 
 
