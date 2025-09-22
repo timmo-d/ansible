@@ -5,14 +5,241 @@
   vars_files:
     - group_vars/all.yml
 
-  roles:
-    - role: ubuntu_pro_attach   # Attach Ubuntu Pro if not already, and enable USG
-      vars:
-        ubuntu_pro_token: "{{ ubuntu_pro_token }}"
-    - role: users               # Create admin user and SSH keypair
-    - role: ssh                 # Harden SSH configuration
-    - role: common              # Update apt cach and packages, and set timezone
-    - role: packages            # Install essential packages
-    - role: hardening       # Apply full STIG controls
-    - role: firewall        # Install UFW and configure default rules.
-    - role: ssh             # Harden SSH implementation if not doone during provisioning.
+  vars:
+    banner_text: |
+      You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only...
+    unused_apps:
+      - thunderbird
+      - transmission-gtk
+      - cheese
+      - rhythmbox
+      - gnome-games
+      - aisleriot
+      - gnome-mahjongg
+      - gnome-mines
+      - gnome-sudoku
+
+  tasks:
+
+  - name: Remove unused desktop apps
+    apt:
+      name: "{{ unused_apps }}"
+      state: absent
+
+  - name: Install security tools
+    apt:
+      name:
+        - fail2ban
+        - clamav
+        - clamav-daemon
+        - rkhunter
+        - lynis
+      state: present
+      update_cache: yes
+
+  - name: Update ClamAV database
+    command: freshclam
+
+  - name: Run rkhunter update
+    command: rkhunter --update
+
+  - name: Install nftables
+    apt:
+      name: nftables
+      state: present
+
+  - name: Disable ufw
+    service:
+      name: ufw
+      state: stopped
+      enabled: no
+
+  - name: Enable and start nftables
+    service:
+      name: nftables
+      state: started
+      enabled: yes
+
+  - name: Configure nftables rules
+    copy:
+      dest: /etc/nftables.conf
+      content: |
+        flush ruleset
+        table inet filter {
+          chain input {
+            type filter hook input priority 0;
+            policy drop;
+            iif lo accept
+            ct state established,related accept
+            tcp dport 22 accept
+            tcp dport {445,139} accept
+            ip protocol icmp accept
+            ip6 nexthdr icmpv6 accept
+          }
+          chain forward {
+            type filter hook forward priority 0;
+            policy drop;
+          }
+          chain output {
+            type filter hook output priority 0;
+            policy accept;
+          }
+        }
+
+  - name: Reload nftables
+    command: nft -f /etc/nftables.conf
+
+  - name: Create CIFS credentials file
+    copy:
+      dest: /etc/smb_credentials
+      content: |
+        username={{ lookup('env', 'CIFS_USERNAME') }}
+        password={{ lookup('env', 'CIFS_PASSWORD') }}
+      owner: root
+      group: root
+      mode: '0600'
+
+  - name: Ensure mount point exists
+    file:
+      path: /mnt/data
+      state: directory
+      owner: root
+      group: root
+      mode: '0755'
+
+  - name: Add CIFS mount to /etc/fstab
+    lineinfile:
+      path: /etc/fstab
+      line: "//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,iocharset=utf8,uid=1000,gid=1000,file_mode=0644,dir_mode=0755 0 0"
+      state: present
+
+  - name: Mount CIFS share
+    command: mount -a
+
+  - name: Restrict Samba to SMBv2 and SMBv3 only
+    blockinfile:
+      path: /etc/samba/smb.conf
+      block: |
+        [global]
+        server min protocol = SMB2
+        server max protocol = SMB3
+    notify: restart samba
+
+  - name: Harden system files to root
+    command: chown -R root:root /etc /usr /bin /sbin /lib /lib64
+
+  - name: Harden user files to unprivileged user
+    command: chown -R 1000:1000 /home/{{ lookup('pipe', 'ls /home') }}
+
+  - name: Harden SSH configuration
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+    loop:
+      - { regexp: '^PermitRootLogin', line: 'PermitRootLogin no' }
+      - { regexp: '^X11Forwarding', line: 'X11Forwarding no' }
+      - { regexp: '^MaxAuthTries', line: 'MaxAuthTries 3' }
+      - { regexp: '^Protocol', line: 'Protocol 2' }
+    notify: restart ssh
+
+  - name: Remove insecure packages
+    apt:
+      name:
+        - telnet
+        - rsh-server
+        - ftp
+        - vsftpd
+        - tftp
+        - xinetd
+      state: absent
+
+  - name: Ensure auditd is installed and enabled
+    apt:
+      name: auditd
+      state: present
+    notify: restart auditd
+
+  - name: Enable immutable audit rules
+    lineinfile:
+      path: /etc/audit/audit.rules
+      line: '-e 2'
+      state: present
+
+  - name: Enable FIPS mode
+    command: fips-mode-setup --enable
+    register: fips_result
+    changed_when: "'enabled' in fips_result.stdout"
+
+  - name: Ensure AppArmor is enabled
+    command: aa-status
+    register: apparmor_status
+    changed_when: false
+
+  - name: Set CLI login banner
+    copy:
+      content: "{{ banner_text }}"
+      dest: /etc/issue
+      mode: '0644'
+
+  - name: Set GUI login banner (GDM)
+    copy:
+      content: "{{ banner_text }}"
+      dest: /etc/gdm3/greeter.dconf-defaults
+      mode: '0644'
+
+  - name: Lock graphical session after inactivity
+    blockinfile:
+      path: /etc/dconf/db/local.d/00-screensaver
+      block: |
+        [org/gnome/desktop/session]
+        idle-delay=uint32 300
+        [org/gnome/desktop/screensaver]
+        lock-enabled=true
+        lock-delay=uint32 0
+
+  - name: Update dconf database
+    command: dconf update
+
+  - name: Disable guest login
+    lineinfile:
+      path: /etc/lightdm/lightdm.conf
+      create: yes
+      line: 'allow-guest=false'
+
+  - name: Disable automatic login
+    lineinfile:
+      path: /etc/lightdm/lightdm.conf
+      line: 'autologin-user='
+      state: present
+
+  - name: Disable Ctrl-Alt-Del reboot
+    file:
+      path: /etc/systemd/system/ctrl-alt-del.target
+      state: absent
+
+  - name: Enforce password complexity
+    copy:
+      dest: /etc/security/pwquality.conf
+      content: |
+        minlen = 14
+        dcredit = -1
+        ucredit = -1
+        lcredit = -1
+        ocredit = -1
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
+
+    - name: restart samba
+      service:
+        name: smbd
+        state: restarted
+
+    - name: restart auditd
+      service:
+        name: auditd
+        state: restarted
