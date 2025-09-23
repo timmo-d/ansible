@@ -10,6 +10,14 @@
   when: disallow_unauthenticated_apt
   tags: [patching]
 
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Upgrade all packages
+  apt:
+    upgrade: dist
+    
 - name: Ensure unattended-upgrades present
   ansible.builtin.package:
     name: unattended-upgrades
