@@ -6,18 +6,17 @@
     - group_vars/all.yml
 
   roles:
-  
-    - time_sync
-    - network_security
-    - ssh_hardening
-    - file_integrity_audit
-    - auth_access
-    - crypto_fips
-    - logging_journal
-    - system_hardening
-    - session_timeouts
-    - packages_patching
-    - compliance_lockdown
+    - role: time_sync
+    - role: network_security
+    - role: ssh_hardening
+    - role: file_integrity_audit
+    - role: auth_access
+    - role: crypto_fips
+    - role: logging_journal
+    - role: system_hardening
+    - role: session_timeouts
+    - role: packages_patching
+    - role: compliance_lockdown
 
     # OLD ROLES TO POTENTIALLY KEEP
     #- role: users               # Create admin user and SSH keypair
