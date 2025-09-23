@@ -1,0 +1,31 @@
+---
+- name: Remove timesyncd and ntp if required
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: absent
+  loop: ["systemd-timesyncd", "ntp"]
+  when: remove_timesyncd
+  tags: [time_sync]
+
+- name: Ensure chrony installed
+  ansible.builtin.package:
+    name: chrony
+    state: present
+  tags: [time_sync]
+
+- name: Configure chrony
+  ansible.builtin.template:
+    src: chrony.conf.j2
+    dest: /etc/chrony/chrony.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart chrony
+  tags: [time_sync]
+
+- name: Enable & start chrony
+  ansible.builtin.service:
+    name: chrony
+    state: started
+    enabled: true
+  tags: [time_sync]

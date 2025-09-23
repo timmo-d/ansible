@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: auth_access
+  description: Password policy, lockouts, root restrictions, optional MFA
+  author: "Tim Davies"
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions: [24.04]

@@ -1,0 +1,28 @@
+---
+- name: Secure /var/log directory
+  ansible.builtin.file:
+    path: /var/log
+    owner: root
+    group: syslog
+    mode: "0755"
+  when: secure_log_files
+  tags: [logging]
+
+- name: Secure syslog file
+  ansible.builtin.file:
+    path: /var/log/syslog
+    owner: syslog
+    group: adm
+    mode: "0640"
+  when: secure_log_files
+  tags: [logging]
+
+- name: Secure journal directory
+  ansible.builtin.file:
+    path: /var/log/journal
+    state: directory
+    owner: root
+    group: systemd-journal
+    mode: "0750"
+  when: secure_log_files
+  tags: [logging]

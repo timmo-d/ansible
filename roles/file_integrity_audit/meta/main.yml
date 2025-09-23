@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: file_integrity_audit
+  description: Install and configure AIDE and auditd with STIG-aligned rules
+  author: "Tim Davies"
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions: [24.04]

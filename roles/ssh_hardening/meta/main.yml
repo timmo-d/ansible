@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: ssh_hardening
+  description: STIG-compliant SSH server configuration
+  author: "Tim Davies"
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions: [24.04]

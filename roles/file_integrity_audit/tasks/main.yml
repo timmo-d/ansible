@@ -1,0 +1,40 @@
+---
+- name: Ensure AIDE installed
+  ansible.builtin.package:
+    name: aide
+    state: present
+  when: install_aide
+  tags: [aide, audit]
+
+- name: Configure AIDE defaults
+  ansible.builtin.template:
+    src: aide.conf.j2
+    dest: /etc/aide/aide.conf
+    owner: root
+    group: root
+    mode: "0640"
+  when: install_aide
+  tags: [aide, audit]
+
+- name: Ensure auditd installed and enabled
+  ansible.builtin.package:
+    name: auditd
+    state: present
+  tags: [audit]
+
+- name: Enable and start auditd
+  ansible.builtin.service:
+    name: auditd
+    state: started
+    enabled: true
+  tags: [audit]
+
+- name: Deploy STIG audit rules
+  ansible.builtin.template:
+    src: audit-stig.rules.j2
+    dest: /etc/audit/rules.d/stig.rules
+    owner: root
+    group: root
+    mode: "0640"
+  notify: Reload audit rules
+  tags: [audit]

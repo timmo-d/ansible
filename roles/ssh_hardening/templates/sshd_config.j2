@@ -1,0 +1,23 @@
+# Managed by Ansible - STIG SSH hardening
+Port {{ ufw_ssh_port }}
+Protocol 2
+UsePAM yes
+PermitEmptyPasswords {{ sshd_permit_empty_passwords }}
+PermitUserEnvironment {{ sshd_permit_user_env }}
+X11Forwarding {{ sshd_x11_forwarding }}
+X11UseLocalhost {{ sshd_x11_use_localhost }}
+ClientAliveInterval {{ ssh_idle_timeout_seconds }}
+ClientAliveCountMax {{ ssh_alive_count_max }}
+
+# FIPS 140-3 aligned cryptography
+Ciphers {{ sshd_ciphers | join(',') }}
+MACs {{ sshd_macs | join(',') }}
+KexAlgorithms {{ sshd_kex | join(',') }}
+
+# Conservative defaults
+LoginGraceTime 30
+MaxAuthTries 4
+ChallengeResponseAuthentication no
+PasswordAuthentication yes
+PubkeyAuthentication yes
+AllowAgentForwarding no

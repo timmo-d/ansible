@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: time_sync
+  description: Configure chrony for STIG-compliant time sync
+  author: "Tim Davies"
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions: [24.04]

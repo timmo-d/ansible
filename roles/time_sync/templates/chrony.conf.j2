@@ -1,0 +1,11 @@
+# Managed by Ansible - STIG: Use reliable time sources
+pool ntp.ubuntu.com        iburst
+{% for line in chrony_servers %}
+server {{ line }}
+{% endfor %}
+
+driftfile /var/lib/chrony/chrony.drift
+makestep 1.0 3
+rtcsync
+keyfile /etc/chrony/chrony.keys
+logdir /var/log/chrony

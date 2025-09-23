@@ -1,0 +1,18 @@
+---
+- name: Render STIG sysctl config
+  ansible.builtin.template:
+    src: 99-stig-sysctl.conf.j2
+    dest: /etc/sysctl.d/99-stig-sysctl.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Apply sysctl
+  tags: [hardening]
+
+- name: Disable kdump core dumps
+  ansible.builtin.service:
+    name: kdump-tools
+    enabled: false
+    state: stopped
+  ignore_errors: true
+  tags: [hardening]

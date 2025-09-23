@@ -1,0 +1,28 @@
+---
+- name: Disallow unauthenticated APT
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/99no-unauth
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      APT::Get::AllowUnauthenticated "false";
+  when: disallow_unauthenticated_apt
+  tags: [patching]
+
+- name: Ensure unattended-upgrades present
+  ansible.builtin.package:
+    name: unattended-upgrades
+    state: present
+  tags: [patching]
+
+- name: Configure unattended-upgrades cleanup
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/51unattended-upgrades-cleanup
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      Unattended-Upgrade::Remove-Unused-Dependencies "{{ remove_unused_dependencies | ternary('true','false') }}";
+      Unattended-Upgrade::Remove-Unused-Kernel-Packages "{{ remove_unused_kernels | ternary('true','false') }}";
+  tags: [patching]

@@ -1,0 +1,7 @@
+---
+- name: Assert SSH idle timeout variables are set
+  ansible.builtin.assert:
+    that:
+      - ssh_idle_timeout_seconds | int > 0
+      - ssh_alive_count_max | int >= 0
+  tags: [session]

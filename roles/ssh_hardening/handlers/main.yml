@@ -1,0 +1,20 @@
+---
+- name: Validate and restart sshd safely
+  block:
+    - name: Validate new sshd_config
+      ansible.builtin.command: /usr/sbin/sshd -t -f {{ sshd_config_path }}
+      changed_when: false
+    - name: Restart sshd
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
+  rescue:
+    - name: Copy invalid sshd_config aside for review
+      ansible.builtin.copy:
+        src: "{{ sshd_config_path }}"
+        dest: "{{ sshd_config_path }}.invalid"
+        remote_src: true
+      changed_when: false
+    - name: Fail with message
+      ansible.builtin.fail:
+        msg: "sshd_config validation failed; SSH not restarted."

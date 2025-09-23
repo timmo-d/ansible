@@ -1,0 +1,23 @@
+---
+- name: Attach Ubuntu Pro (if token provided)
+  ansible.builtin.command: "pro attach {{ ubuntu_pro_token }}"
+  args:
+    creates: /var/lib/ubuntu-advantage/private/machine-token.json
+  when: enable_fips and ubuntu_pro_token | length > 0
+  register: pro_attach
+  changed_when: pro_attach.rc == 0 and ('Attached' in (pro_attach.stdout | default('')) or 'This machine is already attached' not in (pro_attach.stdout | default('')))
+  tags: [fips]
+
+- name: Enable FIPS updates
+  ansible.builtin.command: pro enable fips-updates --assume-yes
+  when: enable_fips
+  register: fips_enable
+  changed_when: fips_enable.rc == 0 and ('Enabled' in (fips_enable.stdout | default('')))
+  tags: [fips]
+
+- name: Reboot required for FIPS enable
+  ansible.builtin.reboot:
+    msg: "Rebooting to load FIPS kernel"
+    reboot_timeout: 900
+  when: enable_fips and (fips_enable is changed)
+  tags: [fips]

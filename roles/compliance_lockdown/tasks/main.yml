@@ -1,0 +1,33 @@
+---
+- name: Set permissions on audit configs
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: "0640"
+  loop:
+    - /etc/audit/auditd.conf
+    - /etc/audit/rules.d
+  tags: [lockdown, audit]
+
+- name: Ensure audit rule immutability (-e 2)
+  ansible.builtin.lineinfile:
+    path: /etc/audit/rules.d/audit.rules
+    create: true
+    line: "-e 2"
+    state: present
+  when: auditd_rules_immutable
+  notify: Reload rules (if mutable)
+  tags: [lockdown, audit]
+
+- name: Secure audit log file and directory
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "{{ item.state | default('file') }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "/var/log/audit", state: "directory", mode: "0750" }
+    - { path: "/var/log/audit/audit.log", mode: "0600" }
+  tags: [lockdown, audit]

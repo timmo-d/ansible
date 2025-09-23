@@ -1,0 +1,4 @@
+---
+- name: Reload rules (if mutable)
+  ansible.builtin.command: augenrules --load
+  changed_when: false

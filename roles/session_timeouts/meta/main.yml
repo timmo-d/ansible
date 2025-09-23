@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: session_timeouts
+  description: Idle session controls
+  author: "Tim Davies"
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions: [24.04]

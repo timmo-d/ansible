@@ -1,0 +1,4 @@
+# Managed by Ansible - STIG sysctl settings
+{% for k, v in sysctl_settings.items() %}
+{{ k }} = {{ v }}
+{% endfor %}
