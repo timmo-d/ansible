@@ -37,3 +37,21 @@
     state: absent
     purge: yes
   tags: [cleanup]
+
+- name: Remove unwanted services from Ubuntu 24.04 Server
+  ansible.builtin.apt:
+    name:
+      - snapd
+      #- ufw           # If using another firewall like iptables/nftables
+      - apport        # Error reporting
+      - landscape-common
+      - update-manager-core
+      - friendly-recovery
+      - whoopsie      # Crash reporting
+      - modemmanager  # Not needed on servers
+      - avahi-daemon  # Zeroconf, not needed on most servers
+      - cups          # Printing service
+    state: absent
+    purge: yes
+  tags: [cleanup]
+
