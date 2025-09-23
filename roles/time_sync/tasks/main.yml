@@ -1,4 +1,8 @@
 ---
+- name: Set timezone
+  timezone:
+    name: "Australia/Perth"
+    
 - name: Remove timesyncd and ntp if required
   ansible.builtin.package:
     name: "{{ item }}"
