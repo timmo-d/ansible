@@ -93,8 +93,8 @@
     copy:
       dest: /etc/smb_credentials
       content: |
-        username={{ lookup('env', 'CIFS_USERNAME') }}
-        password={{ lookup('env', 'CIFS_PASSWORD') }}
+        username={{ username }}
+        password={{ password }}
       owner: root
       group: root
       mode: '0600'
@@ -243,3 +243,4 @@
       service:
         name: auditd
         state: restarted
+
