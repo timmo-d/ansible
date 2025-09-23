@@ -14,6 +14,20 @@
     mode: '0644'
   notify: Reload nginx
 
+- name: Ensure ufw is installed
+  ansible.builtin.package:
+    name: ufw
+    state: present
+  tags: [network_security]
+
+- name: Allow NGINX before enabling UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ ufw_nginx_port }}"
+    proto: tcp
+  when: ufw_enable and ufw_allow_nginx
+  tags: [network_security]
+  
 - name: Test NGINX configuration
   command: nginx -t
   register: nginx_test
