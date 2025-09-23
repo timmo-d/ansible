@@ -50,14 +50,14 @@
     state: present
   tags: [auth]
 
-#- name: Ensure pam_faillock in common-account
-#  ansible.builtin.lineinfile:
-#    path: /etc/pam.d/common-account
-#    regexp: '^account\s+required\s+pam_faillock\.so'
-#    line: 'account required pam_faillock.so'
-#    insertafter: '^account'
-#    state: present
-#  tags: [auth]
+- name: Ensure pam_faillock in common-account
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/common-account
+    regexp: '^account\s+required\s+pam_faillock\.so'
+    line: 'account required pam_faillock.so'
+    insertafter: '^account'
+    state: present
+  tags: [auth]
 
 - name: Ensure pam_pwquality in common-password
   ansible.builtin.lineinfile:
