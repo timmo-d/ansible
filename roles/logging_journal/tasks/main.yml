@@ -8,14 +8,22 @@
 #  when: secure_log_files
 #  tags: [logging]
 
-#- name: Secure syslog file
-#  ansible.builtin.file:
-#    path: /var/log/syslog
-#    owner: syslog
-#    group: adm
-#    mode: "0640"
-#  when: secure_log_files
-#  tags: [logging]
+- name: Ensure rsyslog is installed
+  ansible.builtin.apt:
+    name: rsyslog
+    state: present
+    update_cache: yes
+  tags: [logging]
+
+
+- name: Secure syslog file
+  ansible.builtin.file:
+    path: /var/log/syslog
+    owner: syslog
+    group: adm
+    mode: "0640"
+  when: secure_log_files
+  tags: [logging]
 
 - name: Secure journal directory
   ansible.builtin.file:
