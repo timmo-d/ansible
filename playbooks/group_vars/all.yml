@@ -12,7 +12,7 @@ ubuntu24stig_disruption_high: false
 ubtu24stig_run_audit: true
 
 
-
+# ---- CIFS Mount Points ----
 username: "{{ lookup('env', 'CIFS_USERNAME') }}"
 password: "{{ lookup('env', 'CIFS_PASSWORD') }}"
 
@@ -62,20 +62,17 @@ auditd_rules_immutable: true
 audit_rules_extra: []
 
 # ---- Auth & Access ----
-lock_root_account: true
-pass_min_days: 1
-#pass_max_days: 60
-pass_max_days: 730
-#minlen: 15
-minlen: 4
-difok: 8
-ucredit: -1
-lcredit: -1
-dcredit: -1
-ocredit: -1
-#enforcing_pwquality: 1
-enforcing_pwquality: 0
-dictcheck: 1
+lock_root_account: true          # [true] The root account is locked, preventing direct login. This enhances security by forcing use of sudo.
+pass_min_days: 1                 # [1] Users must wait at least 1 day before changing their password again. Prevents rapid cycling of passwords.
+pass_max_days: 60                # [60] Passwords expire after 60 days. 
+minlen: 15                       # [15] Minimum total password length is 15 characters.
+difok: 8                         # [8] Password must differ from the old password by at least 8 characters.
+ucredit: -1                      # [-1] Requires at least 1 uppercase letter in the password.
+lcredit: -1                      # [-1] Requires at least 1 lowercase letter.
+dcredit: -1                      # [-1] Requires at least 1 digit.
+ocredit: -1                      # [-1] Requires at least 1 special character (e.g., @, #, $).
+enforcing_pwquality: 0           # [1] Password quality enforcement is disabled. This means the above complexity rules may not be enforced.
+dictcheck: 1                     # [1] Dictionary check is enabled. Prevents use of common dictionary words in passwords.
 pam_fail_delay_microseconds: 4000000
 pam_faillock:
   deny: 3
