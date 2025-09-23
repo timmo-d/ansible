@@ -33,11 +33,16 @@
     - ((pro_status.stdout | from_json).services | selectattr('name', 'equalto', 'fips-updates') | map(attribute='status') | first | default('disabled')) != 'enabled'
   tags: [fips]
 
-- name: Enable USG
+- name: Enable USG updates
   ansible.builtin.command: pro enable usg --assume-yes
-  when: enable_usg
   register: usg_enable
   changed_when: usg_enable.rc == 0 and ('Enabled' in (usg_enable.stdout | default('')))
+  failed_when: >
+    usg_enable.rc != 0 and
+    ('USG is already enabled' not in (usg_enable.stdout | default('')))
+  when: 
+    - enable_usg
+    - ((pro_status.stdout | from_json).services | selectattr('name', 'equalto', 'usg') | map(attribute='status') | first | default('disabled')) != 'enabled'
   tags: [usg]
   
 - name: Reboot required for FIPS enable
