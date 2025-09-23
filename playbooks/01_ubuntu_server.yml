@@ -8,9 +8,9 @@
   roles:
     - role: time_sync
     - role: network_security
-    - role: ssh_hardening
+    - role: ssh_hardening          # requires playbook restart
     - role: file_integrity_audit
-    - role: auth_access
+    #- role: auth_access
     - role: crypto_fips           # Requires restart if FIPS is not already enabled (can this be moved to the last role?
     - role: logging_journal
     - role: system_hardening
