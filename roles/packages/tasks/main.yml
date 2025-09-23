@@ -1,3 +1,9 @@
+- name: Update and upgrade APT packages
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: dist
+  tags: [update]
+
 - name: Install essential packages for Ubuntu 24.04 minimal server
   ansible.builtin.apt:
     name:
