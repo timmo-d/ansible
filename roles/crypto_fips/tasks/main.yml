@@ -21,6 +21,13 @@
   changed_when: fips_enable.rc == 0 and ('Enabled' in (fips_enable.stdout | default('')))
   tags: [fips]
 
+- name: Enable USG updates
+  ansible.builtin.command: pro enable usg --assume-yes
+  when: enable_usg
+  register: usg_enable
+  changed_when: usg_enable.rc == 0 and ('Enabled' in (usg_enable.stdout | default('')))
+  tags: [usg]
+  
 - name: Reboot required for FIPS enable
   ansible.builtin.reboot:
     msg: "Rebooting to load FIPS kernel"
