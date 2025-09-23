@@ -5,5 +5,4 @@
       - nano
       - git
       - htop
-      - syslog
     state: present
