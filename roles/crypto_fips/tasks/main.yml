@@ -14,6 +14,13 @@
   changed_when: pro_attach.rc == 0 and ('Attached' in (pro_attach.stdout | default('')) or 'This machine is already attached' not in (pro_attach.stdout | default('')))
   tags: [fips]
 
+- name: Get Ubuntu Pro status
+  ansible.builtin.command: pro status --format=json
+  register: pro_status
+  changed_when: false
+  when: enable_fips
+  tags: [fips]
+
 - name: Enable FIPS updates
   ansible.builtin.command: pro enable fips-updates --assume-yes
   when: 
@@ -22,6 +29,7 @@
   register: fips_enable
   changed_when: fips_enable.rc == 0 and ('Enabled' in (fips_enable.stdout | default('')))
   tags: [fips]
+
 
 - name: Enable USG updates
   ansible.builtin.command: pro enable usg --assume-yes
