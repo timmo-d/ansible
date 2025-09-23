@@ -1,8 +1,39 @@
-- name: Install essential packages
-  apt:
+- name: Install essential packages for Ubuntu 24.04 minimal server
+  ansible.builtin.apt:
     name:
+      #- build-essential
       - curl
+      #- wget
+      - net-tools
+      #- iproute2
+      #- gnupg
+      - ca-certificates
+      - software-properties-common
+      - unzip
+      - zip
+      - htop
       - nano
       - git
+      - rsyslog
+      #- lsof
+      - bash-completion
+      - openssh-server
       - htop
     state: present
+    update_cache: yes
+  tags: [essential]
+
+- name: Remove unwanted packages from Ubuntu 24.04 Server
+  ansible.builtin.apt:
+    name:
+      - snapd
+      - ufw
+      - apport
+      - landscape-common
+      - popularity-contest
+      - friendly-recovery
+      - ubuntu-release-upgrader-core
+      - update-manager-core
+    state: absent
+    purge: yes
+  tags: [cleanup]
