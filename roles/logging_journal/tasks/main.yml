@@ -6,7 +6,7 @@
     update_cache: yes
   tags: [logging]
   
-  - name: Secure /var/log directory
+- name: Secure /var/log directory
   ansible.builtin.file:
     path: /var/log
     owner: root
