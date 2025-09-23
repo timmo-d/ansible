@@ -6,12 +6,13 @@
     - group_vars/all.yml
 
   roles:
+    - role: packages            # Install essential packages
     - role: time_sync
     - role: network_security
     - role: ssh_hardening          # requires playbook restart
     - role: file_integrity_audit
     #- role: auth_access
-    - role: crypto_fips           # Requires restart if FIPS is not already enabled (can this be moved to the last role?
+    - role: crypto_fips           # Requires restart if FIPS is not already enabled
     - role: logging_journal
     - role: system_hardening
     - role: session_timeouts
@@ -20,7 +21,7 @@
 
     # OLD ROLES TO POTENTIALLY KEEP
     #- role: users               # Create admin user and SSH keypair
-    - role: packages            # Install essential packages
+    
 
     
     # OLD ROLES, TO BE REMOVED
