@@ -23,13 +23,15 @@
 
 - name: Enable FIPS updates
   ansible.builtin.command: pro enable fips-updates --assume-yes
+  register: fips_enable
+  changed_when: fips_enable.rc == 0 and ('Enabled' in (fips_enable.stdout | default('')))
+  failed_when: >
+    fips_enable.rc != 0 and
+    ('FIPS Updates is already enabled' not in (fips_enable.stdout | default('')))
   when: 
     - enable_fips
     - ((pro_status.stdout | from_json).services | selectattr('name', 'equalto', 'fips-updates') | map(attribute='status') | first | default('disabled')) != 'enabled'
-  register: fips_enable
-  changed_when: fips_enable.rc == 0 and ('Enabled' in (fips_enable.stdout | default('')))
   tags: [fips]
-
 
 - name: Enable USG
   ansible.builtin.command: pro enable usg --assume-yes
