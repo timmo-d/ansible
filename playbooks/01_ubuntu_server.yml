@@ -11,7 +11,7 @@
     - role: ssh_hardening
     - role: file_integrity_audit
     - role: auth_access
-    - role: crypto_fips           # Requires restart if FIPS is not already enabled
+    - role: crypto_fips           # Requires restart if FIPS is not already enabled (can this be moved to the last role?
     - role: logging_journal
     - role: system_hardening
     - role: session_timeouts
@@ -20,8 +20,7 @@
 
     # OLD ROLES TO POTENTIALLY KEEP
     #- role: users               # Create admin user and SSH keypair
-    #- role: common              # Update apt cach and packages, and set timezone
-    #- role: packages            # Install essential packages
+    - role: packages            # Install essential packages
 
     
     # OLD ROLES, TO BE REMOVED
@@ -32,3 +31,4 @@
     #- role: hardening       # Apply full STIG controls
     #- role: firewall        # Install UFW and configure default rules.
     #- role: ssh             # Harden SSH implementation if not doone during provisioning.
+    #- role: common              # Update apt cach and packages, and set timezone
