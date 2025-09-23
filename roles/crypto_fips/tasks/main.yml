@@ -1,4 +1,10 @@
 ---
+- name: Install essential packages
+  apt:
+    name:
+      - ubuntu-advantage-tools
+    state: present
+    
 - name: Attach Ubuntu Pro (if token provided)
   ansible.builtin.command: "pro attach {{ ubuntu_pro_token }}"
   args:
