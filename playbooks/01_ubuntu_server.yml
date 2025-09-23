@@ -11,7 +11,7 @@
     - role: ssh_hardening
     - role: file_integrity_audit
     - role: auth_access
-    - role: crypto_fips
+    - role: crypto_fips           # Requires restart if FIPS is not already enabled
     - role: logging_journal
     - role: system_hardening
     - role: session_timeouts
