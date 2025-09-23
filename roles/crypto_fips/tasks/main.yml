@@ -31,7 +31,7 @@
   tags: [fips]
 
 
-- name: Enable USG updates
+- name: Enable USG
   ansible.builtin.command: pro enable usg --assume-yes
   when: enable_usg
   register: usg_enable
