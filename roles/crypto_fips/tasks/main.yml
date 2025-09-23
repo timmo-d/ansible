@@ -18,10 +18,7 @@
   ansible.builtin.command: pro enable fips-updates --assume-yes
   when: 
     - enable_fips
-    - >
-      ((pro_status.stdout | from_json).services
-       | selectattr('name', 'equalto', 'fips-updates')
-       | map(attribute='status') | first | default('disabled')) != 'enabled'
+    - ((pro_status.stdout | from_json).services | selectattr('name', 'equalto', 'fips-updates') | map(attribute='status') | first | default('disabled')) != 'enabled'
   register: fips_enable
   changed_when: fips_enable.rc == 0 and ('Enabled' in (fips_enable.stdout | default('')))
   tags: [fips]
