@@ -25,6 +25,8 @@ ufw_default_incoming: "deny"
 ufw_default_outgoing: "allow"
 ufw_allow_ssh: true
 ufw_ssh_port: 22
+ufw_allow_nginx: true
+ufw_nginx_port: 80
 remove_insecure_network_pkgs: [telnetd, rsh-server]
 
 # ---- SSH Hardening ----
