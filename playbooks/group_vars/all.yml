@@ -12,3 +12,88 @@ ubuntu24stig_disruption_high: false
 ubtu24stig_run_audit: true
 ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
 
+---
+# ---- Time Sync ----
+chrony_servers:
+  - "time.cloudflare.com iburst nts maxsamples 5"
+  - "au.pool.ntp.org iburst"
+remove_timesyncd: true
+
+# ---- Network Security / UFW ----
+ufw_enable: true
+ufw_default_incoming: "deny"
+ufw_default_outgoing: "allow"
+ufw_allow_ssh: true
+ufw_ssh_port: 22
+remove_insecure_network_pkgs: [telnetd, rsh-server]
+
+# ---- SSH Hardening ----
+sshd_pkg: openssh-server
+sshd_x11_forwarding: "no"
+sshd_x11_use_localhost: "yes"
+sshd_permit_empty_passwords: "no"
+sshd_permit_user_env: "no"
+sshd_ciphers:
+  - aes256-gcm@openssh.com
+  - aes128-gcm@openssh.com
+  - aes256-ctr
+  - aes128-ctr
+sshd_macs:
+  - hmac-sha2-512-etm@openssh.com
+  - hmac-sha2-256-etm@openssh.com
+  - hmac-sha2-512
+  - hmac-sha2-256
+sshd_kex:
+  - ecdh-sha2-nistp521
+  - ecdh-sha2-nistp384
+  - ecdh-sha2-nistp256
+  - diffie-hellman-group-exchange-sha256
+  - diffie-hellman-group16-sha512
+  - diffie-hellman-group14-sha256
+
+# ---- File Integrity & Audit ----
+install_aide: true
+auditd_rules_immutable: true
+audit_rules_extra: []
+
+# ---- Auth & Access ----
+lock_root_account: true
+pass_min_days: 1
+pass_max_days: 60
+minlen: 15
+difok: 8
+ucredit: -1
+lcredit: -1
+dcredit: -1
+ocredit: -1
+enforcing_pwquality: 1
+dictcheck: 1
+pam_fail_delay_microseconds: 4000000
+pam_faillock:
+  deny: 3
+  fail_interval: 900
+  unlock_time: 0
+enable_sssd_mfa: false
+
+# ---- Crypto / FIPS ----
+enable_fips: false
+ubuntu_pro_token: ""
+
+# ---- Logging & Journal ----
+secure_log_files: true
+
+# ---- System Hardening ----
+sysctl_settings:
+  kernel.dmesg_restrict: 1
+  net.ipv4.tcp_syncookies: 1
+  kernel.randomize_va_space: 2
+
+# ---- Session Timeouts ----
+ssh_idle_timeout_seconds: 600
+ssh_alive_count_max: 1
+max_concurrent_sessions: 10
+
+# ---- Patching / APT ----
+remove_unused_dependencies: true
+remove_unused_kernels: true
+disallow_unauthenticated_apt: true
