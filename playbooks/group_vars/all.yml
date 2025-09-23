@@ -13,8 +13,8 @@ ubtu24stig_run_audit: true
 ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
 
 
-username={{ lookup('env', 'CIFS_USERNAME') }}
-password={{ lookup('env', 'CIFS_PASSWORD') }}
+username: "{{ lookup('env', 'CIFS_USERNAME') }}"
+password: "{{ lookup('env', 'CIFS_PASSWORD') }}"
 
 # ---- Time Sync ----
 chrony_servers:
