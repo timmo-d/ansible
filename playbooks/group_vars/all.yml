@@ -10,7 +10,7 @@ stig_enabled_tags:
 
 ubuntu24stig_disruption_high: false
 ubtu24stig_run_audit: true
-ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
+
 
 
 username: "{{ lookup('env', 'CIFS_USERNAME') }}"
@@ -84,8 +84,8 @@ pam_faillock:
 enable_sssd_mfa: false
 
 # ---- Crypto / FIPS ----
-enable_fips: false
-ubuntu_pro_token: ""
+enable_fips: true
+ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
 
 # ---- Logging & Journal ----
 secure_log_files: true
