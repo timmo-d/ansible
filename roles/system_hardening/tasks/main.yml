@@ -9,10 +9,17 @@
   notify: Apply sysctl
   tags: [hardening]
 
-- name: Disable kdump core dumps
+- name: Check if kdump-tools is installed
+  ansible.builtin.shell: dpkg -l | grep -qw kdump-tools
+  register: kdump_installed
+  changed_when: false
+  failed_when: false
+
+- name: Disable kdump-tools service if installed
   ansible.builtin.service:
     name: kdump-tools
-    enabled: false
+    enabled: no
     state: stopped
-  ignore_errors: true
+  when: kdump_installed.rc == 0
   tags: [hardening]
+
