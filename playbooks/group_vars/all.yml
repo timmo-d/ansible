@@ -81,7 +81,7 @@ pam_faillock:
 enable_sssd_mfa: false
 
 # ---- Crypto / FIPS ----
-enable_fips: false
+enable_fips: false      # Not compatible with my hardware. (Causes panic during boot.)
 enable_usg: true
 ubuntu_pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
 
