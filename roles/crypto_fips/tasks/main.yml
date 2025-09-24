@@ -9,7 +9,7 @@
   ansible.builtin.command: "pro attach {{ ubuntu_pro_token }}"
   args:
     creates: /var/lib/ubuntu-advantage/private/machine-token.json
-  when: enable_fips and ubuntu_pro_token | length > 0
+  when: (enable_fips or enable_usg) and ubuntu_pro_token | length > 0
   register: pro_attach
   changed_when: pro_attach.rc == 0 and ('Attached' in (pro_attach.stdout | default('')) or 'This machine is already attached' not in (pro_attach.stdout | default('')))
   tags: [fips]
