@@ -18,7 +18,7 @@
   ansible.builtin.command: pro status --format=json
   register: pro_status
   changed_when: false
-  when: enable_fips
+  when: enable_fips or enable_usg
   tags: [fips]
 
 - name: Enable FIPS updates
