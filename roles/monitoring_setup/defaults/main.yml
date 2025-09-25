@@ -54,6 +54,8 @@ zeek_obs_key_url: "https://download.opensuse.org/repositories/security:/zeek/xUb
 suricata_user: suricata
 suricata_group: suricata
 suricata_log_dir: /var/log/suricata
+suricata_log_json: /var/log/suricata/eve.json
+suricata_log_log: /var/log/suricata/stats.log
 
 # --- Unix command socket (enable and set canonical path) ---
 # Some packaged builds default to /var/run/suricata-command.socket (suricatasc manpage).

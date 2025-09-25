@@ -134,128 +134,6 @@
 
 
 
-# --- Auto-detect the monitoring interface (IDS/NIDS) ---
-
-# Gather just network facts (fast). Safe even if fact gathering is already enabled.
-- name: Gather network facts
-  ansible.builtin.setup:
-    gather_subset:
-      - network
-
-# (Optional) Allow an override variable; if set, we honor it and skip detection.
-# Usage: set ids_nids_interface_override: "ens160" in group_vars to force a specific NIC.
-- name: Use user-provided override if present
-  ansible.builtin.set_fact:
-    ids_nids_interface: "{{ ids_nids_interface_override }}"
-  when:
-    - ids_nids_interface is not defined
-    - ids_nids_interface_override is defined
-    - ids_nids_interface_override | length > 0
-
-# Prefer the default IPv4 route interface discovered by Ansible
-- name: Detect interface via default IPv4 route
-  ansible.builtin.set_fact:
-    ids_nids_interface: "{{ ansible_default_ipv4.interface }}"
-  when:
-    - ids_nids_interface is not defined
-    - ansible_default_ipv4 is defined
-    - ansible_default_ipv4.interface is defined
-    - ansible_default_ipv4.interface | length > 0
-
-# Prefer Ansible's default route interface (kept as-is if you already have it)
-- name: Gather network facts (network subset is enough)
-  ansible.builtin.setup:
-    gather_subset:
-      - network
-
-# Optional user override (kept as-is if you already have it)
-- name: Use user-provided override if present
-  ansible.builtin.set_fact:
-    ids_nids_interface: "{{ ids_nids_interface_override }}"
-  when:
-    - ids_nids_interface is not defined
-    - ids_nids_interface_override is defined
-    - ids_nids_interface_override | length > 0
-
-- name: Detect interface via default IPv4 route (Ansible facts)
-  ansible.builtin.set_fact:
-    ids_nids_interface: "{{ ansible_default_ipv4.interface }}"
-  when:
-    - ids_nids_interface is not defined
-    - ansible_default_ipv4 is defined
-    - ansible_default_ipv4.interface is defined
-    - ansible_default_ipv4.interface | length > 0
-
-# Fallback 1: ask kernel which interface would reach 8.8.8.8 (does not send traffic)
-- name: Fallback detect interface via ip route get
-  ansible.builtin.shell: |
-    ip -o route get 8.8.8.8 | sed -n 's/.* dev \([^ ]\+\) .*/\1/p'
-  args:
-    executable: /bin/bash
-  register: _route_dev
-  changed_when: false
-  failed_when: false
-  when: ids_nids_interface is not defined
-
-- name: Set ids_nids_interface from ip route get
-  ansible.builtin.set_fact:
-    ids_nids_interface: "{{ _route_dev.stdout }}"
-  when:
-    - ids_nids_interface is not defined
-    - _route_dev.stdout is defined
-    - _route_dev.stdout | length > 0
-
-# Fallback 2: first active non-loopback link
-- name: Fallback detect first non-loopback UP interface
-  ansible.builtin.shell: |
-    set -o pipefail
-    ip -o link show up \
-      | awk -F': ' '$2!="lo"{print $2; exit}'
-  args:
-    executable: /bin/bash
-  register: _uplink
-  changed_when: false
-  failed_when: false
-  when: ids_nids_interface is not defined
-
-- name: Set ids_nids_interface from UP link
-  ansible.builtin.set_fact:
-    ids_nids_interface: "{{ _uplink.stdout }}"
-  when:
-    - ids_nids_interface is not defined
-    - _uplink.stdout is defined
-    - _uplink.stdout | length > 0
-
-# Validate we found something sane and print it
-- name: Assert monitoring interface was detected
-  ansible.builtin.assert:
-    that:
-      - ids_nids_interface is defined
-      - ids_nids_interface | length > 0
-    fail_msg: >-
-      Could not auto-detect a monitoring interface.
-      Set `ids_nids_interface_override` (or `ids_nids_interface`) in group_vars/all/main.yml.
-
-- name: Show detected monitoring interface
-  ansible.builtin.debug:
-    msg: "Using ids_nids_interface='{{ ids_nids_interface }}'"
-
-
-# Validate that we discovered something sane
-- name: Assert monitoring interface was detected
-  ansible.builtin.assert:
-    that:
-      - ids_nids_interface is defined
-      - ids_nids_interface | length > 0
-    fail_msg: >-
-      Could not auto-detect a monitoring interface.
-      Set `ids_nids_interface_override` (or `ids_nids_interface`) in group_vars/all/main.yml.
-
-# Optional: print what we detected (useful in first run logs)
-- name: Show detected monitoring interface
-  ansible.builtin.debug:
-    msg: "Using ids_nids_interface='{{ ids_nids_interface }}'"
-
 - name: Deploy Suricata configuration
   ansible.builtin.template:
     src: suricata.yaml.j2
@@ -299,6 +177,19 @@
     owner: "{{ suricata_user }}"
     group: "{{ suricata_group }}"
     mode: '0750'
+
+- name: Ensure Suricata log files exist with correct ownership and permissions
+  become: true
+  file:
+    path: "{{ item.path }}"
+    state: touch
+    owner: "{{ suricata_user }}"
+    group: "{{ suricata_group }}"
+    mode: '0644'
+  loop:
+    - { path: "{{ suricata_log_json }}" }
+    - { path: "{{ suricata_log_log }}" }
+
 
 - name: Ensure Suricata runtime directory exists
   ansible.builtin.file:
