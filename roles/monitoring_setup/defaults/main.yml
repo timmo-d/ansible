@@ -3,7 +3,7 @@
 
 # Package names (Ubuntu 24.04)
 suricata_pkg: suricata
-zeek_pkg: zeek  # ensure universe repo enabled; otherwise install from upstream
+zeek_pkg: "zeek-lts"    # or "zeek" / "zeek-7.0"
 ossec_pkg: wazuh-agent
 prometheus_pkg: prometheus
 node_exporter_pkg: prometheus-node-exporter
@@ -20,6 +20,7 @@ rsyslog_forward_protocol: "tcp"  # tcp or udp
 
 # Paths
 suricata_config_path: /etc/suricata/suricata.yaml
+suricata_log_dir: /var/log/suricata
 zeek_conf_path: /opt/zeek/etc/zeekctl.cfg
 zeek_networks_cfg_path: /opt/zeek/etc/networks.cfg
 ossec_conf_path: /var/ossec/etc/ossec.conf
@@ -38,11 +39,9 @@ grafana_repo_line: "deb [signed-by={{ grafana_keyring_path }}] https://apt.grafa
 # Service names
 suricata_svc: suricata
 zeek_svc: zeek
-
 ossec_svc: wazuh-agent
 prometheus_svc: prometheus
 node_exporter_svc: prometheus-node-exporter
-
 grafana_svc: grafana-server
 rsyslog_svc: rsyslog
 ufw_svc: ufw
@@ -52,15 +51,11 @@ zeek_obs_repo_url: "https://download.opensuse.org/repositories/security:/zeek/xU
 zeek_obs_repo_file: "security:zeek"    # /etc/apt/sources.list.d/security:zeek.list
 zeek_obs_key_url: "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_24.04/Release.key"
 
-# Package name: choose 'zeek-lts' for long-term stability or 'zeek' for feature line
-zeek_pkg: "zeek-lts"    # or "zeek" / "zeek-7.0"
-
 
 # Service account for Suricata privilege drop
 suricata_user: suricata
 suricata_group: suricata
 
-suricata_log_dir: /var/log/suricata
-suricata_user: suricata
-suricata_group: suricata
+
+
 
