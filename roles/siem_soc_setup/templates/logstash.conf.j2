@@ -1,0 +1,20 @@
+input {
+  beats {
+    port => {{ logstash_beats_port }}
+  }
+}
+
+filter {
+  # Place for GROK/JSON parsing of Suricata/Zeek/OSSEC if shipped via Beats
+}
+
+output {
+  elasticsearch {
+    hosts => {{ logstash_elasticsearch_hosts | to_json }}
+    user => "{{ logstash_elasticsearch_username }}"
+    password => "{{ logstash_elasticsearch_password }}"
+    ssl => true
+    ssl_certificate_verification => false  # Set true and provide CA certs in production
+    index => "logs-%{+YYYY.MM.dd}"
+  }
+}

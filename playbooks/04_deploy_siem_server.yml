@@ -1,0 +1,7 @@
+---
+- name: DoD Monitoring & SIEM/SOC setup (Ubuntu 24.04)
+  hosts: monitoring
+  become: yes
+  roles:
+    - role: monitoring_setup
+    - role: siem_soc_setup

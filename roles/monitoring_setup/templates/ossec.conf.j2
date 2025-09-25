@@ -1,0 +1,39 @@
+<ossec_config>
+  <!-- Global settings (align with AU-2/6 logging) -->
+  <global>
+    <jsonout_output>yes</jsonout_output>
+    <alerts_log>yes</alerts_log>
+    <email_notification>no</email_notification>
+  </global>
+
+  <!-- Localfile: monitor auth, syslog, and Suricata/Zeek logs -->
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/auth.log</location>
+  </localfile>
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/var/log/syslog</location>
+  </localfile>
+  <localfile>
+    <log_format>json</log_format>
+    <location>/var/log/suricata/eve.json</location>
+  </localfile>
+
+  <!-- File integrity monitoring (syscheck) -->
+  <syscheck>
+    <frequency>{{ ossec_syscheck_frequency }}</frequency>
+    <directories check_all="yes">/etc,/usr/bin,/usr/sbin</directories>
+    <ignore>/etc/mtab</ignore>
+  </syscheck>
+
+  <!-- Rootcheck for known bad artifacts -->
+  <rootcheck>
+    <disabled>no</disabled>
+  </rootcheck>
+
+  <!-- Alerting threshold -->
+  <alerts>
+    <log_alert_level>{{ ossec_alert_level }}</log_alert_level>
+  </alerts>
+</ossec_config>

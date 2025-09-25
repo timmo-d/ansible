@@ -1,0 +1,22 @@
+# zeekctl.cfg (Jinja2)
+# Minimal, hardened Zeek Controller configuration.
+# Aligns with NSA guidance to segment management and restrict interfaces.
+
+# Mail settings are disabled by default in this example.
+MailTo = root@localhost
+MailConnectionSummary = 0
+
+# Log policy
+LogRotationInterval = 3600
+LogExpireInterval = 172800   # 2 days; integrate with external SIEM for long-term retention
+SpoolDir = /opt/zeek/spool
+LogDir = {{ zeek_log_dir }}
+
+# Runtime user
+DetectiveUser = zeek
+
+# Site policies (scripts)
+SitePolicyScripts = {{ zeek_site_policies | join(' ') }}
+
+# Interface monitored (set via af-packet for Suricata; Zeek typically runs on same SPAN/TAP)
+# Configure via zeekctl 'netscripts' as needed.

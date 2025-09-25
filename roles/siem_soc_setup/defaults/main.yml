@@ -1,0 +1,21 @@
+---
+# Package names and paths
+elasticsearch_pkg: elasticsearch
+logstash_pkg: logstash
+kibana_pkg: kibana
+wazuh_repo_url: https://packages.wazuh.com/4.x/apt/
+wazuh_gpg_url: https://packages.wazuh.com/key/GPG-KEY-WAZUH
+wazuh_manager_pkg: wazuh-manager
+wazuh_api_pkg: wazuh-indexer # adjust if using separate indexer; placeholder
+
+# Config paths
+elasticsearch_yml_path: /etc/elasticsearch/elasticsearch.yml
+logstash_pipeline_path: /etc/logstash/conf.d/01-beats.conf
+kibana_yml_path: /etc/kibana/kibana.yml
+wazuh_manager_conf: /var/ossec/etc/ossec.conf
+
+# Services
+elasticsearch_svc: elasticsearch
+logstash_svc: logstash
+kibana_svc: kibana
+wazuh_manager_svc: wazuh-manager

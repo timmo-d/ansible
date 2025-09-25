@@ -1,0 +1,107 @@
+---
+# =============================
+# Global variables for the monitoring group
+# These values are intended to be customized prior to deployment.
+# Inline comments describe compliance intent with DISA STIG, NSA NISEG, and IDPS SRG.
+# =============================
+
+# Interface that Suricata/Zeek will monitor (e.g., "ens160").
+ids_nids_interface: "enp1s0" #"ens160"  # Select a dedicated SPAN/TAP interface per NSA guidance on monitoring at choke points.
+
+# Address space considered trusted/internal (Zeek & Suricata). Use CIDR notation.
+home_net: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]  # Tune to enclave boundaries per STIG/SRG.
+
+# Management networks that are allowed to access web UIs (Grafana/Kibana/Prometheus UIs)
+# Limit exposure per NSA NISEG principle of strict perimeter access controls. ["10.0.0.0/8"]
+mgmt_allow_cidrs: ["192.168.1.0/24"]
+
+# Central log server to forward logs to (rsyslog TCP/UDP 514). If this host is the central server, set to 127.0.0.1.
+central_log_server_ip: "127.0.0.1"
+central_log_server_port_tcp: 514
+central_log_server_port_udp: 514
+
+# SSH hardening: set to true to enforce UFW and PasswordAuthentication=no (map to STIG V-238201/SSH).
+ssh_hardening_enable: false # true
+ssh_port: 22
+
+# UFW firewall default policy and allowed ports (minimally open services only)
+ufw_default_input_policy: "deny"
+ufw_allowed_tcp_ports:
+  - "{{ ssh_port }}"
+  - "9090"   # Prometheus
+  - "3000"   # Grafana
+  - "514"    # Syslog TCP
+ufw_allowed_udp_ports:
+  - "514"    # Syslog UDP
+
+# Prometheus scrape targets
+prometheus_listen_address: "0.0.0.0:9090"
+prometheus_scrape_interval: "15s"
+# Optional scrape jobs (enable node_exporter if installed elsewhere)
+prometheus_scrape_jobs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+# Grafana settings
+grafana_http_port: 3000
+grafana_root_url: "https://grafana.timmos.com.au"  # Set to production FQDN; enforce TLS at a reverse proxy or Grafana.
+grafana_admin_user: "admin"
+# Use Ansible Vault for production secrets.
+grafana_admin_password: "ChangeMe-StrongPass!"  # STIG: enforce strong creds & no default passwords.
+
+# rsyslog forwarding (reliable TCP with queue)
+rsyslog_use_tcp: true
+rsyslog_tls_enable: false  # Set true when TLS is configured; provide certs/CA accordingly.
+rsyslog_work_queue_size: 100000
+
+# Suricata engine tuning
+suricata_runmode: "autofp"            # Balanced performance mode
+suricata_default_packet_size: 1514
+suricata_max_pending_packets: 2048
+suricata_detect_profile: "medium"      # {low, medium, high}; adjust for hardware capacity
+suricata_af_packet:
+  - interface: "{{ ids_nids_interface }}"
+    cluster_id: 99
+    cluster_type: "cluster_flow"
+    defrag: yes
+    checksum_check: auto
+
+# Zeek configuration
+zeek_log_dir: "/var/log/zeek"
+zeek_site_policies:
+  - "local.zeek"   # Add custom policies here
+zeek_networks: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"  # networks.cfg content
+
+# OSSEC (for local HIDS on this host)
+ossec_alert_level: 7
+ossec_syscheck_frequency: "12h"
+
+# Elastic Stack (if SIEM role used) - single-node secured deployment
+elastic_version: "8.x"
+elasticsearch_heap: "2g"
+elasticsearch_bind_host: "0.0.0.0"
+elasticsearch_http_port: 9200
+elasticsearch_security_enable: true
+elasticsearch_username: "elastic"
+elasticsearch_password: "ChangeMeElasticsearch!"  # Use Vault in production
+
+logstash_beats_port: 5044
+logstash_elasticsearch_hosts: ["https://localhost:9200"]
+logstash_elasticsearch_username: "{{ elasticsearch_username }}"
+logstash_elasticsearch_password: "{{ elasticsearch_password }}"
+
+kibana_server_port: 5601
+kibana_server_host: "0.0.0.0"
+kibana_public_url: "https://kibana.timmos.com.au"
+
+# Wazuh Manager
+wazuh_manager_port: 1514
+wazuh_manager_protocols: ["tcp", "udp"]
+wazuh_api_port: 55000
+wazuh_cluster_enabled: false
+
+# Compliance notes:
+# - Default deny inbound, allow only management ranges to UI ports per NSA NISEG.
+# - Enable secure transport (TLS) for rsyslog and Elastic components before production cutover.
+# - Map controls to NIST 800-53: AU-2/6/12 (logging), SI-4 (IDS/IPS), AC-4 (boundary protection), CM-6 (config mgmt).

@@ -1,0 +1,27 @@
+# rsyslog main config (forwarding baseline)
+# Forward all logs reliably to central server using TCP with a queue.
+# See rsyslog omfwd guidance; enable TLS in production.
+
+module(load="imuxsock")  # local system logging
+module(load="imklog")    # kernel logging
+$PreserveFQDN on
+
+# Queue parameters for reliable forwarding
+*.* action(type="omfwd"
+           protocol="{{ 'tcp' if rsyslog_use_tcp else 'udp' }}"
+           target="{{ rsyslog_forward_ip }}"
+           port="{{ rsyslog_forward_port_tcp if rsyslog_use_tcp else rsyslog_forward_port_udp }}"
+           queue.type="linkedList"
+           queue.size="{{ rsyslog_work_queue_size }}")
+
+# Local log files
+auth,authpriv.*                 /var/log/auth.log
+*.*;auth,authpriv.none          -/var/log/syslog
+kern.*                          -/var/log/kern.log
+mail.*                          -/var/log/mail.log
+
+# Enable UDP/TCP reception if this node is central (optional)
+# $ModLoad imudp
+# $UDPServerRun 514
+# $ModLoad imtcp
+# $InputTCPServerRun 514

@@ -1,0 +1,37 @@
+---
+# Role defaults (override in group_vars/monitoring/main.yml as needed)
+
+# Package names (Ubuntu 24.04)
+suricata_pkg: suricata
+zeek_pkg: zeek  # ensure universe repo enabled; otherwise install from upstream
+ossec_pkg: ossec-hids
+prometheus_pkg: prometheus
+node_exporter_pkg: prometheus-node-exporter
+grafana_pkg: grafana
+rsyslog_pkg: rsyslog
+ufw_pkg: ufw
+
+# rsyslog forwarding target (defaults to central server var)
+rsyslog_forward_ip: "{{ central_log_server_ip }}"
+rsyslog_forward_port_tcp: "{{ central_log_server_port_tcp }}"
+rsyslog_forward_port_udp: "{{ central_log_server_port_udp }}"
+rsyslog_forward_protocol: "tcp"  # tcp or udp
+
+# Paths
+suricata_config_path: /etc/suricata/suricata.yaml
+zeek_conf_path: /opt/zeek/etc/zeekctl.cfg
+zeek_networks_cfg_path: /opt/zeek/etc/networks.cfg
+ossec_conf_path: /var/ossec/etc/ossec.conf
+prometheus_config_path: /etc/prometheus/prometheus.yml
+grafana_ini_path: /etc/grafana/grafana.ini
+rsyslog_conf_path: /etc/rsyslog.conf
+
+# Service names
+suricata_svc: suricata
+zeek_svc: zeek
+ossec_svc: ossec
+prometheus_svc: prometheus
+node_exporter_svc: prometheus-node-exporter
+grafana_svc: grafana-server
+rsyslog_svc: rsyslog
+ufw_svc: ufw

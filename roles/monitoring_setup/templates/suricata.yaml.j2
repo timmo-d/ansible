@@ -1,0 +1,76 @@
+# Suricata configuration (hardened baseline)
+# Aligns with IDPS SRG (SI-4) and DISA STIG logging requirements.
+# Variables defined in group_vars.
+
+%YAML 1.1
+---
+vars:
+  address-groups:
+    HOME_NET: "[{{ home_net | join(', ') }}]"   # Define protected networks
+    EXTERNAL_NET: "!$HOME_NET"
+
+af-packet:
+{% for afp in suricata_af_packet %}
+  - interface: {{ afp.interface }}
+    cluster-id: {{ afp.cluster_id }}
+    cluster-type: {{ afp.cluster_type }}
+    defrag: {{ 'yes' if afp.defrag else 'no' }}
+    checksum-checks: {{ afp.checksum_check }}
+    copy-mode: ips
+    copy-iface: {{ afp.interface }}
+{% endfor %}
+
+flow:
+  emergency-recovery: 30
+
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: /var/log/suricata/eve.json
+      community-id: yes
+      community-id-seed: 0
+      types:
+        - alert
+        - dns
+        - http
+        - tls
+        - flow
+        - stats
+      rotate-interval: 3600   # hourly rotation to control file size
+  - stats:
+      enabled: yes
+      filename: /var/log/suricata/stats.log
+
+logging:
+  default-log-level: notice
+  outputs:
+    - file:
+        enabled: yes
+        filename: /var/log/suricata/suricata.log
+
+engine-analysis:
+  rules-fast-pattern: yes
+
+mpm-algo: ac
+detect:
+  profile: {{ suricata_detect_profile }}
+  sgh-mpm-context: auto
+  prefilter: yes
+
+app-layer:
+  protocols:
+    tls:
+      enabled: yes
+      detection-ports:
+        dp: 443
+
+# Performance tuning
+max-pending-packets: {{ suricata_max_pending_packets }}
+runmode: {{ suricata_runmode }}
+default-packet-size: {{ suricata_default_packet_size }}
+
+# Drop privileges
+run-as:
+  user: suricata
+  group: suricata

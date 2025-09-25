@@ -1,0 +1,30 @@
+---
+- name: restart suricata
+  ansible.builtin.service:
+    name: "{{ suricata_svc }}"
+    state: restarted
+
+- name: restart zeek
+  ansible.builtin.service:
+    name: "{{ zeek_svc }}"
+    state: restarted
+
+- name: restart ossec
+  ansible.builtin.service:
+    name: "{{ ossec_svc }}"
+    state: restarted
+
+- name: restart prometheus
+  ansible.builtin.service:
+    name: "{{ prometheus_svc }}"
+    state: restarted
+
+- name: restart grafana
+  ansible.builtin.service:
+    name: "{{ grafana_svc }}"
+    state: restarted
+
+- name: restart rsyslog
+  ansible.builtin.service:
+    name: "{{ rsyslog_svc }}"
+    state: restarted

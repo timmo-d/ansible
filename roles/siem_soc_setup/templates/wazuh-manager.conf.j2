@@ -1,0 +1,26 @@
+<ossec_config>
+  <global>
+    <jsonout_output>yes</jsonout_output>
+    <alerts_log>yes</alerts_log>
+  </global>
+
+  <remote>
+    <connection>secure</connection>
+    <port>{{ wazuh_manager_port }}</port>
+    <protocol>{{ ','.join(wazuh_manager_protocols) }}</protocol>
+    <queue_size>131072</queue_size>
+  </remote>
+
+  <api>
+    <enabled>yes</enabled>
+    <host>0.0.0.0</host>
+    <port>{{ wazuh_api_port }}</port>
+    <https>yes</https>
+  </api>
+
+  <cluster>
+    <name>wazuh-cluster</name>
+    <node_name>manager-1</node_name>
+    <disabled>{{ 'yes' if not wazuh_cluster_enabled else 'no' }}</disabled>
+  </cluster>
+</ossec_config>

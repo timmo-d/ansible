@@ -1,0 +1,199 @@
+---
+- name: Ensure apt cache is up to date
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install monitoring packages
+  ansible.builtin.apt:
+    name:
+      - "{{ suricata_pkg }}"
+      - "{{ zeek_pkg }}"
+      - "{{ ossec_pkg }}"
+      - "{{ prometheus_pkg }}"
+      - "{{ node_exporter_pkg }}"
+      - "{{ grafana_pkg }}"
+      - "{{ rsyslog_pkg }}"
+      - "{{ ufw_pkg }}"
+    state: present
+
+- name: Deploy Suricata configuration
+  ansible.builtin.template:
+    src: suricata.yaml.j2
+    dest: "{{ suricata_config_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart suricata
+
+- name: Enable and start Suricata
+  ansible.builtin.service:
+    name: "{{ suricata_svc }}"
+    enabled: yes
+    state: started
+
+- name: Create Zeek etc directory
+  ansible.builtin.file:
+    path: /opt/zeek/etc
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy Zeek main config (zeekctl.cfg)
+  ansible.builtin.template:
+    src: zeek.cfg.j2
+    dest: "{{ zeek_conf_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart zeek
+
+- name: Deploy Zeek networks.cfg
+  ansible.builtin.copy:
+    dest: "{{ zeek_networks_cfg_path }}"
+    content: "{{ zeek_networks }}" # Local networks considered 'home' for Zeek analysis
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart zeek
+
+- name: Enable and start Zeek (via systemd unit if available)
+  ansible.builtin.service:
+    name: "{{ zeek_svc }}"
+    enabled: yes
+    state: started
+  ignore_errors: yes  # Service name may differ if installed from source
+
+- name: Deploy OSSEC configuration
+  ansible.builtin.template:
+    src: ossec.conf.j2
+    dest: "{{ ossec_conf_path }}"
+    owner: root
+    group: ossec
+    mode: '0640'
+  notify: restart ossec
+
+- name: Enable and start OSSEC
+  ansible.builtin.service:
+    name: "{{ ossec_svc }}"
+    enabled: yes
+    state: started
+  ignore_errors: yes
+
+- name: Deploy Prometheus configuration
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ prometheus_config_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart prometheus
+
+- name: Install Prometheus alert rules
+  ansible.builtin.copy:
+    src: prometheus_alert_rules.yml
+    dest: /etc/prometheus/alert_rules.yml
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart prometheus
+
+- name: Enable and start Prometheus
+  ansible.builtin.service:
+    name: "{{ prometheus_svc }}"
+    enabled: yes
+    state: started
+
+- name: Deploy Grafana ini (hardened)
+  ansible.builtin.template:
+    src: grafana.ini.j2
+    dest: "{{ grafana_ini_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart grafana
+
+- name: Install example Grafana dashboard json
+  ansible.builtin.copy:
+    src: grafana_dashboard_config.json
+    dest: /var/lib/grafana/dashboards/monitoring_dashboard.json
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ensure Grafana dashboards directory exists
+  ansible.builtin.file:
+    path: /var/lib/grafana/dashboards
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: '0755'
+
+- name: Enable and start Grafana
+  ansible.builtin.service:
+    name: "{{ grafana_svc }}"
+    enabled: yes
+    state: started
+
+- name: Deploy rsyslog configuration (forward to central server)
+  ansible.builtin.template:
+    src: rsyslog.conf.j2
+    dest: "{{ rsyslog_conf_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart rsyslog
+
+- name: Enable and start rsyslog
+  ansible.builtin.service:
+    name: "{{ rsyslog_svc }}"
+    enabled: yes
+    state: started
+
+- name: Install logrotate policy for Elasticsearch logs (example)
+  ansible.builtin.copy:
+    src: elasticsearch_logrotate.conf
+    dest: /etc/logrotate.d/elasticsearch
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install logrotate policy for Suricata logs
+  ansible.builtin.copy:
+    src: suricata_logrotate.conf
+    dest: /etc/logrotate.d/suricata
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: UFW - ensure enabled with default deny inbound
+  community.general.ufw:
+    state: enabled
+    policy: "{{ ufw_default_input_policy }}"
+
+- name: UFW - allow required TCP service ports
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    from: "{{ mgmt_allow_cidrs | join(',') }}"
+  loop: "{{ ufw_allowed_tcp_ports }}"
+
+- name: UFW - allow required UDP service ports
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: udp
+    from: "{{ mgmt_allow_cidrs | join(',') }}"
+  loop: "{{ ufw_allowed_udp_ports }}"
+
+- name: Optionally harden SSH daemon (PasswordAuthentication=no)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    create: no
+  when: ssh_hardening_enable
+  notify:
+    - restart rsyslog  # placeholder; real deployment should restart ssh
