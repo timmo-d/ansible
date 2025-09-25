@@ -14,7 +14,7 @@ home_net: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]  # Tune to enclave b
 HTTP_SERVERS: "$home_net
 
 # Management networks that are allowed to access web UIs (Grafana/Kibana/Prometheus UIs)
-# Limit exposure per NSA NISEG principle of strict perimeter access controls. ["10.0.0.0/8"]
+# Limit exposure per NSA NISEG principle of strict perimeter access controls.
 mgmt_allow_cidrs: ["192.168.1.0/24"]
 
 # Central log server to forward logs to (rsyslog TCP/UDP 514). If this host is the central server, set to 127.0.0.1.
