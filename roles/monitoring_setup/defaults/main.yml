@@ -19,7 +19,6 @@ rsyslog_forward_protocol: "tcp"  # tcp or udp
 
 # Paths
 suricata_config_path: /etc/suricata/suricata.yaml
-suricata_log_dir: /var/log/suricata
 zeek_conf_path: /opt/zeek/etc/zeekctl.cfg
 zeek_networks_cfg_path: /opt/zeek/etc/networks.cfg
 ossec_conf_path: /var/ossec/etc/ossec.conf
@@ -51,9 +50,17 @@ zeek_obs_repo_file: "security:zeek"    # /etc/apt/sources.list.d/security:zeek.l
 zeek_obs_key_url: "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_24.04/Release.key"
 
 
-# Service account for Suricata privilege drop
+# --- Suricata service account & paths (recap / ensure present) ---
 suricata_user: suricata
 suricata_group: suricata
+suricata_log_dir: /var/log/suricata
+
+# --- Unix command socket (enable and set canonical path) ---
+# Some packaged builds default to /var/run/suricata-command.socket (suricatasc manpage).
+# We'll make it explicit and configurable.
+suricata_unix_socket_enabled: true
+suricata_unix_socket_path: /var/run/suricata-command.socket
+
 
 
 

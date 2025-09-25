@@ -84,3 +84,8 @@ rule-files:
   - suricata.rules
 classification-file: /etc/suricata/classification.config
 reference-config-file: /etc/suricata/reference.config
+
+# --- Unix command socket (suricatasc) ---
+unix-command:
+  enabled: {{ 'yes' if suricata_unix_socket_enabled else 'no' }}
+  filename: {{ suricata_unix_socket_path }}
