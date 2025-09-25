@@ -253,7 +253,11 @@
     fail_msg: >-
       Interface {{ ids_nids_interface }} not found on this host.
       Set ids_nids_interface correctly (see `ip -o link`).
-# --- Ensure Suricata service account and paths exist ---
+
+- name: Show detected monitoring interface
+  ansible.builtin.debug:
+    msg: "Using ids_nids_interface='{{ ids_nids_interface }}'"
+
 
 # Always create the account/dirs first (keep these if you already added them)
 - name: Ensure suricata group exists
@@ -392,6 +396,18 @@
   ansible.builtin.fail:
     msg: "Suricata -T failed (rc={{ suri_test.rc }})"
   when: suri_test.rc != 0
+
+- name: Install suricata-update
+  ansible.builtin.apt:
+    name: suricata-update
+    state: present
+    update_cache: yes
+
+- name: Update rules with suricata-update
+  ansible.builtin.command: suricata-update
+  changed_when: "'Rules written' in suri_update.stdout|default('')"
+  register: suri_update
+
 
 - name: Enable and start Suricata
   ansible.builtin.service:
