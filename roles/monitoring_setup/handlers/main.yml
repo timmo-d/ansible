@@ -9,11 +9,6 @@
     name: "{{ zeek_svc }}"
     state: restarted
 
-- name: restart ossec
-  ansible.builtin.service:
-    name: "{{ ossec_svc }}"
-    state: restarted
-
 - name: restart prometheus
   ansible.builtin.service:
     name: "{{ prometheus_svc }}"
@@ -27,4 +22,9 @@
 - name: restart rsyslog
   ansible.builtin.service:
     name: "{{ rsyslog_svc }}"
+    state: restarted
+
+- name: restart ossec
+  ansible.builtin.service:
+    name: "{{ ossec_svc }}"     # now wazuh-agent
     state: restarted

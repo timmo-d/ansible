@@ -25,11 +25,14 @@ ossec_conf_path: /var/ossec/etc/ossec.conf
 prometheus_config_path: /etc/prometheus/prometheus.yml
 grafana_ini_path: /etc/grafana/grafana.ini
 rsyslog_conf_path: /etc/rsyslog.conf
+wazuh_key_path: /usr/share/keyrings/wazuh.gpg
+wazuh_repo_line: "deb [signed-by={{ wazuh_key_path }}] https://packages.wazuh.com/4.x/apt/ stable main"
 
 # Service names
 suricata_svc: suricata
 zeek_svc: zeek
-ossec_svc: ossec
+ossec_pkg: wazuh-agent
+ossec_svc: wazuh-agent
 prometheus_svc: prometheus
 node_exporter_svc: prometheus-node-exporter
 grafana_svc: grafana-server
