@@ -35,3 +35,11 @@ node_exporter_svc: prometheus-node-exporter
 grafana_svc: grafana-server
 rsyslog_svc: rsyslog
 ufw_svc: ufw
+
+# Zeek repository (OBS) for Ubuntu 24.04
+zeek_obs_repo_url: "http://download.opensuse.org/repositories/security:/zeek/xUbuntu_24.04/"
+zeek_obs_repo_file: "security:zeek"    # /etc/apt/sources.list.d/security:zeek.list
+zeek_obs_key_url: "https://download.opensuse.org/repositories/security:zeek/xUbuntu_24.04/Release.key"
+
+# Package name: choose 'zeek-lts' for long-term stability or 'zeek' for feature line
+zeek_pkg: "zeek-lts"

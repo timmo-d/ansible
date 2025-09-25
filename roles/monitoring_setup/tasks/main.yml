@@ -4,6 +4,22 @@
     update_cache: yes
     cache_valid_time: 3600
 
+# --- Add Zeek repository for Ubuntu 24.04 (OBS) ---
+- name: Add Zeek OBS APT source
+  ansible.builtin.apt_repository:
+    repo: "deb {{ zeek_obs_repo_url }} /"
+    filename: "{{ zeek_obs_repo_file }}"
+    state: present
+
+- name: Add Zeek OBS GPG key
+  ansible.builtin.apt_key:
+    url: "{{ zeek_obs_key_url }}"
+    state: present
+
+- name: Update apt cache after adding Zeek repo
+  ansible.builtin.apt:
+    update_cache: yes
+
 - name: Install monitoring packages
   ansible.builtin.apt:
     name:
