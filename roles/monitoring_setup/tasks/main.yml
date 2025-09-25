@@ -163,10 +163,12 @@
     mode: '0750'
 
 - name: Validate Suricata configuration (parse test)
-  ansible.builtin.command: "suricata -T -c {{ suricata_config_path }} -l /var/log/suricat"
+  ansible.builtin.command: >
+    suricata -T -c {{ suricata_config_path }} -l {{ suricata_log_dir }}
   register: suri_test
   changed_when: false
   failed_when: suri_test.rc != 0
+
 
 - name: Enable and start Suricata
   ansible.builtin.service:

@@ -59,3 +59,8 @@ zeek_pkg: "zeek-lts"    # or "zeek" / "zeek-7.0"
 # Service account for Suricata privilege drop
 suricata_user: suricata
 suricata_group: suricata
+
+suricata_log_dir: /var/log/suricata
+suricata_user: suricata
+suricata_group: suricata
+
