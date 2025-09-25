@@ -115,6 +115,25 @@
       - "{{ ufw_pkg }}"
     state: present
 
+- name: Ensure suricata-update is installed
+  ansible.builtin.apt:
+    name: suricata-update
+    state: present
+    update_cache: yes
+
+- name: Update Suricata rules
+  ansible.builtin.command: suricata-update
+  register: suri_update
+  changed_when: "'Rules written' in (suri_update.stdout | default(''))"
+  failed_when: false
+
+- name: Restart Suricata after rules update
+  ansible.builtin.service:
+    name: suricata
+    state: restarted
+
+
+
 # --- Auto-detect the monitoring interface (IDS/NIDS) ---
 
 # Gather just network facts (fast). Safe even if fact gathering is already enabled.
@@ -440,22 +459,6 @@
   changed_when: false
   failed_when: suri_test.rc != 0
 
-- name: Ensure suricata-update is installed
-  ansible.builtin.apt:
-    name: suricata-update
-    state: present
-    update_cache: yes
-
-- name: Update Suricata rules
-  ansible.builtin.command: suricata-update
-  register: suri_update
-  changed_when: "'Rules written' in (suri_update.stdout | default(''))"
-  failed_when: false
-
-- name: Restart Suricata after rules update
-  ansible.builtin.service:
-    name: suricata
-    state: restarted
 
 - name: Enable and start Suricata
   ansible.builtin.service:
