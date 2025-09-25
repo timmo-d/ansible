@@ -124,6 +124,20 @@
     mode: '0644'
   notify: restart suricata
 
+- name: Assert monitoring interface exists
+  ansible.builtin.assert:
+    that:
+      - ids_nids_interface in ansible_facts.interfaces
+    fail_msg: >-
+      Interface {{ ids_nids_interface }} not found on this host.
+      Set ids_nids_interface correctly (see `ip -o link`).
+
+- name: Validate Suricata configuration (parse test)
+  ansible.builtin.command: "suricata -T -c {{ suricata_config_path }}"
+  register: suri_test
+  changed_when: false
+  failed_when: suri_test.rc != 0
+
 - name: Enable and start Suricata
   ansible.builtin.service:
     name: "{{ suricata_svc }}"
