@@ -133,6 +133,7 @@
       Set ids_nids_interface correctly (see `ip -o link`).
 # --- Ensure Suricata service account and paths exist ---
 
+# Always create the account/dirs first (keep these if you already added them)
 - name: Ensure suricata group exists
   ansible.builtin.group:
     name: "{{ suricata_group }}"
@@ -146,15 +147,15 @@
     shell: /usr/sbin/nologin
     create_home: no
 
-- name: Ensure /var/log/suricata exists and is owned by service account
+- name: Ensure Suricata log directory exists
   ansible.builtin.file:
-    path: /var/log/suricata
+    path: "{{ suricata_log_dir }}"
     state: directory
     owner: "{{ suricata_user }}"
     group: "{{ suricata_group }}"
     mode: '0750'
 
-- name: Ensure /var/run/suricata exists and is owned by service account
+- name: Ensure Suricata runtime directory exists
   ansible.builtin.file:
     path: /var/run/suricata
     state: directory
@@ -162,13 +163,27 @@
     group: "{{ suricata_group }}"
     mode: '0750'
 
+# Parse test with full output captured
 - name: Validate Suricata configuration (parse test)
   ansible.builtin.command: >
     suricata -T -c {{ suricata_config_path }} -l {{ suricata_log_dir }}
   register: suri_test
   changed_when: false
-  failed_when: suri_test.rc != 0
+  failed_when: false
 
+- name: Show Suricata parse test output
+  ansible.builtin.debug:
+    msg: |
+      Suricata -T exit code: {{ suri_test.rc }}
+      --- STDERR ---
+      {{ suri_test.stderr | default('') }}
+      --- STDOUT ---
+      {{ suri_test.stdout | default('') }}
+
+- name: Fail if Suricata parse test failed
+  ansible.builtin.fail:
+    msg: "Suricata -T failed (rc={{ suri_test.rc }})"
+  when: suri_test.rc != 0
 
 - name: Enable and start Suricata
   ansible.builtin.service:
