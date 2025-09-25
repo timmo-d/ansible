@@ -25,8 +25,15 @@ ossec_conf_path: /var/ossec/etc/ossec.conf
 prometheus_config_path: /etc/prometheus/prometheus.yml
 grafana_ini_path: /etc/grafana/grafana.ini
 rsyslog_conf_path: /etc/rsyslog.conf
+# Non-default repos
 wazuh_key_path: /usr/share/keyrings/wazuh.gpg
 wazuh_repo_line: "deb [signed-by={{ wazuh_key_path }}] https://packages.wazuh.com/4.x/apt/ stable main"
+grafana_keyring_path: /etc/apt/keyrings/grafana.gpg
+grafana_repo_line: "deb [signed-by={{ grafana_keyring_path }}] https://apt.grafana.com stable main"
+
+# Choose which package to install: grafana (OSS) or grafana-enterprise
+grafana_pkg: grafana
+
 
 # Service names
 suricata_svc: suricata
@@ -35,6 +42,7 @@ ossec_pkg: wazuh-agent
 ossec_svc: wazuh-agent
 prometheus_svc: prometheus
 node_exporter_svc: prometheus-node-exporter
+grafana_pkg: grafana
 grafana_svc: grafana-server
 rsyslog_svc: rsyslog
 ufw_svc: ufw
