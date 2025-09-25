@@ -302,6 +302,92 @@
       --- STDOUT ---
       {{ suri_test.stdout | default('') }}
 
+# --- Make sure Suricata reference files/paths exist (prevents parse errors) ---
+- name: Ensure default rule path exists
+  ansible.builtin.file:
+    path: /etc/suricata/rules
+    state: directory
+    owner: "{{ suricata_user | default('suricata') }}"
+    group: "{{ suricata_group | default('suricata') }}"
+    mode: '0750'
+
+- name: Ensure classification.config exists
+  ansible.builtin.copy:
+    dest: /etc/suricata/classification.config
+    content: |
+      # Minimal classification config (extend later)
+      config classification: not-suspicious,Not Suspicious Traffic,3
+      config classification: unknown,Unknown Traffic,3
+    owner: root
+    group: root
+    mode: '0644'
+    force: no  # do not overwrite if package has provided a richer file
+
+- name: Ensure reference.config exists
+  ansible.builtin.copy:
+    dest: /etc/suricata/reference.config
+    content: |
+      # Minimal reference config (extend later)
+      config reference: url,www.example.com
+    owner: root
+    group: root
+    mode: '0644'
+    force: no
+
+# --- Try a parser-only check: should succeed if YAML & paths are good ---
+- name: Suricata dump-config (parser validation)
+  ansible.builtin.command: >
+    suricata --dump-config -c {{ suricata_config_path }}
+  register: suri_dump
+  changed_when: false
+  failed_when: false
+
+- name: Show dump-config (first 80 lines)
+  ansible.builtin.debug:
+    msg: "{{ (suri_dump.stdout | default(''))[:4000] }}"
+
+# --- Re-run -T but override run-as to root (test-only) to isolate privilege-drop issues ---
+- name: Suricata parse test with run-as override (root)
+  ansible.builtin.command: >
+    suricata -T -c {{ suricata_config_path }} -l {{ suricata_log_dir | default('/var/log/suricata') }}
+    --user=root --group=root
+  register: suri_test_root
+  changed_when: false
+  failed_when: false
+
+- name: Show Suricata -T (root override) output
+  ansible.builtin.debug:
+    msg: |
+      Suricata -T (root override) rc={{ suri_test_root.rc }}
+      --- STDERR ---
+      {{ suri_test_root.stderr | default('') }}
+      --- STDOUT ---
+      {{ suri_test_root.stdout | default('') }}
+
+# --- If it still fails, print build-info and Suricata log to reveal the cause ---
+- name: Suricata build info
+  ansible.builtin.command: suricata --build-info
+  register: suri_build
+  changed_when: false
+  failed_when: false
+
+- name: Show build info (first 120 lines)
+  ansible.builtin.debug:
+    msg: "{{ (suri_build.stdout | default(''))[:6000] }}"
+
+- name: Read suricata.log for errors (last 200 lines)
+  ansible.builtin.shell: |
+    test -f {{ suricata_log_dir | default('/var/log/suricata') }}/suricata.log && tail -n 200 {{ suricata_log_dir | default('/var/log/suricata') }}/suricata.log || true
+  args: { executable: /bin/bash }
+  register: suri_log
+  changed_when: false
+  failed_when: false
+
+- name: Show suricata.log (tail)
+  ansible.builtin.debug:
+    msg: "{{ suri_log.stdout | default('') }}"
+
+
 - name: Fail if Suricata parse test failed
   ansible.builtin.fail:
     msg: "Suricata -T failed (rc={{ suri_test.rc }})"
