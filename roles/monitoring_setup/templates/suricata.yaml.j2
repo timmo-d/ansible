@@ -72,5 +72,6 @@ default-packet-size: {{ suricata_default_packet_size }}
 
 # Drop privileges
 run-as:
-  user: suricata
-  group: suricata
+  user: {{ suricata_user }}
+  group: {{ suricata_group }}
+

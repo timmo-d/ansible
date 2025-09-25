@@ -131,9 +131,39 @@
     fail_msg: >-
       Interface {{ ids_nids_interface }} not found on this host.
       Set ids_nids_interface correctly (see `ip -o link`).
+# --- Ensure Suricata service account and paths exist ---
+
+- name: Ensure suricata group exists
+  ansible.builtin.group:
+    name: "{{ suricata_group }}"
+    system: yes
+
+- name: Ensure suricata user exists (no shell, no home)
+  ansible.builtin.user:
+    name: "{{ suricata_user }}"
+    group: "{{ suricata_group }}"
+    system: yes
+    shell: /usr/sbin/nologin
+    create_home: no
+
+- name: Ensure /var/log/suricata exists and is owned by service account
+  ansible.builtin.file:
+    path: /var/log/suricata
+    state: directory
+    owner: "{{ suricata_user }}"
+    group: "{{ suricata_group }}"
+    mode: '0750'
+
+- name: Ensure /var/run/suricata exists and is owned by service account
+  ansible.builtin.file:
+    path: /var/run/suricata
+    state: directory
+    owner: "{{ suricata_user }}"
+    group: "{{ suricata_group }}"
+    mode: '0750'
 
 - name: Validate Suricata configuration (parse test)
-  ansible.builtin.command: "suricata -T -c {{ suricata_config_path }}"
+  ansible.builtin.command: "suricata -T -c {{ suricata_config_path }} -l /var/log/suricat"
   register: suri_test
   changed_when: false
   failed_when: suri_test.rc != 0

@@ -54,3 +54,8 @@ zeek_obs_key_url: "https://download.opensuse.org/repositories/security:/zeek/xUb
 
 # Package name: choose 'zeek-lts' for long-term stability or 'zeek' for feature line
 zeek_pkg: "zeek-lts"    # or "zeek" / "zeek-7.0"
+
+
+# Service account for Suricata privilege drop
+suricata_user: suricata
+suricata_group: suricata
