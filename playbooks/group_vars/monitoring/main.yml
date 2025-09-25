@@ -6,7 +6,8 @@
 # =============================
 
 # Interface that Suricata/Zeek will monitor (e.g., "ens160").
-ids_nids_interface: "enp1s0" #"ens160"  # Select a dedicated SPAN/TAP interface per NSA guidance on monitoring at choke points.
+# Uncomment with override or comment to auto-detect
+#ids_nids_interface: "ens160"  # Select a dedicated SPAN/TAP interface per NSA guidance on monitoring at choke points.
 
 # Address space considered trusted/internal (Zeek & Suricata). Use CIDR notation.
 home_net: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]  # Tune to enclave boundaries per STIG/SRG.
