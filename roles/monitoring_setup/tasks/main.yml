@@ -408,6 +408,37 @@
   changed_when: "'Rules written' in suri_update.stdout|default('')"
   register: suri_update
 
+# Ensure interface exists
+- name: Assert the monitoring interface exists on this host
+  ansible.builtin.assert:
+    that:
+      - ids_nids_interface is defined
+      - ids_nids_interface | length > 0
+      - ids_nids_interface in ansible_facts.interfaces
+    fail_msg: "Interface {{ ids_nids_interface }} not present on this VM."
+
+# Confirm Suricata will really use enp1s0
+- name: Check parsed interface in Suricata config
+  ansible.builtin.shell: >
+    suricata --dump-config -c {{ suricata_config_path }} |
+    awk -F': ' '/^af-packet\.0\.interface:/{print $2}'
+  args: { executable: /bin/bash }
+  register: _suri_nic
+  changed_when: false
+
+- name: Fail if parsed interface is not enp1s0
+  ansible.builtin.assert:
+    that:
+      - _suri_nic.stdout == ids_nids_interface
+    fail_msg: "Suricata parsed interface '{{ _suri_nic.stdout }}', expected '{{ ids_nids_interface }}'."
+
+# Parse-validation (supported method to verify config)
+- name: Validate Suricata configuration (parse test)
+  ansible.builtin.command: >
+    suricata -T -c {{ suricata_config_path }} -l {{ suricata_log_dir | default('/var/log/suricata') }}
+  register: suri_test
+  changed_when: false
+  failed_when: suri_test.rc != 0
 
 - name: Enable and start Suricata
   ansible.builtin.service:

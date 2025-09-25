@@ -62,11 +62,12 @@ suricata_default_packet_size: 1514
 suricata_max_pending_packets: 2048
 suricata_detect_profile: "medium"      # {low, medium, high}; adjust for hardware capacity
 suricata_af_packet:
-  - interface: "{{ ids_nids_interface }}"
+  - interface: "{{ ids_nids_interface_override | default(ids_nids_interface, true) }}"
     cluster_id: 99
     cluster_type: "cluster_flow"
-    defrag: yes
+    defrag: true
     checksum_check: auto
+
 
 # Zeek configuration
 zeek_log_dir: "/var/log/zeek"

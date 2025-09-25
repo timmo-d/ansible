@@ -9,16 +9,20 @@ vars:
     HOME_NET: "[{{ home_net | join(', ') }}]"   # Define protected networks
     EXTERNAL_NET: "!$HOME_NET"
 
+
+
+
+# IDS-only AF_PACKET (single interface)
 af-packet:
 {% for afp in suricata_af_packet %}
-  - interface: {{ afp.interface }}
-    cluster-id: {{ afp.cluster_id }}
-    cluster-type: {{ afp.cluster_type }}
+  - interface: {{ afp.interface }}      # e.g., {{ ids_nids_interface }}
+    cluster-id: {{ afp.cluster_id | default(99) }}
+    cluster-type: {{ afp.cluster_type | default('cluster_flow') }}
     defrag: {{ 'yes' if afp.defrag else 'no' }}
-    checksum-checks: {{ afp.checksum_check }}
-    copy-mode: ips
-    copy-iface: {{ afp.interface }}
+    checksum-checks: {{ afp.checksum_check | default('auto') }}
+    # NOTE: Do NOT set copy-mode/copy-iface for IDS-only
 {% endfor %}
+
 
 flow:
   emergency-recovery: 30
