@@ -11,7 +11,7 @@ ids_nids_interface: "enp1s0"  # Select a dedicated SPAN/TAP interface per NSA gu
 
 # Address space considered trusted/internal (Zeek & Suricata). Use CIDR notation.
 home_net: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]  # Tune to enclave boundaries per STIG/SRG.
-HTTP_SERVERS: "$home_net
+HTTP_SERVERS: "$home_net"
 
 # Management networks that are allowed to access web UIs (Grafana/Kibana/Prometheus UIs)
 # Limit exposure per NSA NISEG principle of strict perimeter access controls.
