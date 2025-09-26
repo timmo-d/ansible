@@ -7,10 +7,15 @@
 - name: Add Elastic apt source list
   ansible.builtin.apt_repository:
     repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/{{ elastic_version }}/apt stable main"
-    filename: elastic-{{ elastic_version | regex_replace(' ','') | regex_replace('\.x','') }}
+    #filename: elastic-{{ elastic_version | regex_replace(' ','') | regex_replace('\.x','') }}
+    filename: 'elastic-8.x'
   ignore_errors: yes
-  msg: elastic-{{ elastic_version | regex_replace(' ','') | regex_replace('\.x','') }}
-  
+
+- name: Update apt cache
+  become: true
+  apt:
+    update_cache: yes
+    
 - name: Install Elasticsearch, Logstash, Kibana
   ansible.builtin.apt:
     name:
