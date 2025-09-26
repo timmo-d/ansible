@@ -3,7 +3,8 @@
     name:
       - "{{ ufw_pkg }}"
     state: present
-    - name: UFW - ensure enabled with default deny inbound
+
+- name: UFW - ensure enabled with default deny inbound
   community.general.ufw:
     state: enabled
     policy: "{{ ufw_default_input_policy }}"
