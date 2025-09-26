@@ -1,18 +1,17 @@
+- name: Install apt-transport-https and gnupg
+  become: true
+  apt:
+    name:
+      - apt-transport-https
+      - gnupg
+    state: present
+
 - name: Download Elasticsearch GPG key
   become: true
   get_url:
     url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    dest: /tmp/elasticsearch-key.asc
+    dest: /usr/share/keyrings/elasticsearch-keyring.gpg
     mode: '0644'
-
-- name: Convert GPG key to keyring format
-  become: true
-  shell: |
-    gpg --dearmor /tmp/elasticsearch-key.asc
-    mv /tmp/elasticsearch-key.asc.gpg /usr/share/keyrings/elasticsearch-keyring.gpg
-  args:
-    executable: /bin/bash
-
 
 - name: Add Elasticsearch APT repository
   become: true
@@ -20,12 +19,6 @@
     dest: /etc/apt/sources.list.d/elastic-8.x.list
     content: 'deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main\n'
     mode: '0644'
-
-- name: Ensure apt-transport-https is installed
-  become: true
-  apt:
-    name: apt-transport-https
-    state: present
 
 - name: Update apt cache
   become: true
@@ -38,12 +31,21 @@
     name: elasticsearch
     state: present
 
+
 #- name: Install Elasticsearch
 #  ansible.builtin.apt:
 #    name:
 #      - "{{ elasticsearch_pkg }}"
 #    state: present
 #    update_cache: yes
+
+- name: Enable Elasticsearch service
+  become: true
+  systemd:
+    name: elasticsearch
+    enabled: true
+    state: started
+
 
 - name: Ensure elasticsearch group exists
   ansible.builtin.group:
