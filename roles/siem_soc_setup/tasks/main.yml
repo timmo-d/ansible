@@ -3,12 +3,14 @@
   ansible.builtin.apt_key:
     url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
     state: present
+
 - name: Add Elastic apt source list
   ansible.builtin.apt_repository:
     repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/{{ elastic_version }}/apt stable main"
     filename: elastic-{{ elastic_version | regex_replace(' ','') | regex_replace('\.x','') }}
   ignore_errors: yes
-
+  msg: elastic-{{ elastic_version | regex_replace(' ','') | regex_replace('\.x','') }}
+  
 - name: Install Elasticsearch, Logstash, Kibana
   ansible.builtin.apt:
     name:

@@ -25,12 +25,3 @@
     from: "{{ mgmt_allow_cidrs | join(',') }}"
   loop: "{{ ufw_allowed_udp_ports }}"
 
-- name: Optionally harden SSH daemon (PasswordAuthentication=no)
-  ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^PasswordAuthentication'
-    line: 'PasswordAuthentication no'
-    create: no
-  when: ssh_hardening_enable
-  notify:
-    - restart rsyslog  # placeholder; real deployment should restart ssh
