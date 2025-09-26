@@ -1,9 +1,18 @@
-- name: Download and install Elasticsearch GPG key
+- name: Download Elasticsearch GPG key
+  become: true
+  get_url:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    dest: /tmp/elasticsearch-key.asc
+    mode: '0644'
+
+- name: Convert GPG key to keyring format
   become: true
   shell: |
-    wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
+    gpg --dearmor /tmp/elasticsearch-key.asc
+    mv /tmp/elasticsearch-key.asc.gpg /usr/share/keyrings/elasticsearch-keyring.gpg
   args:
     executable: /bin/bash
+
 
 - name: Add Elasticsearch APT repository
   become: true
