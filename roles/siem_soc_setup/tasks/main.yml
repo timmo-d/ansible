@@ -8,8 +8,8 @@
 #- name: Configure Elasticsearch
 #  import_tasks: elasticsearch.yml
 
-#- name: Configure Logstash
-#  import_tasks: logstash.yml
+- name: Configure Logstash
+  import_tasks: logstash.yml
 
 #- name: Configure Kibana
 #  import_tasks: kibana.yml
