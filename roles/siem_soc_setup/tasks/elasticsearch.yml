@@ -34,7 +34,7 @@
 
 - name: Ensure Elasticsearch log directory exists
   ansible.builtin.file:
-    path: "{{ suricata_log_dir }}"
+    path: "{{ elasticsearch_log_dir }}"
     state: directory
     owner: root
     group: elasticsearch
