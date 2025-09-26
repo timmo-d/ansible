@@ -28,7 +28,7 @@
   become: true
   copy:
     dest: /etc/apt/sources.list.d/elastic-8.x.list
-    content: 'deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main\n'
+    content: 'deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main'
     mode: '0644'
 
 - name: Update apt cache
