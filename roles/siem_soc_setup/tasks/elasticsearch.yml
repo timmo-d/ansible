@@ -4,19 +4,28 @@
 #    state: present
 #    update_cache: yes
 
-- name: Download Elastic GPG key using wget
+- name: Download and install Elasticsearch GPG key
   become: true
   shell: |
-    wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | tee /usr/share/keyrings/elasticsearch-keyring.asc
+    wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
   args:
     executable: /bin/bash
 
-- name: Add Elastic APT repository with signed-by
+
+- name: Add Elasticsearch APT repository
   become: true
   copy:
     dest: /etc/apt/sources.list.d/elastic-8.x.list
-    content: 'deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.asc] https://artifacts.elastic.co/packages/8.x/apt stable main\n'
+    content: 'deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main\n'
     mode: '0644'
+
+
+- name: Ensure apt-transport-https is installed
+  become: true
+  apt:
+    name: apt-transport-https
+    state: present
+
 
 - name: Update apt cache
   become: true
