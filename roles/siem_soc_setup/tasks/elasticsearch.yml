@@ -1,19 +1,22 @@
-- name: Install required packages
+
+- name: Download Elasticsearch GPG key and convert to keyring
+  become: true
+  shell: |
+    wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elastic-keyring.gpg
+  args:
+    executable: /bin/bash
+
+- name: Install apt-transport-https
   become: true
   apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg
-      - software-properties-common
+    name: apt-transport-https
     state: present
 
-- name: Download Elasticsearch GPG key
+- name: Add Elastic 9.x APT repository
   become: true
-  get_url:
-    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    dest: /usr/share/keyrings/elasticsearch-keyring.gpg
+  copy:
+    dest: /etc/apt/sources.list.d/elastic-9.x.list
+    content: 'deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/9.x/apt stable main\n'
     mode: '0644'
 
 - name: Update apt cache
@@ -21,15 +24,13 @@
   apt:
     update_cache: yes
 
-
-
-
-- name: Install Logstash
-  ansible.builtin.apt:
+- name: Install Elasticsearch and Logstash
+  become: true
+  apt:
     name:
-      - "{{ logstash_pkg }}"
+      - elasticsearch
+      - logstash
     state: present
-    update_cache: yes
     
 - name: Deploy Logstash pipeline for Beats/syslog
   ansible.builtin.template:
@@ -48,11 +49,11 @@
 
 
 
-- name: Install Elasticsearch
-  become: true
-  apt:
-    name: elasticsearch
-    state: present
+#- name: Install Elasticsearch
+#  become: true
+#  apt:
+#    name: elasticsearch
+#    state: present
 
 
 
