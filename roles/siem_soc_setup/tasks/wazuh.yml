@@ -19,7 +19,7 @@
     src: wazuh-manager.conf.j2
     dest: "{{ wazuh_manager_conf }}"
     owner: root
-    group: ossec
+    group: wazuh
     mode: '0640'
   notify:
     - restart wazuh-manager
