@@ -40,6 +40,14 @@
     group: elasticsearch
     mode: '0750'
 
+- name: Ensure Elasticsearch log files exist with correct ownership and permissions
+  become: true
+  file:
+    path: "{{ elasticsearch_log_file }}"
+    state: touch
+    owner: root
+    group: elasticsearch
+    mode: '0644'
 
 - name: Enable and start Elasticsearch
   ansible.builtin.service:
