@@ -88,6 +88,8 @@ elasticsearch_http_port: 9200
 elasticsearch_security_enable: true
 elasticsearch_username: "elastic"
 elasticsearch_password: "ChangeMeElasticsearch!"  # Use Vault in production
+elasticsearch_repo_url: "https://artifacts.elastic.co/packages/{{ elastic_version }}/apt"
+elasticsearch_gpg_key_url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
 
 logstash_beats_port: 5044
 logstash_elasticsearch_hosts: ["https://localhost:9200"]
