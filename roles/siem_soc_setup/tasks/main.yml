@@ -1,124 +1,34 @@
 ---
-- name: Ensure Java is installed
-  apt:
-    name: default-jdk
-    state: present
-    update_cache: yes
-
-- name: Add Elasticsearch GPG key
-  ansible.builtin.apt_key:
-    url: "{{ elasticsearch_gpg_key_url }}"
-    keyring: /usr/share/keyrings/elasticsearch-keyring.asc
-    state: present
-
-- name: Add Elasticsearch APT repository
-  apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.asc] {{ elasticsearch_repo_url }} stable main"
-    filename: "elastic-{{ elastic_version }}"
-    state: present
-
-- name: Install Elasticsearch, Logstash, Kibana
+- name: Ensure apt cache is up to date
   ansible.builtin.apt:
-    name:
-      - "{{ elasticsearch_pkg }}"
-      - "{{ logstash_pkg }}"
-      - "{{ kibana_pkg }}"
-    state: present
     update_cache: yes
+    cache_valid_time: 3600
 
-- name: Deploy elasticsearch.yml (single-node secure-ready)
-  ansible.builtin.template:
-    src: elasticsearch.yml.j2
-    dest: "{{ elasticsearch_yml_path }}"
-    owner: root
-    group: elasticsearch
-    mode: '0640'
-  notify: restart elasticsearch
 
-- name: Enable and start Elasticsearch
-  ansible.builtin.service:
-    name: "{{ elasticsearch_svc }}"
-    enabled: yes
-    state: started
+- name: Configure Elasticsearch
+  import_tasks: elasticsearch.yml
 
-- name: Deploy Logstash pipeline for Beats/syslog
-  ansible.builtin.template:
-    src: logstash.conf.j2
-    dest: "{{ logstash_pipeline_path }}"
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart logstash
+- name: Configure Logstash
+  import_tasks: logstash.yml
 
-- name: Enable and start Logstash
-  ansible.builtin.service:
-    name: "{{ logstash_svc }}"
-    enabled: yes
-    state: started
+- name: Configure Kibana
+  import_tasks: kibana.yml
 
-- name: Deploy Kibana config
-  ansible.builtin.template:
-    src: kibana.yml.j2
-    dest: "{{ kibana_yml_path }}"
-    owner: root
-    group: kibana
-    mode: '0640'
-  notify: restart kibana
+- name: Configure Wazuh
+  import_tasks: wazuh.yml
 
-- name: Enable and start Kibana
-  ansible.builtin.service:
-    name: "{{ kibana_svc }}"
-    enabled: yes
-    state: started
+- name: Configure UFW
+  import_tasks: ufw.yml
 
-- name: Add Wazuh apt repository key
-  ansible.builtin.apt_key:
-    url: "{{ wazuh_gpg_url }}"
-    state: present
 
-- name: Add Wazuh apt repository
-  ansible.builtin.apt_repository:
-    repo: "deb https://packages.wazuh.com/4.x/apt/ stable main"
-    filename: wazuh
 
-- name: Install Wazuh Manager
-  ansible.builtin.apt:
-    name: "{{ wazuh_manager_pkg }}"
-    state: present
-    update_cache: yes
 
-- name: Configure Wazuh Manager (ossec.conf)
-  ansible.builtin.template:
-    src: wazuh-manager.conf.j2
-    dest: "{{ wazuh_manager_conf }}"
-    owner: root
-    group: ossec
-    mode: '0640'
-  notify:
-    - restart wazuh-manager
 
-- name: Enable and start Wazuh Manager
-  ansible.builtin.service:
-    name: "{{ wazuh_manager_svc }}"
-    enabled: yes
-    state: started
 
-- name: UFW - allow SIEM/SOC TCP ports
-  community.general.ufw:
-    rule: allow
-    port: "{{ item.port }}"
-    proto: tcp
-    from: "{{ mgmt_allow_cidrs | join(',') }}"
-  loop:
-    - { port: "5601" }   # Kibana
-    - { port: "9200" }   # Elasticsearch HTTP
-    - { port: "5044" }   # Logstash Beats
-    - { port: "1514" }   # Wazuh TCP
-    - { port: "55000" }  # Wazuh API
 
-- name: UFW - allow Wazuh UDP if needed
-  community.general.ufw:
-    rule: allow
-    port: "1514"
-    proto: udp
-    from: "{{ mgmt_allow_cidrs | join(',') }}"
+
+
+
+
+
+

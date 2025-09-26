@@ -1,0 +1,39 @@
+- name: Ensure Java is installed
+  apt:
+    name: default-jdk
+    state: present
+    update_cache: yes
+
+- name: Add Elasticsearch GPG key
+  ansible.builtin.apt_key:
+    url: "{{ elasticsearch_gpg_key_url }}"
+    keyring: /usr/share/keyrings/elasticsearch-keyring.asc
+    state: present
+
+- name: Add Elasticsearch APT repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.asc] {{ elasticsearch_repo_url }} stable main"
+    filename: "elastic-{{ elastic_version }}"
+    state: present
+
+- name: Install Elasticsearch
+  ansible.builtin.apt:
+    name:
+      - "{{ elasticsearch_pkg }}"
+    state: present
+    update_cache: yes
+
+- name: Deploy elasticsearch.yml (single-node secure-ready)
+  ansible.builtin.template:
+    src: elasticsearch.yml.j2
+    dest: "{{ elasticsearch_yml_path }}"
+    owner: root
+    group: elasticsearch
+    mode: '0640'
+  notify: restart elasticsearch
+
+- name: Enable and start Elasticsearch
+  ansible.builtin.service:
+    name: "{{ elasticsearch_svc }}"
+    enabled: yes
+    state: started

@@ -1,0 +1,31 @@
+- name: Add Wazuh apt repository key
+  ansible.builtin.apt_key:
+    url: "{{ wazuh_gpg_url }}"
+    state: present
+
+- name: Add Wazuh apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://packages.wazuh.com/4.x/apt/ stable main"
+    filename: wazuh
+
+- name: Install Wazuh Manager
+  ansible.builtin.apt:
+    name: "{{ wazuh_manager_pkg }}"
+    state: present
+    update_cache: yes
+
+- name: Configure Wazuh Manager (ossec.conf)
+  ansible.builtin.template:
+    src: wazuh-manager.conf.j2
+    dest: "{{ wazuh_manager_conf }}"
+    owner: root
+    group: ossec
+    mode: '0640'
+  notify:
+    - restart wazuh-manager
+
+- name: Enable and start Wazuh Manager
+  ansible.builtin.service:
+    name: "{{ wazuh_manager_svc }}"
+    enabled: yes
+    state: started

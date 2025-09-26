@@ -1,0 +1,21 @@
+- name: Install Kibana
+  ansible.builtin.apt:
+    name:
+      - "{{ kibana_pkg }}"
+    state: present
+    update_cache: yes
+
+- name: Deploy Kibana config
+  ansible.builtin.template:
+    src: kibana.yml.j2
+    dest: "{{ kibana_yml_path }}"
+    owner: root
+    group: kibana
+    mode: '0640'
+  notify: restart kibana
+
+- name: Enable and start Kibana
+  ansible.builtin.service:
+    name: "{{ kibana_svc }}"
+    enabled: yes
+    state: started
