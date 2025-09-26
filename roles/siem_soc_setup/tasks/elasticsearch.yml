@@ -1,16 +1,9 @@
-#- name: Ensure Java is installed
-#  apt:
-#    name: default-jdk
-#    state: present
-#    update_cache: yes
-
 - name: Download and install Elasticsearch GPG key
   become: true
   shell: |
     wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
   args:
     executable: /bin/bash
-
 
 - name: Add Elasticsearch APT repository
   become: true
@@ -19,26 +12,29 @@
     content: 'deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main\n'
     mode: '0644'
 
-
 - name: Ensure apt-transport-https is installed
   become: true
   apt:
     name: apt-transport-https
     state: present
 
-
 - name: Update apt cache
   become: true
   apt:
     update_cache: yes
 
-
 - name: Install Elasticsearch
-  ansible.builtin.apt:
-    name:
-      - "{{ elasticsearch_pkg }}"
+  become: true
+  apt:
+    name: elasticsearch
     state: present
-    update_cache: yes
+
+#- name: Install Elasticsearch
+#  ansible.builtin.apt:
+#    name:
+#      - "{{ elasticsearch_pkg }}"
+#    state: present
+#    update_cache: yes
 
 - name: Ensure elasticsearch group exists
   ansible.builtin.group:
