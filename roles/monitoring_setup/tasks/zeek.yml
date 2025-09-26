@@ -48,7 +48,7 @@
     state: present
 
 
-    - name: Create Zeek etc directory
+- name: Create Zeek etc directory
   ansible.builtin.file:
     path: /opt/zeek/etc
     state: directory
