@@ -23,11 +23,24 @@
     state: present
     update_cache: yes
 
+- name: Ensure elasticsearch group exists
+  ansible.builtin.group:
+    name: "{{ elasticsearch_group }}"
+    system: yes
+
+- name: Ensure elasticsearch user exists (no shell, no home)
+  ansible.builtin.user:
+    name: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    system: yes
+    shell: /usr/sbin/nologin
+    create_home: no
+
 - name: Deploy elasticsearch.yml (single-node secure-ready)
   ansible.builtin.template:
     src: elasticsearch.yml.j2
     dest: "{{ elasticsearch_yml_path }}"
-    owner: root
+    owner: elasticsearch
     group: elasticsearch
     mode: '0640'
   notify: restart elasticsearch
@@ -36,7 +49,7 @@
   ansible.builtin.file:
     path: "{{ elasticsearch_log_dir }}"
     state: directory
-    owner: root
+    owner: elasticsearch
     group: elasticsearch
     mode: '0750'
 
@@ -45,7 +58,7 @@
   file:
     path: "{{ elasticsearch_log_file }}"
     state: touch
-    owner: root
+    owner: elasticsearch
     group: elasticsearch
     mode: '0644'
 

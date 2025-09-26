@@ -21,3 +21,6 @@ elasticsearch_svc: elasticsearch
 logstash_svc: logstash
 kibana_svc: kibana
 wazuh_manager_svc: wazuh-manager
+
+elasticsearch_user: elasticsearch
+elasticsearch_group: elasticsearch
