@@ -36,7 +36,7 @@
 
 
 
-    - name: Deploy Grafana ini (hardened)
+- name: Deploy Grafana ini (hardened)
   ansible.builtin.template:
     src: grafana.ini.j2
     dest: "{{ grafana_ini_path }}"
