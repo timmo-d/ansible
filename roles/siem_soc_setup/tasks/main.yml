@@ -1,17 +1,17 @@
 ---
-- name: Download Elastic GPG key
+- name: Download Elastic GPG key using wget
   become: true
-  get_url:
-    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    dest: /usr/share/keyrings/elastic-archive-keyring.gpg
-    mode: '0644'
+  shell: |
+    wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | tee /usr/share/keyrings/elasticsearch-keyring.asc
+  args:
+    executable: /bin/bash
 
-- name: Add Elastic APT repository
+- name: Add Elastic APT repository with signed-by
   become: true
-  apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/elastic-archive-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
-    state: present
-    filename: "elastic-8.x"
+  copy:
+    dest: /etc/apt/sources.list.d/elastic-8.x.list
+    content: 'deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.asc] https://artifacts.elastic.co/packages/8.x/apt stable main\n'
+    mode: '0644'
 
 - name: Update apt cache
   become: true
