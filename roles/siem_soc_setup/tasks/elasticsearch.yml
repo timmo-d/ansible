@@ -32,6 +32,15 @@
     mode: '0640'
   notify: restart elasticsearch
 
+- name: Ensure Elasticsearch log directory exists
+  ansible.builtin.file:
+    path: "{{ suricata_log_dir }}"
+    state: directory
+    owner: root
+    group: elasticsearch
+    mode: '0750'
+
+
 - name: Enable and start Elasticsearch
   ansible.builtin.service:
     name: "{{ elasticsearch_svc }}"
