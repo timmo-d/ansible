@@ -1,0 +1,248 @@
+
+- name: Install Suricata
+  ansible.builtin.apt:
+    name:
+      - "{{ suricata_pkg }}"
+    state: present
+    
+- name: Ensure suricata-update is installed
+  ansible.builtin.apt:
+    name: suricata-update
+    state: present
+    update_cache: yes
+
+- name: Update Suricata rules
+  ansible.builtin.command: suricata-update
+  register: suri_update
+  changed_when: "'Rules written' in (suri_update.stdout | default(''))"
+  failed_when: false
+
+- name: Restart Suricata after rules update
+  ansible.builtin.service:
+    name: suricata
+    state: restarted
+
+
+
+- name: Deploy Suricata configuration
+  ansible.builtin.template:
+    src: suricata.yaml.j2
+    dest: "{{ suricata_config_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart suricata
+
+- name: Assert monitoring interface exists
+  ansible.builtin.assert:
+    that:
+      - ids_nids_interface in ansible_facts.interfaces
+    fail_msg: >-
+      Interface {{ ids_nids_interface }} not found on this host.
+      Set ids_nids_interface correctly (see `ip -o link`).
+
+- name: Show detected monitoring interface
+  ansible.builtin.debug:
+    msg: "Using ids_nids_interface='{{ ids_nids_interface }}'"
+
+
+# Always create the account/dirs first (keep these if you already added them)
+- name: Ensure suricata group exists
+  ansible.builtin.group:
+    name: "{{ suricata_group }}"
+    system: yes
+
+- name: Ensure suricata user exists (no shell, no home)
+  ansible.builtin.user:
+    name: "{{ suricata_user }}"
+    group: "{{ suricata_group }}"
+    system: yes
+    shell: /usr/sbin/nologin
+    create_home: no
+
+- name: Ensure Suricata log directory exists
+  ansible.builtin.file:
+    path: "{{ suricata_log_dir }}"
+    state: directory
+    owner: "{{ suricata_user }}"
+    group: "{{ suricata_group }}"
+    mode: '0750'
+
+- name: Ensure Suricata log files exist with correct ownership and permissions
+  become: true
+  file:
+    path: "{{ item.path }}"
+    state: touch
+    owner: "{{ suricata_user }}"
+    group: "{{ suricata_group }}"
+    mode: '0644'
+  loop:
+    - { path: "{{ suricata_log_json }}" }
+    - { path: "{{ suricata_log_log }}" }
+
+
+- name: Ensure Suricata runtime directory exists
+  ansible.builtin.file:
+    path: /var/run/suricata
+    state: directory
+    owner: "{{ suricata_user }}"
+    group: "{{ suricata_group }}"
+    mode: '0750'
+
+# Parse test with full output captured
+- name: Validate Suricata configuration (parse test)
+  ansible.builtin.command: >
+    suricata -T -c {{ suricata_config_path }} -l {{ suricata_log_dir }}
+  register: suri_test
+  changed_when: false
+  failed_when: false
+
+- name: Show Suricata parse test output
+  ansible.builtin.debug:
+    msg: |
+      Suricata -T exit code: {{ suri_test.rc }}
+      --- STDERR ---
+      {{ suri_test.stderr | default('') }}
+      --- STDOUT ---
+      {{ suri_test.stdout | default('') }}
+
+# --- Make sure Suricata reference files/paths exist (prevents parse errors) ---
+- name: Ensure default rule path exists
+  ansible.builtin.file:
+    path: /etc/suricata/rules
+    state: directory
+    owner: "{{ suricata_user | default('suricata') }}"
+    group: "{{ suricata_group | default('suricata') }}"
+    mode: '0750'
+
+- name: Ensure classification.config exists
+  ansible.builtin.copy:
+    dest: /etc/suricata/classification.config
+    content: |
+      # Minimal classification config (extend later)
+      config classification: not-suspicious,Not Suspicious Traffic,3
+      config classification: unknown,Unknown Traffic,3
+    owner: root
+    group: root
+    mode: '0644'
+    force: no  # do not overwrite if package has provided a richer file
+
+- name: Ensure reference.config exists
+  ansible.builtin.copy:
+    dest: /etc/suricata/reference.config
+    content: |
+      # Minimal reference config (extend later)
+      config reference: url,www.example.com
+    owner: root
+    group: root
+    mode: '0644'
+    force: no
+
+# --- Try a parser-only check: should succeed if YAML & paths are good ---
+- name: Suricata dump-config (parser validation)
+  ansible.builtin.command: >
+    suricata --dump-config -c {{ suricata_config_path }}
+  register: suri_dump
+  changed_when: false
+  failed_when: false
+
+- name: Show dump-config (first 80 lines)
+  ansible.builtin.debug:
+    msg: "{{ (suri_dump.stdout | default(''))[:4000] }}"
+
+# --- Re-run -T but override run-as to root (test-only) to isolate privilege-drop issues ---
+- name: Suricata parse test with run-as override (root)
+  ansible.builtin.command: >
+    suricata -T -c {{ suricata_config_path }} -l {{ suricata_log_dir | default('/var/log/suricata') }}
+    --user=root --group=root
+  register: suri_test_root
+  changed_when: false
+  failed_when: false
+
+- name: Show Suricata -T (root override) output
+  ansible.builtin.debug:
+    msg: |
+      Suricata -T (root override) rc={{ suri_test_root.rc }}
+      --- STDERR ---
+      {{ suri_test_root.stderr | default('') }}
+      --- STDOUT ---
+      {{ suri_test_root.stdout | default('') }}
+
+# --- If it still fails, print build-info and Suricata log to reveal the cause ---
+- name: Suricata build info
+  ansible.builtin.command: suricata --build-info
+  register: suri_build
+  changed_when: false
+  failed_when: false
+
+- name: Show build info (first 120 lines)
+  ansible.builtin.debug:
+    msg: "{{ (suri_build.stdout | default(''))[:6000] }}"
+
+- name: Read suricata.log for errors (last 200 lines)
+  ansible.builtin.shell: |
+    test -f {{ suricata_log_dir | default('/var/log/suricata') }}/suricata.log && tail -n 200 {{ suricata_log_dir | default('/var/log/suricata') }}/suricata.log || true
+  args: { executable: /bin/bash }
+  register: suri_log
+  changed_when: false
+  failed_when: false
+
+- name: Show suricata.log (tail)
+  ansible.builtin.debug:
+    msg: "{{ suri_log.stdout | default('') }}"
+
+
+- name: Fail if Suricata parse test failed
+  ansible.builtin.fail:
+    msg: "Suricata -T failed (rc={{ suri_test.rc }})"
+  when: suri_test.rc != 0
+
+- name: Install suricata-update
+  ansible.builtin.apt:
+    name: suricata-update
+    state: present
+    update_cache: yes
+
+- name: Update rules with suricata-update
+  ansible.builtin.command: suricata-update
+  changed_when: "'Rules written' in suri_update.stdout|default('')"
+  register: suri_update
+
+# Ensure interface exists
+- name: Assert the monitoring interface exists on this host
+  ansible.builtin.assert:
+    that:
+      - ids_nids_interface is defined
+      - ids_nids_interface | length > 0
+      - ids_nids_interface in ansible_facts.interfaces
+    fail_msg: "Interface {{ ids_nids_interface }} not present on this VM."
+
+# Confirm Suricata will really use enp1s0
+- name: Check parsed interface in Suricata config
+  ansible.builtin.shell: >
+    suricata --dump-config -c {{ suricata_config_path }} |
+    awk -F': ' '/^af-packet\.0\.interface:/{print $2}'
+  args: { executable: /bin/bash }
+  register: _suri_nic
+  changed_when: false
+
+- name: Fail if parsed interface is not enp1s0
+  ansible.builtin.assert:
+    that:
+      - _suri_nic.stdout == ids_nids_interface
+    fail_msg: "Suricata parsed interface '{{ _suri_nic.stdout }}', expected '{{ ids_nids_interface }}'."
+
+# Parse-validation (supported method to verify config)
+- name: Validate Suricata configuration (parse test)
+  ansible.builtin.command: >
+    suricata -T -c {{ suricata_config_path }} -l {{ suricata_log_dir | default('/var/log/suricata') }}
+  register: suri_test
+  changed_when: false
+  failed_when: suri_test.rc != 0
+
+
+- name: Enable and start Suricata
+  ansible.builtin.service:
+    name: "{{ suricata_svc }}"
+    enabled: yes
+    state: started

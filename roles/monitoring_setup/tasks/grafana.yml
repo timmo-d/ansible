@@ -1,0 +1,68 @@
+# --- Grafana repo & key (official APT) ---
+- name: Ensure APT keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Grafana GPG key (ASCII)
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg.key
+    dest: /etc/apt/keyrings/grafana.asc
+    mode: '0644'
+
+- name: Convert Grafana key to keyring (dearmor)
+  ansible.builtin.command: >
+    gpg --dearmor -o {{ grafana_keyring_path }} /etc/apt/keyrings/grafana.asc
+  args:
+    creates: "{{ grafana_keyring_path }}"
+
+- name: Add Grafana APT repository (signed-by)
+  ansible.builtin.apt_repository:
+    repo: "{{ grafana_repo_line }}"
+    filename: grafana
+    state: present
+
+- name: Update apt cache after adding Grafana repo
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install Grafana
+  ansible.builtin.apt:
+    name:
+      - "{{ grafana_pkg }}"
+    state: present
+
+
+
+
+    - name: Deploy Grafana ini (hardened)
+  ansible.builtin.template:
+    src: grafana.ini.j2
+    dest: "{{ grafana_ini_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart grafana
+
+- name: Ensure Grafana dashboards directory exists
+  ansible.builtin.file:
+    path: /var/lib/grafana/dashboards
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: '0755'
+    
+- name: Install example Grafana dashboard json
+  ansible.builtin.copy:
+    src: grafana_dashboard_config.json
+    dest: /var/lib/grafana/dashboards/monitoring_dashboard.json
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable and start Grafana
+  ansible.builtin.service:
+    name: "{{ grafana_svc }}"
+    enabled: yes
+    state: started

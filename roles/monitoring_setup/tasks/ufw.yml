@@ -1,0 +1,35 @@
+- name: Install UFW
+  ansible.builtin.apt:
+    name:
+      - "{{ ufw_pkg }}"
+    state: present
+    - name: UFW - ensure enabled with default deny inbound
+  community.general.ufw:
+    state: enabled
+    policy: "{{ ufw_default_input_policy }}"
+
+- name: UFW - allow required TCP service ports
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    from: "{{ mgmt_allow_cidrs | join(',') }}"
+  loop: "{{ ufw_allowed_tcp_ports }}"
+
+- name: UFW - allow required UDP service ports
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: udp
+    from: "{{ mgmt_allow_cidrs | join(',') }}"
+  loop: "{{ ufw_allowed_udp_ports }}"
+
+- name: Optionally harden SSH daemon (PasswordAuthentication=no)
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    create: no
+  when: ssh_hardening_enable
+  notify:
+    - restart rsyslog  # placeholder; real deployment should restart ssh

@@ -1,0 +1,36 @@
+- name: Install rSyslog
+  ansible.builtin.apt:
+    name:
+      - "{{ rsyslog_pkg }}"
+    state: present
+
+- name: Deploy rsyslog configuration (forward to central server)
+  ansible.builtin.template:
+    src: rsyslog.conf.j2
+    dest: "{{ rsyslog_conf_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart rsyslog
+
+- name: Enable and start rsyslog
+  ansible.builtin.service:
+    name: "{{ rsyslog_svc }}"
+    enabled: yes
+    state: started
+
+- name: Install logrotate policy for Elasticsearch logs (example)
+  ansible.builtin.copy:
+    src: elasticsearch_logrotate.conf
+    dest: /etc/logrotate.d/elasticsearch
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install logrotate policy for Suricata logs
+  ansible.builtin.copy:
+    src: suricata_logrotate.conf
+    dest: /etc/logrotate.d/suricata
+    owner: root
+    group: root
+    mode: '0644'

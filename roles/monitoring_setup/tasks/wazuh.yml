@@ -1,0 +1,48 @@
+# --- Wazuh Agent repository for Ubuntu 24.04 ---
+- name: Ensure APT keyrings dir exists
+  ansible.builtin.file:
+    path: /usr/share/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Install Wazuh repository GPG key
+  ansible.builtin.shell: |
+    set -e
+    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH \
+      | gpg --dearmor | tee {{ wazuh_key_path }} > /dev/null
+    chmod 644 {{ wazuh_key_path }}
+  args:
+    creates: "{{ wazuh_key_path }}"
+
+- name: Add Wazuh APT repository (signed-by)
+  ansible.builtin.apt_repository:
+    repo: "{{ wazuh_repo_line }}"
+    filename: wazuh
+    state: present
+
+- name: Update apt cache after adding Wazuh repo
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install Wazuh agent
+  ansible.builtin.apt:
+    name:
+      - "{{ ossec_pkg }}"
+      - "{{ node_exporter_pkg }}"
+    state: present
+
+- name: Deploy OSSEC configuration
+  ansible.builtin.template:
+    src: ossec.conf.j2
+    dest: "{{ ossec_conf_path }}"
+    owner: root
+    group: ossec
+    mode: '0640'
+  notify: restart ossec
+
+- name: Enable and start Wazuh Agent
+  ansible.builtin.service:
+    name: "{{ ossec_svc }}"
+    enabled: yes
+    state: started
+  ignore_errors: yes
