@@ -44,21 +44,7 @@
       - logstash
     state: present
 
-- name: Enable and start Elasticsearch
-  become: true
-  systemd:
-    name: elasticsearch
-    enabled: true
-    state: started
-
-- name: Enable and start Logstash
-  become: true
-  systemd:
-    name: logstash
-    enabled: true
-    state: started
-
-    
+   
 - name: Deploy Logstash pipeline for Beats/syslog
   ansible.builtin.template:
     src: logstash.conf.j2
@@ -91,12 +77,12 @@
 #    state: present
 #    update_cache: yes
 
-- name: Enable and start Elasticsearch
-  become: true
-  systemd:
-    name: elasticsearch
-    enabled: true
-    state: started
+#- name: Enable and start Elasticsearch
+#  become: true
+#  systemd:
+#    name: elasticsearch
+#    enabled: true
+#    state: started
 
 
 
@@ -145,7 +131,7 @@
     state: touch
     owner: root
     group: elasticsearch
-    mode: '0644'
+    mode: '0664'
 
 - name: Enable and start Elasticsearch
   ansible.builtin.service:
