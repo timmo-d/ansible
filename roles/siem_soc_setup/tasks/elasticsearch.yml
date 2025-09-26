@@ -53,6 +53,14 @@
     group: elasticsearch
     mode: '0750'
 
+- name: Ensure Elasticsearch data directory exists
+  ansible.builtin.file:
+    path: "{{ elasticsearch_data_dir }}"
+    state: directory
+    owner: elasticsearch
+    group: elasticsearch
+    mode: '0750'
+
 - name: Ensure Elasticsearch log files exist with correct ownership and permissions
   become: true
   file:

@@ -11,6 +11,7 @@ wazuh_api_pkg: wazuh-indexer # adjust if using separate indexer; placeholder
 # Config paths
 elasticsearch_yml_path: /etc/elasticsearch/elasticsearch.yml
 elasticsearch_log_dir: /usr/share/elasticsearch/logs
+elasticsearch_data_dir: /usr/share/elasticsearch/data
 elasticsearch_log_file: /usr/share/elasticsearch/logs/gc.log
 logstash_pipeline_path: /etc/logstash/conf.d/01-beats.conf
 kibana_yml_path: /etc/kibana/kibana.yml
