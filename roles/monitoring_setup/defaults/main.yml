@@ -63,7 +63,7 @@ suricata_log_log: /var/log/suricata/stats.log
 suricata_unix_socket_enabled: true
 suricata_unix_socket_path: /var/run/suricata-command.socket
 
-
+default_interface: enp1s0
 
 
 

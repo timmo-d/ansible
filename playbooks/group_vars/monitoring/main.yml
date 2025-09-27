@@ -10,7 +10,7 @@
 ids_nids_interface: "enp1s0"  # Select a dedicated SPAN/TAP interface per NSA guidance on monitoring at choke points.
 
 # Address space considered trusted/internal (Zeek & Suricata). Use CIDR notation.
-home_net: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]  # Tune to enclave boundaries per STIG/SRG.
+home_net: ["10.0.0.0/8", "172.16.0.0/12", "192.168.1.0/24"]  # Tune to enclave boundaries per STIG/SRG.
 HTTP_SERVERS: "$home_net"
 
 # Management networks that are allowed to access web UIs (Grafana/Kibana/Prometheus UIs)
@@ -74,7 +74,7 @@ suricata_af_packet:
 zeek_log_dir: "/var/log/zeek"
 zeek_site_policies:
   - "local.zeek"   # Add custom policies here
-zeek_networks: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"  # networks.cfg content
+zeek_networks: "10.0.0.0/8,172.16.0.0/12,192.168.1.0/24"  # networks.cfg content
 
 # OSSEC (for local HIDS on this host)
 ossec_alert_level: 7

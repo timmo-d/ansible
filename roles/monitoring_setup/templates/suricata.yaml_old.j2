@@ -1,0 +1,95 @@
+# Suricata configuration (hardened baseline)
+# Aligns with IDPS SRG (SI-4) and DISA STIG logging requirements.
+# Variables defined in group_vars.
+
+%YAML 1.1
+---
+vars:
+  address-groups:
+    HOME_NET: "[{{ home_net | join(', ') }}]"   # Define protected networks
+    EXTERNAL_NET: "!$HOME_NET"
+
+
+
+
+# IDS-only AF_PACKET (single interface)
+af-packet:
+{% for afp in suricata_af_packet %}
+  - interface: {{ afp.interface }}      # e.g., {{ ids_nids_interface }}
+    cluster-id: {{ afp.cluster_id | default(99) }}
+    cluster-type: {{ afp.cluster_type | default('cluster_flow') }}
+    defrag: {{ 'yes' if afp.defrag else 'no' }}
+    checksum-checks: {{ afp.checksum_check | default('auto') }}
+    # NOTE: Do NOT set copy-mode/copy-iface for IDS-only
+{% endfor %}
+
+
+flow:
+  emergency-recovery: 30
+
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: /var/log/suricata/eve.json
+      community-id: yes
+      community-id-seed: 0
+      types:
+        - alert
+        - dns
+        - http
+        - tls
+        - flow
+        - stats
+      rotate-interval: 3600   # hourly rotation to control file size
+  - stats:
+      enabled: yes
+      filename: /var/log/suricata/stats.log
+
+logging:
+  default-log-level: notice
+  outputs:
+    - file:
+        enabled: yes
+        filename: /var/log/suricata/suricata.log
+
+engine-analysis:
+  rules-fast-pattern: yes
+
+mpm-algo: ac
+detect:
+  profile: {{ suricata_detect_profile }}
+  sgh-mpm-context: auto
+  prefilter: yes
+
+app-layer:
+  protocols:
+    tls:
+      enabled: yes
+      detection-ports:
+        dp: 443
+    modbus:
+      enabled: yes
+      detection-enabled: yes
+
+
+# Performance tuning
+max-pending-packets: {{ suricata_max_pending_packets }}
+runmode: {{ suricata_runmode }}
+default-packet-size: {{ suricata_default_packet_size }}
+
+# Drop privileges
+run-as:
+  user: {{ suricata_user }}
+  group: {{ suricata_group }}
+
+default-rule-path: /var/lib/suricata/rules
+rule-files:
+  - suricata.rules
+classification-file: /etc/suricata/classification.config
+reference-config-file: /etc/suricata/reference.config
+
+# --- Unix command socket (suricatasc) ---
+unix-command:
+  enabled: {{ 'yes' if suricata_unix_socket_enabled else 'no' }}
+  filename: {{ suricata_unix_socket_path }}
