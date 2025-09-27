@@ -8,7 +8,8 @@ http.port: {{ elasticsearch_http_port }}
 discovery.type: single-node
 
 # Security (enable built-in auth; configure TLS out-of-band)
-xpack.security.enabled: {{ 'true' if elasticsearch_security_enable else 'false' }}
+xpack.security.enabled: false
+# xpack.security.enabled: {{ 'true' if elasticsearch_security_enable else 'false' }}
 # xpack.security.http.ssl.enabled: true
 # xpack.security.http.ssl.key: /etc/elasticsearch/certs/http.key
 # xpack.security.http.ssl.certificate: /etc/elasticsearch/certs/http.crt
