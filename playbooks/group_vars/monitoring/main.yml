@@ -85,7 +85,7 @@ elastic_version: "9.x"
 elasticsearch_heap: "2g"
 elasticsearch_bind_host: "0.0.0.0"
 elasticsearch_http_port: 9200
-elasticsearch_security_enable: false # true
+elasticsearch_security_enable: true
 elasticsearch_username: "elastic"
 elasticsearch_password: "ChangeMeElasticsearch!"  # Use Vault in production
 elasticsearch_repo_url: "https://artifacts.elastic.co/packages/{{ elastic_version }}/apt"
