@@ -1,130 +1,102 @@
----
-- name: Install & configure Elasticsearch (Ubuntu 24.04)
-  hosts: elasticsearch_hosts
-  become: true
+- name: Ensure apt prerequisites are present
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - gnupg
+      - curl
+    state: present
+    update_cache: yes
 
-  vars:
-    # === Version/Repo ===
-    es_major_version: "9.x"                        # change to "8.x" if needed
-    es_repo_file: "elastic-{{ es_major_version }}.list"
-    es_apt_keyring: "/usr/share/keyrings/elasticsearch-keyring.gpg"
+- name: Add Elastic GPG key to keyring (dearmored)
+  ansible.builtin.command: >
+    bash -lc "curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch |
+    gpg --dearmor -o {{ es_apt_keyring }}"
+  args:
+    creates: "{{ es_apt_keyring }}"
+  # Elastic recommends dearmor + signed-by with /usr/share/keyrings
+  # https://www.elastic.co/docs/deploy-manage/deploy/self-managed/install-elasticsearch-with-debian-package
 
-    # === Basic node config ===
-    es_cluster_name: "es-single"
-    es_node_name: "{{ inventory_hostname }}"
-    es_network_host: "0.0.0.0"                     # or set to a specific IP
-    es_http_port: 9200
+- name: Add Elastic APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by={{ es_apt_keyring }}] https://artifacts.elastic.co/packages/{{ es_major_version }}/apt stable main"
+    filename: "{{ es_repo_file | regex_replace('\\/', '-') }}"
+    state: present
+  register: es_repo
 
-    # === Cluster mode & security ===
-    es_single_node: true                           # sets discovery.type: single-node
-    es_disable_security: true                      # quick start only; not for prod
-    # === Heap (optional). Empty/omit to keep Elastic's automatic sizing ===
-    es_heap_size_gb: 2
+- name: apt update when repo changes
+  ansible.builtin.apt:
+    update_cache: yes
+  when: es_repo.changed
 
-  tasks:
-    - name: Ensure apt prerequisites are present
-      ansible.builtin.apt:
-        name:
-          - ca-certificates
-          - gnupg
-          - curl
-        state: present
-        update_cache: yes
+- name: Install Elasticsearch
+  ansible.builtin.apt:
+    name: elasticsearch
+    state: present
 
-    - name: Add Elastic GPG key to keyring (dearmored)
-      ansible.builtin.command: >
-        bash -lc "curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch |
-        gpg --dearmor -o {{ es_apt_keyring }}"
-      args:
-        creates: "{{ es_apt_keyring }}"
-      # Elastic recommends dearmor + signed-by with /usr/share/keyrings
-      # https://www.elastic.co/docs/deploy-manage/deploy/self-managed/install-elasticsearch-with-debian-package
+- name: Configure /etc/elasticsearch/elasticsearch.yml
+  ansible.builtin.copy:
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: root
+    group: elasticsearch
+    mode: "0640"
+    content: |
+      cluster.name: {{ es_cluster_name }}
+      node.name: {{ es_node_name }}
+      network.host: {{ es_network_host }}
+      http.port: {{ es_http_port }}
+      {% if es_single_node %}
+      discovery.type: single-node
+      {% endif %}
+      {% if es_disable_security %}
+      xpack.security.enabled: false
+      {% endif %}
+  notify: Restart Elasticsearch
 
-    - name: Add Elastic APT repository
-      ansible.builtin.apt_repository:
-        repo: "deb [signed-by={{ es_apt_keyring }}] https://artifacts.elastic.co/packages/{{ es_major_version }}/apt stable main"
-        filename: "{{ es_repo_file | regex_replace('\\/', '-') }}"
-        state: present
-      register: es_repo
+- name: Optionally set JVM heap size (use ≤50% of RAM)
+  ansible.builtin.copy:
+    dest: /etc/elasticsearch/jvm.options.d/heap.options
+    owner: root
+    group: elasticsearch
+    mode: "0644"
+    content: |
+      -Xms{{ es_heap_size_gb }}g
+      -Xmx{{ es_heap_size_gb }}g
+  when: es_heap_size_gb is defined and (es_heap_size_gb | int) > 0
+  notify: Restart Elasticsearch
+  # For heap sizing guidance and jvm.options.d usage, see Elastic docs. [5](https://www.elastic.co/docs/reference/elasticsearch/jvm-settings)
 
-    - name: apt update when repo changes
-      ansible.builtin.apt:
-        update_cache: yes
-      when: es_repo.changed
+# Optional: the .deb normally handles vm.max_map_count for you; keep this if you want to enforce it explicitly.
+- name: Ensure vm.max_map_count is sufficient (optional)
+  ansible.builtin.sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    state: present
+    reload: yes
+  # Elastic notes the Debian package configures this automatically. [6](https://www.elastic.co/docs/deploy-manage/deploy/self-managed/vm-max-map-count)
 
-    - name: Install Elasticsearch
-      ansible.builtin.apt:
-        name: elasticsearch
-        state: present
+- name: Enable and start Elasticsearch
+  ansible.builtin.systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
+    daemon_reload: yes
 
-    - name: Configure /etc/elasticsearch/elasticsearch.yml
-      ansible.builtin.copy:
-        dest: /etc/elasticsearch/elasticsearch.yml
-        owner: root
-        group: elasticsearch
-        mode: "0640"
-        content: |
-          cluster.name: {{ es_cluster_name }}
-          node.name: {{ es_node_name }}
-          network.host: {{ es_network_host }}
-          http.port: {{ es_http_port }}
-          {% if es_single_node %}
-          discovery.type: single-node
-          {% endif %}
-          {% if es_disable_security %}
-          xpack.security.enabled: false
-          {% endif %}
-      notify: Restart Elasticsearch
+- name: Wait for HTTP port
+  ansible.builtin.wait_for:
+    host: "{{ ansible_default_ipv4.address | default('127.0.0.1') }}"
+    port: "{{ es_http_port }}"
+    timeout: 60
 
-    - name: Optionally set JVM heap size (use ≤50% of RAM)
-      ansible.builtin.copy:
-        dest: /etc/elasticsearch/jvm.options.d/heap.options
-        owner: root
-        group: elasticsearch
-        mode: "0644"
-        content: |
-          -Xms{{ es_heap_size_gb }}g
-          -Xmx{{ es_heap_size_gb }}g
-      when: es_heap_size_gb is defined and (es_heap_size_gb | int) > 0
-      notify: Restart Elasticsearch
-      # For heap sizing guidance and jvm.options.d usage, see Elastic docs. [5](https://www.elastic.co/docs/reference/elasticsearch/jvm-settings)
+- name: Quick health check (no auth if security disabled)
+  ansible.builtin.uri:
+    url: "http://localhost:{{ es_http_port }}/_cluster/health"
+    return_content: yes
+  register: es_health
+  when: es_disable_security | bool
 
-    # Optional: the .deb normally handles vm.max_map_count for you; keep this if you want to enforce it explicitly.
-    - name: Ensure vm.max_map_count is sufficient (optional)
-      ansible.builtin.sysctl:
-        name: vm.max_map_count
-        value: "262144"
-        state: present
-        reload: yes
-      # Elastic notes the Debian package configures this automatically. [6](https://www.elastic.co/docs/deploy-manage/deploy/self-managed/vm-max-map-count)
+- name: Show cluster health (debug)
+  ansible.builtin.debug:
+    var: es_health.json
+  when: es_disable_security | bool
 
-    - name: Enable and start Elasticsearch
-      ansible.builtin.systemd:
-        name: elasticsearch
-        enabled: yes
-        state: started
-        daemon_reload: yes
 
-    - name: Wait for HTTP port
-      ansible.builtin.wait_for:
-        host: "{{ ansible_default_ipv4.address | default('127.0.0.1') }}"
-        port: "{{ es_http_port }}"
-        timeout: 60
-
-    - name: Quick health check (no auth if security disabled)
-      ansible.builtin.uri:
-        url: "http://localhost:{{ es_http_port }}/_cluster/health"
-        return_content: yes
-      register: es_health
-      when: es_disable_security | bool
-
-    - name: Show cluster health (debug)
-      ansible.builtin.debug:
-        var: es_health.json
-      when: es_disable_security | bool
-
-  handlers:
-    - name: Restart Elasticsearch
-      ansible.builtin.systemd:
-        name: elasticsearch
-        state: restarted

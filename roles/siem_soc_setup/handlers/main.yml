@@ -18,3 +18,9 @@
   ansible.builtin.service:
     name: wazuh-manager
     state: restarted
+
+
+- name: Restart Elasticsearch
+  ansible.builtin.systemd:
+    name: elasticsearch
+    state: restarted

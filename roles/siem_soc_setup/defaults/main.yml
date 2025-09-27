@@ -25,3 +25,28 @@ wazuh_manager_svc: wazuh-manager
 
 elasticsearch_user: elasticsearch
 elasticsearch_group: elasticsearch
+
+
+
+
+
+
+
+
+
+# === Version/Repo ===
+es_major_version: "9.x"                        # change to "8.x" if needed
+es_repo_file: "elastic-{{ es_major_version }}.list"
+es_apt_keyring: "/usr/share/keyrings/elasticsearch-keyring.gpg"
+
+# === Basic node config ===
+es_cluster_name: "es-single"
+es_node_name: "{{ inventory_hostname }}"
+es_network_host: "0.0.0.0"                     # or set to a specific IP
+es_http_port: 9200
+
+# === Cluster mode & security ===
+es_single_node: true                           # sets discovery.type: single-node
+es_disable_security: true                      # quick start only; not for prod
+# === Heap (optional). Empty/omit to keep Elastic's automatic sizing ===
+es_heap_size_gb: 2
