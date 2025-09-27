@@ -121,11 +121,11 @@
   ansible.builtin.systemd:
     daemon_reload: yes
 
-#- name: Enable and start Elasticsearch (package service)
-#  ansible.builtin.systemd:
-#    name: elasticsearch
-#    enabled: yes
-#    state: started
+- name: Enable and start Elasticsearch (package service)
+  ansible.builtin.systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
 
 # Sanity check: verify the process owner is 'elasticsearch'
 - name: Get Elasticsearch MainPID
