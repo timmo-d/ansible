@@ -87,7 +87,17 @@
     - /var/log/elasticsearch
 
 # Force the service to run as the right user, regardless of prior overrides
+- name: Ensure systemd drop-in directory exists for elasticsearch
+  become: true
+  ansible.builtin.file:
+    path: /etc/systemd/system/elasticsearch.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Create systemd override to enforce elasticsearch user/group
+  become: true
   ansible.builtin.copy:
     dest: /etc/systemd/system/elasticsearch.service.d/override.conf
     mode: "0644"
@@ -96,6 +106,19 @@
       User=elasticsearch
       Group=elasticsearch
   notify: Restart Elasticsearch service
+
+- name: Reload systemd units
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Enable and start Elasticsearch (package service)
+  become: true
+  ansible.builtin.systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
+
 
 - name: Reload systemd units (if override changed)
   ansible.builtin.systemd:
