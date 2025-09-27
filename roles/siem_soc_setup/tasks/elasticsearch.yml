@@ -24,11 +24,11 @@
     executable: /bin/bash
 
 
-- name: Add Elastic APT repository (version 8.x)
+- name: Add Elastic APT repository (version 9.x)
   become: true
   copy:
-    dest: /etc/apt/sources.list.d/elastic-8.x.list
-    content: 'deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main'
+    dest: /etc/apt/sources.list.d/elastic-9.x.list
+    content: 'deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/9.x/apt stable main'
     mode: '0644'
 
 - name: Update apt cache
