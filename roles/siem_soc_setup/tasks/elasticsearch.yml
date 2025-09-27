@@ -111,8 +111,8 @@
     mode: "0644"
     content: |
       [Service]
-      User=elasticsearch
-      Group=elasticsearch
+      User=root
+      Group=root
   notify: Restart Elasticsearch service
 
 - name: Reload systemd units
