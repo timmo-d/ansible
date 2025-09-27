@@ -24,3 +24,9 @@
   ansible.builtin.systemd:
     name: elasticsearch
     state: restarted
+    
+- name: Restart Elasticsearch service
+  become: true
+  ansible.builtin.systemd:
+    name: elasticsearch
+    state: restarte
