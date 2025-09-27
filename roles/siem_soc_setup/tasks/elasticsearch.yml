@@ -75,9 +75,9 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    owner: elasticsearch
+    owner: root
     group: elasticsearch
-    mode: "0775"
+    mode: "0750"
   loop:
     - /var/lib/elasticsearch
     - /var/log/elasticsearch
@@ -87,7 +87,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    owner: elasticsearch
+    owner: root
     group: elasticsearch
     recurse: yes
   loop:
@@ -101,8 +101,8 @@
     path: /etc/systemd/system/elasticsearch.service.d
     state: directory
     owner: root
-    group: root
-    mode: "0775"
+    group: elasticsearch
+    mode: "0750"
 
 - name: Create systemd override to enforce elasticsearch user/group
   become: true
@@ -111,21 +111,10 @@
     mode: "0644"
     content: |
       [Service]
-      User=root
-      Group=root
+      User=elasticsearch
+      Group=elasticsearch
   notify: Restart Elasticsearch service
 
-- name: Reload systemd units
-  become: true
-  ansible.builtin.systemd:
-    daemon_reload: yes
-
-- name: Enable and start Elasticsearch (package service)
-  become: true
-  ansible.builtin.systemd:
-    name: elasticsearch
-    enabled: yes
-    state: started
 
 
 - name: Reload systemd units (if override changed)
