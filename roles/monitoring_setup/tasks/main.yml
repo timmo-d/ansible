@@ -17,14 +17,14 @@
 - name: Configure Zeek
   import_tasks: zeek.yml
 
-- name: Configure Wazuh Indexer
-  import_tasks: wazuh-indexer.yml
+#- name: Configure Wazuh Indexer
+#  import_tasks: wazuh-indexer.yml
 
-- name: Configure Wazuh Dashboard
-  import_tasks: wazuh-dashboard.yml
+#- name: Configure Wazuh Dashboard
+#  import_tasks: wazuh-dashboard.yml
 
-- name: Configure Wazuh Manager
-  import_tasks: wazuh-manager.yml
+#- name: Configure Wazuh Manager
+#  import_tasks: wazuh-manager.yml
 
 - name: Configure rSyslog
   import_tasks: rsyslog.yml

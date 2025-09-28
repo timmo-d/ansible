@@ -11,8 +11,8 @@
 - name: Configure Kibana
   import_tasks: kibana.yml
 
-- name: Configure Wazuh
-  import_tasks: wazuh.yml
+#- name: Configure Wazuh
+#  import_tasks: wazuh.yml
 
 - name: Configure UFW
   import_tasks: ufw.yml
