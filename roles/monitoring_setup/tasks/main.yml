@@ -39,33 +39,7 @@
 #      - "{{ ufw_pkg }}"
 #    state: present
 
-- name: Install CIFS utilities
-  apt:
-    name: cifs-utils
-    state: present
-    update_cache: yes
 
-- name: Create mount point
-  file:
-    path: /mnt/remote_data
-    state: directory
-
-- name: Ensure mount point exists
-  file:
-    path: /mnt/remote_data
-    state: directory
-
-- name: Add CIFS mount entry to /etc/fstab
-  blockinfile:
-    path: /etc/fstab
-    block: |
-      # CIFS mount for Elasticsearch backup
-      //192.168.1.106/data /mnt/remote_data cifs guest,nounix,noserverino,iocharset=utf8,file_mode=0777,dir_mode=0777 0 0
-
-- name: Mount CIFS share
-  command: mount /mnt/remote_data
-  args:
-    warn: false
 
 - name: Copy elasticsearch.yml to mounted share
   copy:
