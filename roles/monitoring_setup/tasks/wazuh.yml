@@ -24,53 +24,13 @@
   apt:
     update_cache: yes
 
-- name: Install Wazuh Indexer
-  apt:
-    name: wazuh-indexer={{ wazuh_version }}
-    state: present
-  when: ansible_os_family == "Debian"
-
-- name: Configure JVM memory
-  lineinfile:
-    path: /etc/wazuh-indexer/jvm.options
-    regexp: '^(-Xms|-Xmx)'
-    line: "-Xms1024m"
-  notify: restart wazuh-indexer
-
-- name: Start Wazuh Indexer
-  systemd:
-    name: wazuh-indexer
-    enabled: yes
-    state: started
-
-
-
-- name: Install Wazuh manager
-  apt:
-    name: wazuh-manager
-    state: present
-
-- name: Install Wazuh dashboard
-  apt:
-    name: wazuh-dashboard
-    state: present
 
 
 
 
 
 
-- name: Enable and start Wazuh manager
-  systemd:
-    name: wazuh-manager
-    enabled: yes
-    state: started
 
-- name: Enable and start Wazuh dashboard
-  systemd:
-    name: wazuh-dashboard
-    enabled: yes
-    state: started
 
 - name: Install Filebeat
   apt:

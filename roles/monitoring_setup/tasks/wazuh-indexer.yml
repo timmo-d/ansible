@@ -1,6 +1,6 @@
 - name: Install Wazuh Indexer
   apt:
-    name: wazuh-indexer={{ wazuh_version }}
+    name: wazuh-indexer
     state: present
   when: ansible_os_family == "Debian"
 
@@ -11,15 +11,17 @@
     line: "-Xms1024m"
   notify: restart wazuh-indexer
 
-- name: Copy certificates
-  copy:
-    src: files/indexer.pem
-    dest: /etc/wazuh-indexer/certs/indexer.pem
-    owner: wazuh-indexer
-    mode: '0400'
+#- name: Copy certificates
+#  copy:
+#    src: files/indexer.pem
+#    dest: /etc/wazuh-indexer/certs/indexer.pem
+#    owner: wazuh-indexer
+#    mode: '0400'
 
 - name: Start Wazuh Indexer
   systemd:
     name: wazuh-indexer
     enabled: yes
     state: started
+
+

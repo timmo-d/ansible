@@ -17,8 +17,14 @@
 - name: Configure Zeek
   import_tasks: zeek.yml
 
-- name: Configure Wazuh
-  import_tasks: wazuh.yml
+- name: Configure Wazuh Indexer
+  import_tasks: wazuh-indexer.yml
+
+- name: Configure Wazuh Dashboard
+  import_tasks: wazuh-dashboard.yml
+
+- name: Configure Wazuh Manager
+  import_tasks: wazuh-manager.yml
 
 - name: Configure rSyslog
   import_tasks: rsyslog.yml
@@ -26,18 +32,10 @@
 - name: Configure UFW
   import_tasks: ufw.yml
 
-#- name: Install monitoring packages
-#  ansible.builtin.apt:
-#    name:
-#      - "{{ suricata_pkg }}"
-#      - "{{ zeek_pkg }}"
-#      - "{{ ossec_pkg }}"
-#      - "{{ prometheus_pkg }}" 
-#      - "{{ node_exporter_pkg }}"
-#      - "{{ grafana_pkg }}"
-#      - "{{ rsyslog_pkg }}"
-#      - "{{ ufw_pkg }}"
-#    state: present
+
+
+
+
 
 
 

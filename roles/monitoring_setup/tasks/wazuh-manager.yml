@@ -1,0 +1,20 @@
+- name: Install Wazuh manager
+  apt:
+    name: wazuh-manager
+    state: present
+
+- name: Install Wazuh dashboard
+  apt:
+    name: wazuh-dashboard
+    state: present
+
+
+
+
+
+
+- name: Enable and start Wazuh manager
+  systemd:
+    name: wazuh-manager
+    enabled: yes
+    state: started
