@@ -111,3 +111,13 @@ wazuh_cluster_enabled: false
 # - Default deny inbound, allow only management ranges to UI ports per NSA NISEG.
 # - Enable secure transport (TLS) for rsyslog and Elastic components before production cutover.
 # - Map controls to NIST 800-53: AU-2/6/12 (logging), SI-4 (IDS/IPS), AC-4 (boundary protection), CM-6 (config mgmt).
+
+
+
+
+
+
+wazuh_version: "4.13.1"
+filebeat_version: "7.10.2"
+http_port: 443
+offline_install: false
