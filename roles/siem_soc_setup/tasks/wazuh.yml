@@ -7,6 +7,7 @@
   ansible.builtin.apt_repository:
     repo: "deb https://packages.wazuh.com/4.x/apt/ stable main"
     filename: wazuh
+    state: present
 
 - name: Install Wazuh Manager
   ansible.builtin.apt:
