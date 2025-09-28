@@ -5,26 +5,26 @@
     cache_valid_time: 3600
 
 
-- name: Configure Suricata
-  import_tasks: suricata.yml
+#- name: Configure Suricata
+#  import_tasks: suricata.yml
 
-- name: Configure Prometheus
-  import_tasks: prometheus.yml
+#- name: Configure Prometheus
+#  import_tasks: prometheus.yml
 
-- name: Configure Grafana
-  import_tasks: grafana.yml
+#- name: Configure Grafana
+#  import_tasks: grafana.yml
 
-- name: Configure Zeek
-  import_tasks: zeek.yml
+#- name: Configure Zeek
+#  import_tasks: zeek.yml
 
 - name: Configure Wazuh
   import_tasks: wazuh.yml
 
-- name: Configure rSyslog
-  import_tasks: rsyslog.yml
+#- name: Configure rSyslog
+#  import_tasks: rsyslog.yml
 
-- name: Configure UFW
-  import_tasks: ufw.yml
+#- name: Configure UFW
+#  import_tasks: ufw.yml
 
 #- name: Install monitoring packages
 #  ansible.builtin.apt:

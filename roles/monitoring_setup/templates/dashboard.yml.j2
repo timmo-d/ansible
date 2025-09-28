@@ -1,0 +1,29 @@
+---
+server:
+  host: 0.0.0.0
+  port: 443
+  ssl:
+    enabled: true
+    key: /etc/wazuh-dashboard/certs/dashboard-key.pem
+    cert: /etc/wazuh-dashboard/certs/dashboard-cert.pem
+
+elasticsearch:
+  hosts:
+    - https://localhost:9200
+  username: admin
+  password: admin
+  ssl:
+    verification_mode: none
+
+wazuh:
+  api:
+    url: https://localhost
+    port: 55000
+    username: wazuh-wui
+    password: wazuh-wui
+    ssl:
+      verification_mode: none
+
+logging:
+  level: info
+  file: /var/log/wazuh-dashboard/dashboard.log

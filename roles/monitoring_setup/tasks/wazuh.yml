@@ -1,48 +1,105 @@
-# --- Wazuh Agent repository for Ubuntu 24.04 ---
-- name: Ensure APT keyrings dir exists
-  ansible.builtin.file:
-    path: /usr/share/keyrings
-    state: directory
-    mode: '0755'
-
-- name: Install Wazuh repository GPG key
-  ansible.builtin.shell: |
-    set -e
-    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH \
-      | gpg --dearmor | tee {{ wazuh_key_path }} > /dev/null
-    chmod 644 {{ wazuh_key_path }}
-  args:
-    creates: "{{ wazuh_key_path }}"
-
-- name: Add Wazuh APT repository (signed-by)
-  ansible.builtin.apt_repository:
-    repo: "{{ wazuh_repo_line }}"
-    filename: wazuh
+- name: Install required dependencies
+  apt:
+    name:
+      - curl
+      - apt-transport-https
+      - lsb-release
+      - gnupg
     state: present
-
-- name: Update apt cache after adding Wazuh repo
-  ansible.builtin.apt:
     update_cache: yes
 
-- name: Install Wazuh agent
-  ansible.builtin.apt:
-    name:
-      - "{{ ossec_pkg }}"
-      - "{{ node_exporter_pkg }}"
+- name: Download and add Wazuh GPG key
+  shell: |
+    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --dearmor -o /usr/share/keyrings/wazuh-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/wazuh-archive-keyring.gpg
+
+- name: Add Wazuh repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/wazuh-archive-keyring.gpg] https://packages.wazuh.com/4.x/apt/ stable main"
+    state: present
+    filename: wazuh
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install Wazuh manager
+  apt:
+    name: wazuh-manager
     state: present
 
-- name: Deploy OSSEC configuration
-  ansible.builtin.template:
-    src: ossec.conf.j2
-    dest: "{{ ossec_conf_path }}"
-    owner: root
-    group: root # ossec
-    mode: '0640'
-  notify: restart ossec
+- name: Install Wazuh dashboard
+  apt:
+    name: wazuh-dashboard
+    state: present
 
-- name: Enable and start Wazuh Agent
-  ansible.builtin.service:
-    name: "{{ ossec_svc }}"
+- name: Enable and start Wazuh manager
+  systemd:
+    name: wazuh-manager
     enabled: yes
     state: started
-  ignore_errors: yes
+
+- name: Enable and start Wazuh dashboard
+  systemd:
+    name: wazuh-dashboard
+    enabled: yes
+    state: started
+
+- name: Install Wazuh agent
+  apt:
+    name: wazuh-agent
+    state: present
+
+- name: Deploy custom Wazuh rules configuration
+  copy:
+    src: roles/wazuh/files/custom_rules.xml
+    dest: /var/ossec/etc/rules/custom_rules.xml
+    owner: root
+    group: ossec
+    mode: '0640'
+
+- name: Restart Wazuh agent
+  systemd:
+    name: wazuh-agent
+    state: restarted
+    enabled: yes
+
+- name: Download and add Elasticsearch GPG key
+  shell: |
+    curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/elasticsearch-keyring.gpg
+
+- name: Add Elasticsearch repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+    filename: elastic-8.x
+
+- name: Update apt cache after adding Elasticsearch repo
+  apt:
+    update_cache: yes
+
+- name: Install Elasticsearch
+  apt:
+    name: elasticsearch
+    state: present
+
+- name: Disable xpack security in elasticsearch.yml
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: '^xpack\\.security\\.enabled:'
+    line: 'xpack.security.enabled: false'
+    insertafter: EOF
+    state: present
+    owner: root
+    group: elasticsearch
+    mode: '0640'
+
+
+- name: Enable and start Elasticsearch service
+  systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
