@@ -6,5 +6,5 @@
   - group_vars/monitoring/main.yml
 
   roles:
-    - role: monitoring_setup
-    #- role: siem_soc_setup
+    #- role: monitoring_setup
+    - role: siem_soc_setup
