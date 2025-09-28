@@ -7,4 +7,4 @@
 
   roles:
     - role: monitoring_setup
-    # - role: siem_soc_setup
+    - role: siem_soc_setup

@@ -1,68 +1,25 @@
-- name: Install required packages
-  become: true
-  apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg
-    state: present
-
-- name: Download Elastic GPG key
-  become: true
-  get_url:
-    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    dest: /tmp/elastic-key.asc
-    mode: '0644'
-
-- name: Convert Elastic GPG key to keyring format
-  become: true
+- name: Download and add Elasticsearch GPG key
   shell: |
-    gpg --dearmor /tmp/elastic-key.asc
-    mv /tmp/elastic-key.asc.gpg /usr/share/keyrings/elastic-keyring.gpg
+    curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
   args:
-    executable: /bin/bash
+    creates: /usr/share/keyrings/elasticsearch-keyring.gpg
 
+- name: Add Elasticsearch repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main"
+    state: present
+    filename: elastic-8.x
 
-- name: Add Elastic APT repository (version 9.x)
-  become: true
-  copy:
-    dest: /etc/apt/sources.list.d/elastic-9.x.list
-    content: 'deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/9.x/apt stable main'
-    mode: '0644'
-
-- name: Update apt cache
-  become: true
+- name: Update apt cache after adding Elasticsearch repo
   apt:
     update_cache: yes
 
-- name: Install Elasticsearch and Logstash
-  become: true
+- name: Install Elasticsearch
   apt:
-    name:
-      - elasticsearch
-      - logstash
+    name: elasticsearch
     state: present
 
-   
-- name: Deploy Logstash pipeline for Beats/syslog
-  ansible.builtin.template:
-    src: logstash.conf.j2
-    dest: "{{ logstash_pipeline_path }}"
-    owner: root
-    group: root
-    mode: '0644'
-  notify: restart logstash
-
-- name: Enable and start Logstash
-  ansible.builtin.service:
-    name: "{{ logstash_svc }}"
-    enabled: yes
-    state: started
-
-
-
-- name: Deploy elasticsearch.yml (single-node secure-ready)
+- name: Deploy Elasticsearch config
   ansible.builtin.template:
     src: elasticsearch.yml.j2
     dest: "{{ elasticsearch_yml_path }}"
@@ -71,168 +28,8 @@
     mode: '0640'
   notify: restart elasticsearch
 
-- name: Ensure Elasticsearch data and log directories exist (package defaults)
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: root
-    group: elasticsearch
-    mode: "0750"
-  loop:
-    - /var/lib/elasticsearch
-    - /var/log/elasticsearch
-
-# If a manual foreground run created files as another user, fix it:
-- name: Ensure data and logs are owned by elasticsearch (recursive)
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: root
-    group: elasticsearch
-    recurse: yes
-  loop:
-    - /var/lib/elasticsearch
-    - /var/log/elasticsearch
-
-# Force the service to run as the right user, regardless of prior overrides
-- name: Ensure systemd drop-in directory exists for elasticsearch
-  become: true
-  ansible.builtin.file:
-    path: /etc/systemd/system/elasticsearch.service.d
-    state: directory
-    owner: root
-    group: elasticsearch
-    mode: "0750"
-
-- name: Create systemd override to enforce elasticsearch user/group
-  become: true
-  ansible.builtin.copy:
-    dest: /etc/systemd/system/elasticsearch.service.d/override.conf
-    mode: "0644"
-    content: |
-      [Service]
-      User=elasticsearch
-      Group=elasticsearch
-  notify: Restart Elasticsearch service
-
-
-
-- name: Reload systemd units (if override changed)
-  ansible.builtin.systemd:
-    daemon_reload: yes
-
-- name: Enable and start Elasticsearch (package service)
-  ansible.builtin.systemd:
+- name: Enable and start Elasticsearch service
+  systemd:
     name: elasticsearch
     enabled: yes
     state: started
-
-# Sanity check: verify the process owner is 'elasticsearch'
-- name: Get Elasticsearch MainPID
-  ansible.builtin.command: systemctl show -p MainPID --value elasticsearch
-  register: es_mainpid
-  changed_when: false
-
-- name: Get process owner for MainPID
-  ansible.builtin.command: "ps -o user= -p {{ es_mainpid.stdout | trim }}"
-  register: es_proc_owner
-  changed_when: false
-  when: es_mainpid.stdout | trim | length > 0 and es_mainpid.stdout | trim != "0"
-
-- name: Fail if Elasticsearch is not running as 'elasticsearch'
-  ansible.builtin.fail:
-    msg: "Elasticsearch is running as '{{ es_proc_owner.stdout | trim }}' (expected 'elasticsearch')."
-  when:
-    - es_mainpid.stdout | trim | length > 0
-    - es_mainpid.stdout | trim != "0"
-    - es_proc_owner.stdout | trim != "elasticsearch"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#- name: Install Elasticsearch
-#  become: true
-#  apt:
-#    name: elasticsearch
-#    state: present
-
-
-
-#- name: Install Elasticsearch
-#  ansible.builtin.apt:
-#    name:
-#      - "{{ elasticsearch_pkg }}"
-#    state: present
-#    update_cache: yes
-
-#- name: Enable and start Elasticsearch
-#  become: true
-#  systemd:
-#    name: elasticsearch
-#    enabled: true
-#    state: started
-
-
-
-#- name: Ensure elasticsearch group exists
-#  ansible.builtin.group:
-#    name: "{{ elasticsearch_group }}"
-#    system: yes
-
-#- name: Ensure elasticsearch user exists (no shell, no home)
-#  ansible.builtin.user:
-#    name: "{{ elasticsearch_user }}"
-#    group: "{{ elasticsearch_group }}"
-#    system: yes
-#    shell: /usr/sbin/nologin
-#    create_home: no
-
-#- name: Deploy elasticsearch.yml (single-node secure-ready)
-#  ansible.builtin.template:
-#    src: elasticsearch.yml.j2
-#    dest: "{{ elasticsearch_yml_path }}"
-#    owner: root
-#    group: elasticsearch
-#    mode: '0640'
-#  notify: restart elasticsearch
-
-#- name: Ensure Elasticsearch log directory exists
-#  ansible.builtin.file:
-#    path: "{{ elasticsearch_log_dir }}"
-#    state: directory
-#    owner: root
-#    group: elasticsearch
-#    mode: '0770'
-
-#- name: Ensure Elasticsearch data directory exists
-#  ansible.builtin.file:
-#    path: "{{ elasticsearch_data_dir }}"
-#    state: directory
-#    owner: root
-#    group: elasticsearch
-#    mode: '0770'
-
-#- name: Ensure Elasticsearch log files exist with correct ownership and permissions
-#  become: true
-#  file:
-#    path: "{{ elasticsearch_log_file }}"
-#    state: touch
-#    owner: root
-#    group: elasticsearch
-#    mode: '0640'
-
-#- name: Enable and start Elasticsearch
-#  ansible.builtin.service:
-#    name: "{{ elasticsearch_svc }}"
-#    enabled: yes
-#    state: started
