@@ -47,16 +47,6 @@
     state: started
 
 
-- name: Deploy custom Wazuh rules configuration
-  copy:
-    src: roles/wazuh/files/custom_rules.xml
-    dest: /var/ossec/etc/rules/custom_rules.xml
-    owner: root
-    group: ossec
-    mode: '0640'
-
-
-
 - name: Download and add Elasticsearch GPG key
   shell: |
     curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
