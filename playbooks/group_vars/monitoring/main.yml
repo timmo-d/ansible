@@ -33,6 +33,7 @@ ufw_allowed_tcp_ports:
   - "9090"   # Prometheus
   - "3000"   # Grafana
   - "514"    # Syslog TCP
+  - "8443"   # custom Wazuh Dashboard port
 ufw_allowed_udp_ports:
   - "514"    # Syslog UDP
 
