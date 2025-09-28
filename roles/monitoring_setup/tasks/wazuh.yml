@@ -68,16 +68,16 @@
     name: elasticsearch
     state: present
 
-- name: Disable xpack security in elasticsearch.yml
-  lineinfile:
-    path: /etc/elasticsearch/elasticsearch.yml
-    regexp: '^xpack\\.security\\.enabled:'
-    line: 'xpack.security.enabled: false'
-    insertafter: EOF
-    state: present
-    owner: root
-    group: elasticsearch
-    mode: '0640'
+#- name: Disable xpack security in elasticsearch.yml
+#  lineinfile:
+#    path: /etc/elasticsearch/elasticsearch.yml
+#    regexp: '^xpack\\.security\\.enabled:'
+#    line: 'xpack.security.enabled: false'
+#    insertafter: EOF
+#    state: present
+#    owner: root
+#    group: elasticsearch
+#    mode: '0640'
 
 
 - name: Enable and start Elasticsearch service
