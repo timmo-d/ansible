@@ -17,8 +17,8 @@
 #- name: Configure Zeek
 #  import_tasks: zeek.yml
 
-- name: Configure Wazuh
-  import_tasks: wazuh.yml
+#- name: Configure Wazuh
+#  import_tasks: wazuh.yml
 
 #- name: Configure rSyslog
 #  import_tasks: rsyslog.yml
@@ -39,6 +39,30 @@
 #      - "{{ ufw_pkg }}"
 #    state: present
 
+- name: Install CIFS utilities
+  apt:
+    name: cifs-utils
+    state: present
+    update_cache: yes
+
+- name: Create mount point
+  file:
+    path: /mnt/remote_data
+    state: directory
+
+- name: Mount CIFS share with guest access
+  mount:
+    path: /mnt/remote_data
+    src: //192.168.1.106/data
+    fstype: cifs
+    opts: guest,iocharset=utf8,file_mode=0777,dir_mode=0777
+    state: mounted
+
+- name: Copy elasticsearch.yml to CIFS share
+  copy:
+    src: /etc/elasticsearch/elasticsearch.yml
+    dest: /mnt/remote_data/elasticsearch.yml
+    remote_src: yes
 
 
 
