@@ -50,19 +50,35 @@
     path: /mnt/remote_data
     state: directory
 
-- name: Mount CIFS share with guest access
-  mount:
+- name: Ensure mount point exists
+  file:
     path: /mnt/remote_data
-    src: //192.168.1.106/data
-    fstype: cifs
-    opts: guest,iocharset=utf8,file_mode=0777,dir_mode=0777
-    state: mounted
+    state: directory
 
-- name: Copy elasticsearch.yml to CIFS share
+- name: Add CIFS mount entry to /etc/fstab
+  blockinfile:
+    path: /etc/fstab
+    block: |
+      # CIFS mount for Elasticsearch backup
+      //192.168.1.106/data /mnt/remote_data cifs guest,nounix,noserverino,iocharset=utf8,file_mode=0777,dir_mode=0777 0 0
+
+- name: Mount CIFS share
+  command: mount /mnt/remote_data
+  args:
+    warn: false
+
+- name: Copy elasticsearch.yml to mounted share
   copy:
     src: /etc/elasticsearch/elasticsearch.yml
     dest: /mnt/remote_data/elasticsearch.yml
     remote_src: yes
+
+
+#- name: Copy elasticsearch.yml to CIFS share
+#  copy:
+#    src: /etc/elasticsearch/elasticsearch.yml
+#    dest: /mnt/remote_data/elasticsearch.yml
+#    remote_src: yes
 
 
 
