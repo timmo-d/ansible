@@ -46,10 +46,6 @@
     enabled: yes
     state: started
 
-- name: Install Wazuh agent
-  apt:
-    name: wazuh-agent
-    state: present
 
 - name: Deploy custom Wazuh rules configuration
   copy:
