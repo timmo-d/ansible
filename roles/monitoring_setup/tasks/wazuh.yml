@@ -55,11 +55,7 @@
     group: ossec
     mode: '0640'
 
-- name: Restart Wazuh agent
-  systemd:
-    name: wazuh-agent
-    state: restarted
-    enabled: yes
+
 
 - name: Download and add Elasticsearch GPG key
   shell: |
