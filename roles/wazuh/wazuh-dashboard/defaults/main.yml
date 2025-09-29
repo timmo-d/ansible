@@ -21,7 +21,7 @@ wazuh_api_credentials:
     url: "https://127.0.0.1"
     port: 55000
     username: "wazuh"
-    password: "wazuh"
+    password: "changemeTo50methingSTRONG!"
 
 # Dashboard Security
 dashboard_security: true
