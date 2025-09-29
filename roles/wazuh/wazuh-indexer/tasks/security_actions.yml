@@ -19,7 +19,7 @@
     mode: 500
 
 - name: Copy the node & admin certificates to Wazuh indexer cluster
-  move:
+  copy:
     src: "{{ local_certs_path }}/wazuh-certificates/{{ item }}"
     dest: "{{ indexer_conf_path }}/certs/"
     owner: wazuh-indexer
@@ -32,6 +32,8 @@
     - "{{ indexer_node_name }}.pem"
     - admin-key.pem
     - admin.pem
+#TODO: Clean up tmp directory
+
 
 - name: Restart Wazuh indexer with security configuration
   systemd:
