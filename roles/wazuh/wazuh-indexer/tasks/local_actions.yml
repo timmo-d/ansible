@@ -3,7 +3,7 @@
   stat:
     path: "{{ local_certs_path }}"
   register: certificates_folder
-  delegate_to: localhost
+  delegate_to: remote #localhost
   become: no
   tags:
     - generate-certs
