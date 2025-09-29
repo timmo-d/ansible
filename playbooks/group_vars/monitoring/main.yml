@@ -33,7 +33,7 @@ ufw_allowed_tcp_ports:
   - "9090"   # Prometheus
   - "3000"   # Grafana
   - "514"    # Syslog TCP
-  - "8443"   # custom Wazuh Dashboard port
+  - "443"   # custom Wazuh Dashboard port
 ufw_allowed_udp_ports:
   - "514"    # Syslog UDP
 
@@ -121,3 +121,4 @@ wazuh_version: "4.13.1"
 filebeat_version: "7.10.2"
 http_port: 443
 offline_install: false
+server_ip: "192.168.1.240"
