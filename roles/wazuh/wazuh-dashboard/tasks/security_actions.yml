@@ -15,6 +15,7 @@
       owner: wazuh-dashboard
       group: wazuh-dashboard
       mode: 0400
+      remote_src: yes
     with_items:
       - "root-ca.pem"
       - "{{ dashboard_node_name }}-key.pem"
