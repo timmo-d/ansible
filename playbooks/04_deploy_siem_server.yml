@@ -38,7 +38,7 @@
     single_node: true
     minimum_master_nodes: 1
     indexer_node_master: true
-    indexer_network_host: 192.168.1.240 # 127.0.0.1
+    indexer_network_host: 127.0.0.1
     filebeat_node_name: node-1
     filebeat_output_indexer_hosts:
     - 127.0.0.1

@@ -56,7 +56,7 @@
 
 - name: Attempting to delete legacy Wazuh index if exists
   uri:
-    url: "{{ indexer_api_protocol }}://{{ indexer_network_host }}:{{ indexer_http_port }}/.wazuh"
+    url: "{{ indexer_api_protocol }}://{{ indexer_network_host }}:{{ indexer_http_port }}.wazuh"
     method: DELETE
     user: "admin"
     password: "{{ indexer_admin_password }}"
