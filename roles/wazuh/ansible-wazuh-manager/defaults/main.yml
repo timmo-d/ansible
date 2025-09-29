@@ -1,5 +1,5 @@
 ---
-wazuh_manager_version: 5.0.0
+wazuh_manager_version: 4.13.1
 
 wazuh_manager_fqdn: "wazuh-server"
 wazuh_manager_package_state: present
@@ -149,7 +149,7 @@ filebeat_output_indexer_hosts:
   - "localhost"
 filebeat_output_indexer_port: 9200
 indexer_security_user: admin
-indexer_security_password: changeme
+indexer_security_password: changemeTo50methingSTRONG!
 filebeat_ssl_dir: /etc/pki/filebeat
 
 wazuh_manager_vulnerability_detection:

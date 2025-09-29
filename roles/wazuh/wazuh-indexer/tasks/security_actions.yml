@@ -19,7 +19,7 @@
     mode: 500
 
 - name: Copy the node & admin certificates to Wazuh indexer cluster
-  copy:
+  move:
     src: "{{ local_certs_path }}/wazuh-certificates/{{ item }}"
     dest: "{{ indexer_conf_path }}/certs/"
     owner: wazuh-indexer
