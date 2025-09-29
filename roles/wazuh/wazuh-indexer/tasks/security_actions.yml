@@ -20,11 +20,12 @@
 
 - name: Copy the node & admin certificates to Wazuh indexer cluster
   copy:
-    remote_src: "{{ local_certs_path }}/wazuh-certificates/{{ item }}"
+    src: "{{ local_certs_path }}/wazuh-certificates/{{ item }}"
     dest: "{{ indexer_conf_path }}/certs/"
     owner: wazuh-indexer
     group: wazuh-indexer
     mode: 0400
+    remote_src: yes
   with_items:
     - root-ca.pem
     - "{{ indexer_node_name }}-key.pem"
