@@ -13,7 +13,7 @@ indexer_cluster_nodes:
   - 127.0.0.1
 
 # The Wazuh dashboard package repository
-dashboard_version: "5.0.0"
+dashboard_version: "4.13.1"
 
 # API credentials
 wazuh_api_credentials:
@@ -27,5 +27,5 @@ wazuh_api_credentials:
 dashboard_security: true
 indexer_admin_password: changeme
 dashboard_user: kibanaserver
-dashboard_password: changeme
-local_certs_path: "{{ playbook_dir }}/indexer/certificates"
+dashboard_password: changemeTo50methingSTRONG!
+local_certs_path: "/tmp/indexer/certificates"
