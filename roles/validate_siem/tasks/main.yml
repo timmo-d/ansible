@@ -33,30 +33,30 @@
   register: prometheus_status
   changed_when: false
 
-#- name: Authenticate to Wazuh API
-#  uri:
-#    url: "http://{{ server_ip }}:55000/security/user/authenticate"
-#    method: POST
-#    body_format: json
-#    body:
-#      username: "{{ wazuh_api_users[0].username }}"
-#      password: "{{ wazuh_api_users[0].password }}"
-#    return_content: true
-#  register: wazuh_auth
+- name: Authenticate to Wazuh API
+  uri:
+    url: "http://{{ server_ip }}:55000/security/user/authenticate"
+    method: POST
+    body_format: json
+    body:
+      username: "{{ wazuh_api_users[0].username }}"
+      password: "{{ wazuh_api_users[0].password }}"
+    return_content: true
+  register: wazuh_auth
 
-#- name: Test Wazuh API with token
-#  uri:
-#    url: "http://{{ server_ip }}:55000/agents"
-#    headers:
-#      Authorization: '{{ ''Bearer '' + wazuh_auth.json.data.token }}'
-#    return_content: true
-#  register: wazuh_agents
+- name: Test Wazuh API with token
+  uri:
+    url: "http://{{ server_ip }}:55000/agents"
+    headers:
+      Authorization: '{{ ''Bearer '' + wazuh_auth.json.data.token }}'
+    return_content: true
+  register: wazuh_agents
 
-#- name: Test Wazuh Indexer API
-#  uri:
-#    url: "http://{{ server_ip }}:9200/_cat/indices?v"
-#    return_content: yes
-#  register: indexer_api
+- name: Test Wazuh Indexer API
+  uri:
+    url: "http://{{ server_ip }}:9200/_cat/indices?v"
+    return_content: yes
+  register: indexer_api
 
 - name: Test Prometheus API
   uri:
@@ -86,7 +86,8 @@
       - "Grafana: {{ grafana_status.stdout }}"
       #- "Logstash: {{ logstash_status.stdout }}"
       - "Prometheus: {{ prometheus_status.stdout }}"
-      #- "Wazuh API Response: {{ wazuh_auth.content | default('No response') }}"
+      - "Wazuh API Auth Response: {{ wazuh_auth.content | default('No response') }}"
+      - "Wazuh API Agents Response: {{ wazuh_agents.content | default('No response') }}"
       - "Indexer API Response: {{ indexer_api.content | default('No response') }}"
       - "Prometheus API Response: {{ prometheus_api.content | default('No response') }}"
       #- "Kibana API Response: {{ kibana_api.content | default('No response') }}"
