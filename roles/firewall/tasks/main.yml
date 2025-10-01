@@ -23,15 +23,20 @@
     proto: tcp
     from: "{{ mgmt_allow_cidrs | join(',') }}"
   loop:
-    - { port: "5601" }   # Kibana
-    - { port: "9200" }   # Elasticsearch HTTP
-    - { port: "5044" }   # Logstash Beats
-    - { port: "1514" }   # Wazuh TCP
-    - { port: "55000" }  # Wazuh API
+    - { port: "5601" }  # Kibana
+    - { port: "9200" }  # Elasticsearch HTTP
+    - { port: "5044" }  # Logstash Beats
+    - { port: "1514" }  # Wazuh TCP
+    - { port: "55000" } # Wazuh API
+    - { port: "541" }   # Wazuh Dashboard
+    - { port: "9090" }  # Prometheus
+    - { port: "3000" }  # Grafana
+    - { port: "514" }   # Syslog TCP
+    - { port: "443" }   # Wazuh Dashboard port
 
 - name: UFW - allow Wazuh UDP if needed
   community.general.ufw:
     rule: allow
-    port: "1514"
+    port: "514"
     proto: udp
     from: "{{ mgmt_allow_cidrs | join(',') }}"
