@@ -20,11 +20,11 @@
         ip: "{{ server_ip }}"
         role: indexer
       wazuh1:
-        name: wazuh-1
+        name: node-1
         ip: "{{ server_ip }}"
         role: server
       dashboard:
-        name: dashboard
+        name: node-1
         ip: " {{ server_ip }}"
     
     ansible_shell_allow_world_readable_temp: true
@@ -36,10 +36,10 @@
 ##    - role: elasticsearch # Not required when Wazuh Indexer is used.
 #    - role: logstash
 #    - role: kibana
-#    - role: ../roles/wazuh/wazuh-indexer
-#    - role: ../roles/wazuh/ansible-wazuh-manager
-#    - role: ../roles/wazuh/ansible-filebeat-oss
-#    - role: ../roles/wazuh/wazuh-dashboard
+    - role: ../roles/wazuh/wazuh-indexer
+    - role: ../roles/wazuh/ansible-wazuh-manager
+    - role: ../roles/wazuh/ansible-filebeat-oss
+    - role: ../roles/wazuh/wazuh-dashboard
 #    - role: suricata
 #    - role: prometheus
 #    - role: grafana
