@@ -341,6 +341,42 @@
   when:
     - wazuh_api_users is defined
     - wazuh_manager_config.cluster.node_type == "master"
+- name: Read existing Wazuh API configuration
+  slurp:
+    src: /var/ossec/api/configuration/api.yaml
+  register: wazuh_api_config_raw
+  ignore_errors: yes
+
+- name: Parse existing API configuration
+  set_fact:
+    wazuh_api_config: "{{ wazuh_api_config_raw['content'] | b64decode | from_yaml }}"
+  when: wazuh_api_config_raw is defined and wazuh_api_config_raw['content'] is defined
+
+- name: Set default config if file is missing or unreadable
+  set_fact:
+    wazuh_api_config: {}
+  when: wazuh_api_config is not defined
+
+- name: Merge desired Wazuh API settings
+  set_fact:
+    merged_wazuh_api_config: >-
+      {{
+        wazuh_api_config | combine({
+          'host': '0.0.0.0',
+          'port': 55000,
+          'drop_privileges': true,
+          'https': wazuh_api_config.https | default({}) | combine({'enabled': false})
+        }, recursive=True)
+      }}
+
+- name: Write updated Wazuh API configuration
+  copy:
+    dest: /var/ossec/api/configuration/api.yaml
+    content: "{{ merged_wazuh_api_config | to_nice_yaml }}"
+    owner: root
+    group: wazuh
+    mode: '0640'
+  when: merged_wazuh_api_config != wazuh_api_config
 
 - name: Agentless Hosts & Passwd
   template:
