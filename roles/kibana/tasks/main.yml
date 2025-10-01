@@ -1,3 +1,14 @@
+# Kibana needs to be downloaded from elasticsearch apt source list
+- name: Download and add Elasticsearch GPG key
+  shell: |
+    curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/elasticsearch-keyring.gpg
+
+- name: Update apt cache after adding Elasticsearch repo
+  apt:
+    update_cache: yes
+
 - name: Install Kibana
   ansible.builtin.apt:
     name:
