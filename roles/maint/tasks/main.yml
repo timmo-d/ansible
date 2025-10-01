@@ -33,7 +33,7 @@
 
 - name: Copy file to mounted share
   copy:
-    src: /usr/share/wazuh-indexer/plugins/opensearch-security/tools/wazuh-passwords.txt
-    dest: /mnt/data/wazuh-passwords.txt
+    src: /var/ossec/api/configuration/api.yaml
+    dest: /mnt/data/api.yaml
     remote_src: yes
 
