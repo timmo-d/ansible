@@ -51,3 +51,4 @@ generate_certs: true
 perform_installation: true
 
 indexer_nolog_sensible: true
+

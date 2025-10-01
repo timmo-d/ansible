@@ -32,6 +32,7 @@
 - hosts: all
   become: yes
   become_user: root
+  gather_facts: yes
   roles:
     - role: ../roles/wazuh/wazuh-indexer
     - role: ../roles/wazuh/ansible-wazuh-manager
