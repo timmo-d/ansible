@@ -42,7 +42,7 @@
     single_node: true
     minimum_master_nodes: 1
     indexer_node_master: true
-    indexer_network_host: {{ server_ip }}
+    indexer_network_host: "{{ server_ip }}""
     filebeat_node_name: node-1
     filebeat_output_indexer_hosts:
     - {{ server_ip }}
