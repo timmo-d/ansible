@@ -25,7 +25,7 @@
 #    - role: monitoring_setup
 #    - role: siem_soc_setup
     - role: firewall
-    - role: elasticsearch
+#    - role: elasticsearch # Not required when Wazuh Indexer is used.
     - role: logstash
     - role: kibana
     - role: ../roles/wazuh/wazuh-indexer
