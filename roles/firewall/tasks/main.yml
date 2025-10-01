@@ -40,19 +40,18 @@
       - { port: "443" }   # Wazuh Dashboard port
 
 - name: Open http tcp ports 9200 to 9299 on UFW
-  ufw:
+  community.general.ufw:
     rule: allow
-    port: "{{ item }}"
+    port: "9200:9299"
     proto: tcp
-  loop: "{{ range(9200, 9300) | list }}"
   become: true
 
+
 - name: Open transport tcp ports 9300 to 9399 on UFW
-  ufw:
+  community.general.ufw:
     rule: allow
-    port: "{{ item }}"
+    port: "9300:9399"
     proto: tcp
-  loop: "{{ range(9300, 9400) | list }}"
   become: true
 
 - name: UFW - allow SIEM/SOC UDP ports
