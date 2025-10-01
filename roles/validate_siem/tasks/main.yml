@@ -34,18 +34,19 @@
   changed_when: false
 
 - name: Authenticate to Wazuh API
-    uri:
-      url: http://localhost:55000/security/user/authenticate
-      method: POST
-      body_format: json
-      body:
-        username: "{{ wazuh_api_users.username }}"
-        password: "{{ wazuh_api_users.password }}"
-      return_content: true
-    register: wazuh_auth
+  uri:
+    url: "http://{{ server_ip }}:55000/security/user/authenticate"
+    method: POST
+    body_format: json
+    body:
+      username: "{{ wazuh_api_users.username }}"
+      password: "{{ wazuh_api_users.password }}"
+    return_content: true
+  register: wazuh_auth
+  
 - name: Test Wazuh API with token
   uri:
-    url: http://localhost:55000/agents
+    url: "http://{{ server_ip }}:55000/agents"
     headers:
       Authorization: '{{ ''Bearer '' + wazuh_auth.json.data.token }}'
     return_content: true
