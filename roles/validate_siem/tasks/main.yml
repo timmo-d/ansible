@@ -35,31 +35,31 @@
 
 - name: Test Wazuh API
   uri:
-    url: http://localhost:55000
+    url: "http://{{ server_ip }}:55000"
     return_content: yes
   register: wazuh_api
 
 - name: Test Wazuh Indexer API
   uri:
-    url: http://localhost:9200/_cat/indices?v
+    url: "http://{{ server_ip }}:9200/_cat/indices?v"
     return_content: yes
   register: indexer_api
 
 - name: Test Prometheus API
   uri:
-    url: http://localhost:9090/api/v1/status/buildinfo
+    url: "http://{{ server_ip }}:9090/api/v1/status/buildinfo"
     return_content: yes
   register: prometheus_api
 
 - name: Test Kibana API
   uri:
-    url: http://localhost:5601/api/status
+    url: "http://{{ server_ip }}:5601/api/status"
     return_content: yes
   register: kibana_api
 
 - name: Test Grafana API
   uri:
-    url: http://localhost:3000/api/health
+    url: "http://{{ server_ip }}:3000/api/health"
     return_content: yes
   register: grafana_api
 
