@@ -25,7 +25,7 @@ wazuh_api_credentials:
     run_as: false
 
 # Dashboard Security
-dashboard_security: true
+dashboard_security: false #true
 indexer_admin_password: changemeTo50methingSTRONG!
 dashboard_user: kibanaserver
 dashboard_password: changemeTo50methingSTRONG!
