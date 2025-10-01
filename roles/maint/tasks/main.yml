@@ -4,6 +4,12 @@
     state: present
     update_cache: yes
 
+- name: Ensure samba is installed
+  apt:
+    name: samba
+    state: present
+    update_cache: yes
+
 - name: Create mount point
   file:
     path: /mnt/data
