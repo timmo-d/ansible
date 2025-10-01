@@ -8,7 +8,7 @@ filebeat_create_config: true
 filebeat_node_name: node-1
 
 filebeat_output_elasticsearch_hosts:
-  - "localhost:9200"
+  - "{{ server_ip }}:9200"
 
 filebeat_module_package_url: https://packages.wazuh.com/4.x/filebeat
 filebeat_module_package_name: wazuh-filebeat-0.4.tar.gz
