@@ -39,11 +39,11 @@
     method: POST
     body_format: json
     body:
-      username: "{{ wazuh_api_users.username }}"
-      password: "{{ wazuh_api_users.password }}"
+      username: "{{ wazuh_api_users[0].username }}"
+      password: "{{ wazuh_api_users[0].password }}"
     return_content: true
   register: wazuh_auth
-  
+
 - name: Test Wazuh API with token
   uri:
     url: "http://{{ server_ip }}:55000/agents"
