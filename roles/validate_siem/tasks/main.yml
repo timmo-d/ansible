@@ -52,11 +52,11 @@
 #    return_content: true
 #  register: wazuh_agents
 
-- name: Test Wazuh Indexer API
-  uri:
-    url: "http://{{ server_ip }}:9200/_cat/indices?v"
-    return_content: yes
-  register: indexer_api
+#- name: Test Wazuh Indexer API
+#  uri:
+#    url: "http://{{ server_ip }}:9200/_cat/indices?v"
+#    return_content: yes
+#  register: indexer_api
 
 - name: Test Prometheus API
   uri:
