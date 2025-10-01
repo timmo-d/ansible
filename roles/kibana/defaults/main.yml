@@ -2,3 +2,12 @@
 kibana_pkg: kibana
 kibana_yml_path: /etc/kibana/kibana.yml
 kibana_svc: kibana
+
+wazuh_indexer_http_port: 9200
+wazuh_indexer_username: "wazuh"
+wazuh_indexer_password: "changemeTo50methingSTRONG!"
+
+wazuh-indexer.hosts: ["https://localhost:{{ wazuh_indexer_http_port }}"]
+wazuh-indexer.username: {{ wazuh_indexer_username }}
+wazuh-indexer.password: {{ wazuh_indexer_password }}
+
