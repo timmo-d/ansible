@@ -5,6 +5,8 @@
 # Inline comments describe compliance intent with DISA STIG, NSA NISEG, and IDPS SRG.
 # =============================
 
+server_ip: "192.168.1.240"
+
 # Interface that Suricata/Zeek will monitor (e.g., "ens160").
 # Uncomment with override or comment to auto-detect
 ids_nids_interface: "enp1s0"  # Select a dedicated SPAN/TAP interface per NSA guidance on monitoring at choke points.
@@ -18,7 +20,7 @@ HTTP_SERVERS: "$home_net"
 mgmt_allow_cidrs: ["192.168.1.0/24"]
 
 # Central log server to forward logs to (rsyslog TCP/UDP 514). If this host is the central server, set to 127.0.0.1.
-central_log_server_ip: "127.0.0.1"
+central_log_server_ip: "{{ server_ip }}"
 central_log_server_port_tcp: 514
 central_log_server_port_udp: 514
 
@@ -44,7 +46,7 @@ prometheus_scrape_interval: "15s"
 prometheus_scrape_jobs:
   - job_name: "prometheus"
     static_configs:
-      - targets: ["localhost:9090"]
+      - targets: ["{{ server_ip }}:9090"]
 
 # Grafana settings
 grafana_http_port: 3000
@@ -93,13 +95,13 @@ elasticsearch_repo_url: "https://artifacts.elastic.co/packages/{{ elastic_versio
 elasticsearch_gpg_key_url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
 
 logstash_beats_port: 5044
-logstash_elasticsearch_hosts: ["https://localhost:9200"]
+logstash_elasticsearch_hosts: ["https://{{ server_ip }}:9200"]
 logstash_elasticsearch_username: "{{ elasticsearch_username }}"
 logstash_elasticsearch_password: "{{ elasticsearch_password }}"
 
 kibana_server_port: 5601
 kibana_server_host: "0.0.0.0"
-kibana_public_url: "https://kibana.timmos.com.au"
+kibana_public_url: "https://kibana.{{ domain_name }}"
 
 # Wazuh Manager
 wazuh_manager_port: 1514
@@ -121,4 +123,4 @@ wazuh_version: "4.13.1"
 filebeat_version: "7.10.2"
 http_port: 443
 offline_install: false
-server_ip: "192.168.1.240"
+
