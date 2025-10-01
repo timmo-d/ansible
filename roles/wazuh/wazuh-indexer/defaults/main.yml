@@ -5,7 +5,7 @@ indexer_version: 4.13.1
 single_node: false
 indexer_node_name: node-1
 indexer_cluster_name: wazuh
-indexer_network_host: '0.0.0.0'
+indexer_network_host: '{{ server_ip }}'
 
 indexer_node_master: true
 indexer_node_data: true

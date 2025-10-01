@@ -25,7 +25,7 @@ elasticsearch_xpack_security_password: elastic_pass
 node_certs_destination: /etc/filebeat/certs
 
 # CA Generation
-master_certs_path: "{{ playbook_dir }}/es_certs"
+master_certs_path: "/tmp/es_certs" #"{{ playbook_dir }}/es_certs"
 generate_CA: true
 ca_cert_name: ""
 

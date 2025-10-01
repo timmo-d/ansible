@@ -5,12 +5,12 @@ indexer_http_port: 9200
 indexer_api_protocol: https
 dashboard_conf_path: /etc/wazuh-dashboard/
 dashboard_node_name: node-1
-dashboard_server_host: "0.0.0.0"
+dashboard_server_host: "{{ server_ip }}"
 dashboard_server_port: "443"
 dashboard_server_name: "dashboard"
 wazuh_version: 4.13.1
 indexer_cluster_nodes:
-  - 127.0.0.1
+  - {{ server_ip }}
 
 # The Wazuh dashboard package repository
 dashboard_version: "4.13.1"

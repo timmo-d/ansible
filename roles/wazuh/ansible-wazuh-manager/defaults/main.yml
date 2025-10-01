@@ -1,7 +1,7 @@
 ---
 wazuh_manager_version: 4.13.1
 
-wazuh_manager_fqdn: "wazuh-server"
+wazuh_manager_fqdn: "wazuh-server.{{ domain_name }}"
 wazuh_manager_package_state: present
 
 # Custom packages installation
@@ -38,6 +38,7 @@ wazuh_manager_globals:
   - '127.0.0.1'
   - '^localhost.localdomain$'
   - '127.0.0.53'
+  - '{{ server_ip }}'
 
 wazuh_manager_agent_disconnection_time: '20s'
 wazuh_manager_agents_disconnection_alert_time: '100s'
