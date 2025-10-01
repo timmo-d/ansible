@@ -1,1 +1,4 @@
 # Role defaults (override in group_vars/monitoring/main.yml as needed)
+logstash_pkg: logstash
+logstash_pipeline_path: /etc/logstash/conf.d/01-beats.conf
+logstash_svc: logstash

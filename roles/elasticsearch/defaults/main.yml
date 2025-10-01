@@ -1,1 +1,9 @@
 # Role defaults (override in group_vars/monitoring/main.yml as needed)
+elasticsearch_pkg: elasticsearch
+elasticsearch_yml_path: /etc/elasticsearch/elasticsearch.yml
+#elasticsearch_log_dir: /usr/share/elasticsearch/logs
+#elasticsearch_data_dir: /usr/share/elasticsearch/data
+#elasticsearch_log_file: /usr/share/elasticsearch/logs/gc.log
+elasticsearch_svc: elasticsearch
+elasticsearch_user: elasticsearch
+elasticsearch_group: elasticsearch

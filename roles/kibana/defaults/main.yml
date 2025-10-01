@@ -1,1 +1,4 @@
 # Role defaults (override in group_vars/monitoring/main.yml as needed)
+kibana_pkg: kibana
+kibana_yml_path: /etc/kibana/kibana.yml
+kibana_svc: kibana

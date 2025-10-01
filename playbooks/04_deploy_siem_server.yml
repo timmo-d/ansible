@@ -34,6 +34,7 @@
     - role: suricata
     - role: prometheus
     - role: grafana
+    - role: firewall
 
 
 # Certificates generation
