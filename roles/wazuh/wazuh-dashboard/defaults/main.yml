@@ -32,38 +32,3 @@ dashboard_password: changemeTo50methingSTRONG!
 local_certs_path: "/tmp/indexer/certificates"
 
 
-
-###############
-## Self Signed certificate
-###############
-# Where you want to store the key/cert
-dashboard_ssl_dir: /etc/wazuh-dashboard/certs
-
-# Set your preferred CN (fallback to the host FQDN)
-dashboard_ssl_cn: "{{ wazuh_dashboard_cn | default(ansible_fqdn | default(inventory_hostname)) }}"
-
-# SubjectAltNames: add/trim as needed
-dashboard_ssl_sans:
-  - "DNS:{{ ansible_fqdn | default(inventory_hostname) }}"
-  - "DNS:{{ inventory_hostname }}"
-  - "IP:{{ ansible_default_ipv4.address }}"
-  # Add public DNS/IP if the dashboard is accessed externally, e.g.:
-  # - "DNS:dashboard.example.com"
-  # - "IP:203.0.113.10"
-
-dashboard_key_path: "{{ dashboard_ssl_dir }}/dashboard.key"
-dashboard_csr_path: "{{ dashboard_ssl_dir }}/dashboard.csr"
-dashboard_crt_path: "{{ dashboard_ssl_dir }}/dashboard.crt"
-
-# Validity in days and key size
-dashboard_cert_days: 825        # ~27 months (commonly used for self-signed)
-dashboard_key_size: 4096
-
-# The service name on Debian/Ubuntu packages is typically 'wazuh-dashboard'
-wazuh_dashboard_service: wazuh-dashboard
-
-# Ownership: adjust group if your service runs as a different user
-ssl_owner: root
-ssl_group: wazuh-dashboard
-key_mode: "0640"
-crt_mode: "0644"

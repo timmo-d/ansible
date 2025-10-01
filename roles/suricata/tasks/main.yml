@@ -1,0 +1,37 @@
+- name: Install software-properties-common
+  apt:
+    name: software-properties-common
+    state: present
+    update_cache: yes
+
+- name: Add Suricata PPA repository
+  apt_repository:
+    repo: ppa:oisf/suricata-stable
+    state: present
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install Suricata and jq
+  apt:
+    name:
+      - suricata
+      - jq
+    state: present
+
+- name: Replace 'eth0' with 'enp1s0' in Suricata config
+  replace:
+    path: /etc/suricata/suricata.yaml
+    regexp: 'eth0'
+    replace: 'enp1s0'
+
+- name: Run suricata-update
+  command: suricata-update
+
+- name: Restart Suricata service
+  systemd:
+    name: suricata
+    state: restarted
+    enabled: yes
+

@@ -1,0 +1,20 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Node CPU",
+      "targets": [
+        {
+          "expr": "100 - (avg by(instance)(irate(node_cpu_seconds_total{mode='idle'}[5m])) * 100)",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    }
+  ],
+  "title": "Monitoring Overview",
+  "schemaVersion": 39,
+  "version": 1
+}

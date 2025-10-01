@@ -1,0 +1,5 @@
+---
+- name: restart suricata
+  ansible.builtin.service:
+    name: "{{ suricata_svc }}"
+    state: restarted

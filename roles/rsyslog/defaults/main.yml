@@ -1,0 +1,15 @@
+# Role defaults (override in group_vars/monitoring/main.yml as needed)
+rsyslog_pkg: rsyslog
+rsyslog_conf_path: /etc/rsyslog.conf
+
+
+
+
+
+# rsyslog forwarding target (defaults to central server var)
+rsyslog_forward_ip: "{{ central_log_server_ip }}"
+rsyslog_forward_port_tcp: "{{ central_log_server_port_tcp }}"
+rsyslog_forward_port_udp: "{{ central_log_server_port_udp }}"
+rsyslog_forward_protocol: "tcp"  # tcp or udp
+
+rsyslog_svc: rsyslog

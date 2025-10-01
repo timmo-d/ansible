@@ -1,0 +1,6 @@
+# Role defaults (override in group_vars/monitoring/main.yml as needed)
+prometheus_pkg: prometheus
+node_exporter_pkg: prometheus-node-exporter
+prometheus_config_path: /etc/prometheus/prometheus.yml
+prometheus_svc: prometheus
+node_exporter_svc: prometheus-node-exporter

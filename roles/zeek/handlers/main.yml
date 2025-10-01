@@ -1,0 +1,5 @@
+---
+- name: restart zeek
+  ansible.builtin.service:
+    name: "{{ zeek_svc }}"
+    state: restarted

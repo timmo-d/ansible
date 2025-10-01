@@ -1,0 +1,82 @@
+# Ensure the keyrings directory exists
+- name: Ensure APT keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+# Download Zeek OBS Release key (ASCII)
+- name: Fetch Zeek OBS signing key (ASCII)
+  ansible.builtin.get_url:
+    url: "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_24.04/Release.key"
+    dest: /etc/apt/keyrings/zeek-obs.asc
+    mode: '0644'
+    force: yes
+
+# Convert to a GPG keyring file (dearmored)
+- name: Convert Zeek OBS key to keyring (gpg)
+  ansible.builtin.command: >
+    gpg --dearmor -o /etc/apt/keyrings/zeek-obs.gpg /etc/apt/keyrings/zeek-obs.asc
+  args:
+    creates: /etc/apt/keyrings/zeek-obs.gpg
+
+# Add the Zeek repository with signed-by
+- name: Add Zeek OBS APT source (24.04, signed-by)
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/zeek-obs.gpg] https://download.opensuse.org/repositories/security:/zeek/xUbuntu_24.04/ /"
+    filename: "security:zeek"
+    state: present
+
+# Refresh cache *after* key+repo are present
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Add Zeek OBS GPG key
+  ansible.builtin.apt_key:
+    url: "{{ zeek_obs_key_url }}"
+    state: present
+
+- name: Update apt cache after adding Zeek repo
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install Zeek
+  ansible.builtin.apt:
+    name:
+      - "{{ zeek_pkg }}"
+    state: present
+
+
+- name: Create Zeek etc directory
+  ansible.builtin.file:
+    path: /opt/zeek/etc
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Deploy Zeek main config (zeekctl.cfg)
+  ansible.builtin.template:
+    src: zeek.cfg.j2
+    dest: "{{ zeek_conf_path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart zeek
+
+- name: Deploy Zeek networks.cfg
+  ansible.builtin.copy:
+    dest: "{{ zeek_networks_cfg_path }}"
+    content: "{{ zeek_networks }}" # Local networks considered 'home' for Zeek analysis
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart zeek
+
+- name: Enable and start Zeek (via systemd unit if available)
+  ansible.builtin.service:
+    name: "{{ zeek_svc }}"
+    enabled: yes
+    state: started
+  ignore_errors: yes  # Service name may differ if installed from source

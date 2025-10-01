@@ -1,0 +1,11 @@
+groups:
+- name: infra.rules
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Instance down"
+      description: "Target {{ $labels.instance }} has been down for >5 minutes."

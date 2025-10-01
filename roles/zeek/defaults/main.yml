@@ -1,0 +1,9 @@
+# Role defaults (override in group_vars/monitoring/main.yml as needed)
+zeek_pkg: "zeek-lts"    # or "zeek" / "zeek-7.0"
+zeek_conf_path: /opt/zeek/etc/zeekctl.cfg
+zeek_networks_cfg_path: /opt/zeek/etc/networks.cfg
+zeek_svc: zeek
+# Zeek repository (OBS) for Ubuntu 24.04
+zeek_obs_repo_url: "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_24.04/"
+zeek_obs_repo_file: "security:zeek"    # /etc/apt/sources.list.d/security:zeek.list
+zeek_obs_key_url: "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_24.04/Release.key"

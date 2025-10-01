@@ -1,0 +1,6 @@
+# Role defaults (override in group_vars/monitoring/main.yml as needed)
+grafana_pkg: grafana # Choose which package to install: grafana (OSS) or grafana-enterprise
+grafana_ini_path: /etc/grafana/grafana.ini
+grafana_keyring_path: /etc/apt/keyrings/grafana.gpg
+grafana_repo_line: "deb [signed-by={{ grafana_keyring_path }}] https://apt.grafana.com stable main"
+grafana_svc: grafana-server
