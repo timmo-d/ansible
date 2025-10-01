@@ -1,0 +1,85 @@
+- name: SIEM Health Check
+  hosts: localhost
+  become: yes
+  tasks:
+
+    - name: Check Wazuh Manager status
+      shell: systemctl is-active wazuh-manager
+      register: wazuh_status
+      changed_when: false
+
+    - name: Check Suricata status
+      shell: systemctl is-active suricata
+      register: suricata_status
+      changed_when: false
+
+    - name: Check Wazuh Indexer status
+      shell: systemctl is-active wazuh-indexer
+      register: indexer_status
+      changed_when: false
+
+    - name: Check Kibana status
+      shell: systemctl is-active kibana
+      register: kibana_status
+      changed_when: false
+
+    - name: Check Grafana status
+      shell: systemctl is-active grafana-server
+      register: grafana_status
+      changed_when: false
+
+    - name: Check Logstash status
+      shell: systemctl is-active logstash
+      register: logstash_status
+      changed_when: false
+
+    - name: Check Prometheus status
+      shell: systemctl is-active prometheus
+      register: prometheus_status
+      changed_when: false
+
+    - name: Test Wazuh API
+      uri:
+        url: http://localhost:55000
+        return_content: yes
+      register: wazuh_api
+
+    - name: Test Wazuh Indexer API
+      uri:
+        url: http://localhost:9200/_cat/indices?v
+        return_content: yes
+      register: indexer_api
+
+    - name: Test Prometheus API
+      uri:
+        url: http://localhost:9090/api/v1/status/buildinfo
+        return_content: yes
+      register: prometheus_api
+
+    - name: Test Kibana API
+      uri:
+        url: http://localhost:5601/api/status
+        return_content: yes
+      register: kibana_api
+
+    - name: Test Grafana API
+      uri:
+        url: http://localhost:3000/api/health
+        return_content: yes
+      register: grafana_api
+
+    - name: Display Results
+      debug:
+        msg:
+          - "Wazuh Manager: {{ wazuh_status.stdout }}"
+          - "Suricata: {{ suricata_status.stdout }}"
+          - "Wazuh Indexer: {{ indexer_status.stdout }}"
+          - "Kibana: {{ kibana_status.stdout }}"
+          - "Grafana: {{ grafana_status.stdout }}"
+          - "Logstash: {{ logstash_status.stdout }}"
+          - "Prometheus: {{ prometheus_status.stdout }}"
+          - "Wazuh API Response: {{ wazuh_api.content | default('No response') }}"
+          - "Indexer API Response: {{ indexer_api.content | default('No response') }}"
+          - "Prometheus API Response: {{ prometheus_api.content | default('No response') }}"
+          - "Kibana API Response: {{ kibana_api.content | default('No response') }}"
+          - "Grafana API Response: {{ grafana_api.content | default('No response') }}"
