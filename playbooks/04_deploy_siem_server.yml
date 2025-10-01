@@ -24,6 +24,7 @@
   roles:
 #    - role: monitoring_setup
 #    - role: siem_soc_setup
+    - role: firewall
     - role: elasticsearch
     - role: logstash
     - role: kibana
@@ -34,7 +35,7 @@
     - role: suricata
     - role: prometheus
     - role: grafana
-    - role: firewall
+
 
 
 # Certificates generation
