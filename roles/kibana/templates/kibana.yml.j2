@@ -10,6 +10,14 @@ elasticsearch.hosts: ["http://localhost:9200"]
 elasticsearch.username: "wazuh_indexer_username"
 elasticsearch.password: "wazuh_indexer_password"
 
+# SSL (Wazuh Indexer uses HTTPS by default)
+elasticsearch.ssl.verificationMode: none
+
+# Wazuh plugin
+wazuh.enable: true
+wazuh.url: "https://localhost:55000"
+
+
 # Enable SSL if required
 # server.ssl.enabled: true
 # server.ssl.certificate: "/path/to/cert.pem"
@@ -30,7 +38,7 @@ logging.loggers:
     level: "error"
 
 # Security settings
-#xpack.security.enabled: true
+xpack.security.enabled: true
 #xpack.security.session.idleTimeout: "30m"
 #xpack.security.session.lifespan: "8h"
 
@@ -48,7 +56,7 @@ logging.loggers:
 #xpack.fleet.agents.enabled: true
 
 # Telemetry
-#telemetry.enabled: false
+telemetry.enabled: false
 
 # Content Security Policy
 #csp.strict: true
