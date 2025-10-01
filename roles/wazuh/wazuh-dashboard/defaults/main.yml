@@ -10,7 +10,7 @@ dashboard_server_port: "443"
 dashboard_server_name: "dashboard"
 wazuh_version: 4.13.1
 indexer_cluster_nodes:
-  - {{ server_ip }}
+  - "{{ server_ip }}"
 
 # The Wazuh dashboard package repository
 dashboard_version: "4.13.1"

@@ -55,7 +55,7 @@ wazuh_agent_address: '{{ "any" if wazuh_agent_nat else ansible_default_ipv4.addr
 # List of managers. The first one with register variable declared *and* set to true
 # is the one used to register the agent. Otherwise, the first one in the list will be used.
 wazuh_managers:
-  - address: 127.0.0.1
+  - address: "{{ server_ip }}"
     port: 1514
     protocol: tcp
     api_port: 55000
