@@ -13,9 +13,9 @@ indexer_node_ingest: true
 indexer_start_timeout: 90
 
 indexer_cluster_nodes:
-  - {{ server_ip }}
+  - "{{ server_ip }}"
 indexer_discovery_nodes:
-  - {{ server_ip }}
+  - "{{ server_ip }}"
 
 # OpenSSL required to run the certs bash script, 
 # however Semaphore docker created via Compose does not allow the installation of OpenSSL. Run from remote instead.
