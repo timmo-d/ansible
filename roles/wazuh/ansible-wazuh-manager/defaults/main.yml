@@ -338,7 +338,7 @@ wazuh_manager_cluster:
 
 ## Wazuh API setup
 wazuh_manager_api:
-  bind_addr: {{ server_ip }} #0.0.0.0
+  bind_addr: "{{ server_ip }}"" #0.0.0.0
   port: 55000
   behind_proxy_server: no
   https: yes
