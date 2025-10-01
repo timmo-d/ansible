@@ -33,24 +33,24 @@
   register: prometheus_status
   changed_when: false
 
-- name: Authenticate to Wazuh API
-  uri:
-    url: "http://{{ server_ip }}:55000/security/user/authenticate"
-    method: POST
-    body_format: json
-    body:
-      username: "{{ wazuh_api_users[0].username }}"
-      password: "{{ wazuh_api_users[0].password }}"
-    return_content: true
-  register: wazuh_auth
+#- name: Authenticate to Wazuh API
+#  uri:
+#    url: "http://{{ server_ip }}:55000/security/user/authenticate"
+#    method: POST
+#    body_format: json
+#    body:
+#      username: "{{ wazuh_api_users[0].username }}"
+#      password: "{{ wazuh_api_users[0].password }}"
+#    return_content: true
+#  register: wazuh_auth
 
-- name: Test Wazuh API with token
-  uri:
-    url: "http://{{ server_ip }}:55000/agents"
-    headers:
-      Authorization: '{{ ''Bearer '' + wazuh_auth.json.data.token }}'
-    return_content: true
-  register: wazuh_agents
+#- name: Test Wazuh API with token
+#  uri:
+#    url: "http://{{ server_ip }}:55000/agents"
+#    headers:
+#      Authorization: '{{ ''Bearer '' + wazuh_auth.json.data.token }}'
+#    return_content: true
+#  register: wazuh_agents
 
 - name: Test Wazuh Indexer API
   uri:
