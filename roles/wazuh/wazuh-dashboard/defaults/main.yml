@@ -20,8 +20,8 @@ wazuh_api_credentials:
   - id: "default"
     url: "https://{{ server_ip }}"
     port: 55000
-    username: "wazuh"
-    password: "changemeTo50methingSTRONG!"
+    username: wazuh-api-user
+    password: "SuperSecret1!"
     run_as: false
 
 # Dashboard Security

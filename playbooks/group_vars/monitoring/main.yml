@@ -118,6 +118,10 @@ wazuh_cluster_enabled: false
 
 
 
+wazuh_api_users:
+  - username: wazuh-api-user
+    password: "SuperSecret1!"
+
 
 wazuh_version: "4.13.1"
 filebeat_version: "7.10.2"
