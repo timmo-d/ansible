@@ -10,23 +10,23 @@
 #    - role: siem_soc_setup
 
 # Certificates generation
-- hosts: all
-  roles:
-    - role: ../roles/wazuh/wazuh-indexer
-      perform_installation: false
-  become: no
-  #become_user: root
-  vars_files:
-    - group_vars/monitoring/main.yml
-  vars:
-    indexer_node_master: true
-    instances:
-      node1:
-        name: node-1       # Important: must be equal to indexer_node_name.
-        ip: "{{ server_ip }}"
-        role: indexer
-  tags:
-    - generate-certs
+#- hosts: all
+#  roles:
+#    - role: ../roles/wazuh/wazuh-indexer
+#      perform_installation: false
+#  become: no
+#  #become_user: root
+#  vars_files:
+#    - group_vars/monitoring/main.yml
+#  vars:
+#    indexer_node_master: true
+#    instances:
+#      node1:
+#        name: node-1       # Important: must be equal to indexer_node_name.
+#        ip: "{{ server_ip }}"
+#        role: indexer
+#  tags:
+#    - generate-certs
 
 # Single node
 - hosts: all
