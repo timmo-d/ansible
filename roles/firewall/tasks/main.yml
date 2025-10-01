@@ -23,14 +23,14 @@
     proto: tcp
     from: "{{ mgmt_allow_cidrs | join(',') }}"
   loop:
-    - { port: "5601" }  # Kibana
-    - { port: "9200" }  # Elasticsearch HTTP
-    - { port: "9300" }  # Elasticsearch HTTP
+    - { port: "5601" }  # Kibana Web interface
+    - { port: "9200" }  # Indexer API (used by Kibana and Filebeat)
+    - { port: "9300" }  # Internal cluster communication (multi-node setups)
     - { port: "5044" }  # Logstash Beats
-    - { port: "1514" }  # Wazuh TCP
-    - { port: "1515" }  # Wazuh TCP
-    - { port: "1516" }  # Wazuh TCP
-    - { port: "55000" } # Wazuh API
+    - { port: "1514" }  # Wazuh Agent event reporting
+    - { port: "1515" }  # Wazuh Agent registration
+    - { port: "1516" }  # Wazuh Cluster communication (if using multi-node setup)
+    - { port: "55000" } # Wazuh REST API (used by Dashboard and integrations)
     - { port: "541" }   # Wazuh Dashboard
     - { port: "9090" }  # Prometheus
     - { port: "3000" }  # Grafana
