@@ -46,7 +46,7 @@
     indexer_network_host: "{{ server_ip }}"
     filebeat_node_name: node-1
     filebeat_output_indexer_hosts:
-    - {{ server_ip }}
+    - "{{ server_ip }}"
     instances:
       node1:
         name: node-1       # Important: must be equal to indexer_node_name.
