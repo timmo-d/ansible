@@ -17,7 +17,9 @@ indexer_cluster_nodes:
 indexer_discovery_nodes:
   - 127.0.0.1
 
-#local_certs_path: "{{ playbook_dir }}/indexer/certificates" # OpenSSL required to run the certs bash script, however Semaphore does not allow the installation of OpenSSL
+# OpenSSL required to run the certs bash script, 
+# however Semaphore docker created via Compose does not allow the installation of OpenSSL. Run from remote instead.
+#local_certs_path: "{{ playbook_dir }}/indexer/certificates"
 local_certs_path: "/tmp/indexer/certificates"
 
 # Minimum master nodes in cluster, 2 for 3 nodes Wazuh indexer cluster
