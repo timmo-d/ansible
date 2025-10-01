@@ -21,7 +21,7 @@
     instances:
       node1:
         name: node-1       # Important: must be equal to indexer_node_name.
-        ip: 127.0.0.1
+        ip: {{ server_ip }}
         role: indexer
   tags:
     - generate-certs
@@ -38,13 +38,13 @@
     single_node: true
     minimum_master_nodes: 1
     indexer_node_master: true
-    indexer_network_host: 127.0.0.1
+    indexer_network_host: {{ server_ip }}
     filebeat_node_name: node-1
     filebeat_output_indexer_hosts:
-    - 127.0.0.1
+    - {{ server_ip }}
     instances:
       node1:
         name: node-1       # Important: must be equal to indexer_node_name.
-        ip: 127.0.0.1
+        ip: {{ server_ip }}
         role: indexer
     ansible_shell_allow_world_readable_temp: true
