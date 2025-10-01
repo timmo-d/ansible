@@ -1,0 +1,10 @@
+server.port: {{ kibana_server_port }}
+server.host: {{ kibana_server_host }}
+server.publicBaseUrl: {{ kibana_public_url }}
+
+elasticsearch.hosts: ["https://localhost:{{ elasticsearch_http_port }}"]
+elasticsearch.username: {{ elasticsearch_username }}
+elasticsearch.password: {{ elasticsearch_password }}
+# server.ssl.enabled: true
+# server.ssl.certificate: /etc/kibana/certs/server.crt
+# server.ssl.key: /etc/kibana/certs/server.key
