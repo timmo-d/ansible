@@ -23,7 +23,7 @@
     instances:
       node1:
         name: node-1       # Important: must be equal to indexer_node_name.
-        ip: {{ server_ip }}
+        ip: "{{ server_ip }}"
         role: indexer
   tags:
     - generate-certs
@@ -50,6 +50,6 @@
     instances:
       node1:
         name: node-1       # Important: must be equal to indexer_node_name.
-        ip: {{ server_ip }}
+        ip: "{{ server_ip }}"
         role: indexer
     ansible_shell_allow_world_readable_temp: true
