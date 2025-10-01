@@ -13,9 +13,9 @@ indexer_node_ingest: true
 indexer_start_timeout: 90
 
 indexer_cluster_nodes:
-  - 127.0.0.1
+  - {{ server_ip }}
 indexer_discovery_nodes:
-  - 127.0.0.1
+  - {{ server_ip }}
 
 # OpenSSL required to run the certs bash script, 
 # however Semaphore docker created via Compose does not allow the installation of OpenSSL. Run from remote instead.
@@ -27,7 +27,7 @@ minimum_master_nodes: 2
 
 # Configure hostnames for Wazuh indexer nodes
 # Example es1.example.com, es2.example.com
-domain_name: wazuh.com
+domain_name: "{{ lookup('env', 'DOMAIN_NAME') }}"
 
 indexer_sec_plugin_conf_path: /etc/wazuh-indexer/opensearch-security
 indexer_sec_plugin_tools_path: /usr/share/wazuh-indexer/plugins/opensearch-security/tools
