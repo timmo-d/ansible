@@ -16,6 +16,8 @@
       perform_installation: false
   become: no
   #become_user: root
+  vars_files:
+    - group_vars/monitoring/main.yml
   vars:
     indexer_node_master: true
     instances:
@@ -34,6 +36,8 @@
     - role: ../roles/wazuh/ansible-wazuh-manager
     - role: ../roles/wazuh/ansible-filebeat-oss
     - role: ../roles/wazuh/wazuh-dashboard
+  vars_files:
+    - group_vars/monitoring/main.yml
   vars:
     single_node: true
     minimum_master_nodes: 1
