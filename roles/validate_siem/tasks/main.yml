@@ -33,6 +33,12 @@
   register: prometheus_status
   changed_when: false
 
+- name: Check API Credentials
+  debug:
+    msg:
+      - "Username: {{ wazuh_api_users[0].username }}"
+      - "Password: {{ wazuh_api_users[0].password }}"
+
 - name: Authenticate to Wazuh API
   uri:
     url: "http://{{ server_ip }}:55000/security/user/authenticate"
