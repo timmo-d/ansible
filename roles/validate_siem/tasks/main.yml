@@ -13,10 +13,10 @@
   register: indexer_status
   changed_when: false
 
-- name: Check Kibana status
-  shell: systemctl is-active kibana
-  register: kibana_status
-  changed_when: false
+#- name: Check Kibana status
+#  shell: systemctl is-active kibana
+#  register: kibana_status
+#  changed_when: false
 
 - name: Check Grafana status
   shell: systemctl is-active grafana-server
