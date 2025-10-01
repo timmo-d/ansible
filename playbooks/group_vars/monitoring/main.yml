@@ -6,6 +6,7 @@
 # =============================
 
 server_ip: "192.168.1.240"
+domain_name: "{{ lookup('env', 'DOMAIN_NAME') }}"
 
 # Interface that Suricata/Zeek will monitor (e.g., "ens160").
 # Uncomment with override or comment to auto-detect
