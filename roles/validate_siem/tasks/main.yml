@@ -41,7 +41,8 @@
 
 - name: Authenticate to Wazuh API
   uri:
-    url: "http://{{ server_ip }}:55000/security/user/authenticate"
+    url: "https://{{ server_ip }}:55000/security/user/authenticate?raw=true"
+    validate_certs: no
     method: POST
     body_format: json
     body:
