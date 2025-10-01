@@ -43,13 +43,13 @@
         password: "{{ wazuh_api_users.password }}"
       return_content: true
     register: wazuh_auth
-  - name: Test Wazuh API with token
-    uri:
-      url: http://localhost:55000/agents
-      headers:
-        Authorization: '{{ ''Bearer '' + wazuh_auth.json.data.token }}'
-      return_content: true
-    register: wazuh_agents
+- name: Test Wazuh API with token
+  uri:
+    url: http://localhost:55000/agents
+    headers:
+      Authorization: '{{ ''Bearer '' + wazuh_auth.json.data.token }}'
+    return_content: true
+  register: wazuh_agents
 
 - name: Test Wazuh Indexer API
   uri:
