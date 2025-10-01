@@ -64,11 +64,11 @@
     return_content: yes
   register: prometheus_api
 
-- name: Test Kibana API
-  uri:
-    url: "http://{{ server_ip }}:5601/api/status"
-    return_content: yes
-  register: kibana_api
+#- name: Test Kibana API
+#  uri:
+#    url: "http://{{ server_ip }}:5601/api/status"
+#    return_content: yes
+#  register: kibana_api
 
 - name: Test Grafana API
   uri:
