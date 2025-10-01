@@ -20,12 +20,15 @@ wazuh_api_credentials:
   - id: "default"
     url: "https://{{ server_ip }}"
     port: 55000
-    username: wazuh-api-user
-    password: "SuperSecret1!"
+    username: custom-user  #username: wazuh-api-user
+    password: .S3cur3Pa55w0rd*-    #password: "SuperSecret1!"
     run_as: false
 
+
 # Dashboard Security
+################################
 dashboard_security: false #true
+################################
 indexer_admin_password: changemeTo50methingSTRONG!
 dashboard_user: kibanaserver
 dashboard_password: changemeTo50methingSTRONG!
