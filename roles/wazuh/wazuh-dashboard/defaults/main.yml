@@ -22,6 +22,7 @@ wazuh_api_credentials:
     port: 55000
     username: "wazuh"
     password: "changemeTo50methingSTRONG!"
+    run_as: false
 
 # Dashboard Security
 dashboard_security: true
