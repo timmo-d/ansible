@@ -48,6 +48,7 @@
       username: "{{ wazuh_api_users[0].username }}"
       password: "{{ wazuh_api_users[0].password }}"
     return_content: true
+    force_basic_auth: yes
   register: wazuh_auth
 
 - name: Test Wazuh API with token
