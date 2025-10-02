@@ -19,13 +19,13 @@
         name: node-1       # Important: must be equal to indexer_node_name.
         ip: "{{ server_ip }}"
         role: indexer
-      wazuh1:
-        name: node-1
-        ip: "{{ server_ip }}"
-        role: server
-      dashboard:
-        name: node-1
-        ip: " {{ server_ip }}"
+      #wazuh1:
+      #  name: node-1
+      #  ip: "{{ server_ip }}"
+      #  role: server
+      #dashboard:
+      #  name: node-1
+      #  ip: " {{ server_ip }}"
     
     ansible_shell_allow_world_readable_temp: true
 
