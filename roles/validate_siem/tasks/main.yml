@@ -46,8 +46,8 @@
     method: POST
     body_format: json
     body:
-      username: "{{ wazuh_api_users[0].username }}"
-      password: "{{ wazuh_api_users[0].password }}"
+      username: "admin"
+      password: "changemeTo50methingSTRONG!"
     return_content: true
     force_basic_auth: yes
   register: wazuh_auth
@@ -59,7 +59,7 @@
 #    method: POST
 #    body_format: json
 #    body:
-#      username: "{{ wazuh_api_users[0].username }}"
+#      username: "admin"
 #      password: "{{ wazuh_api_users[0].password }}"
 #    return_content: true
 #    force_basic_auth: yes
