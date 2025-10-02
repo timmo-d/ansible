@@ -32,17 +32,17 @@
   roles:
 ##    - role: monitoring_setup
 ##    - role: siem_soc_setup
-    - role: firewall
+#    - role: firewall
 ##    - role: elasticsearch # Not required when Wazuh Indexer is used.
-    - role: logstash
-    - role: kibana
-    - role: ../roles/wazuh/wazuh-indexer
-    - role: ../roles/wazuh/ansible-wazuh-manager
-    - role: ../roles/wazuh/ansible-filebeat-oss
-    - role: ../roles/wazuh/wazuh-dashboard
-    - role: suricata
-    - role: prometheus
-    - role: grafana
+#    - role: logstash
+#    - role: kibana
+#    - role: ../roles/wazuh/wazuh-indexer
+#    - role: ../roles/wazuh/ansible-wazuh-manager
+#    - role: ../roles/wazuh/ansible-filebeat-oss
+#    - role: ../roles/wazuh/wazuh-dashboard
+#    - role: suricata
+#    - role: prometheus
+#    - role: grafana
     - role: validate_siem
 
 
