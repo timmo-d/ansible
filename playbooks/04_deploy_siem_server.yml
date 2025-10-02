@@ -36,10 +36,10 @@
 ##    - role: elasticsearch # Not required when Wazuh Indexer is used.
 #    - role: logstash
 #    - role: kibana
-#    - role: ../roles/wazuh/wazuh-indexer
-#    - role: ../roles/wazuh/ansible-wazuh-manager
-#    - role: ../roles/wazuh/ansible-filebeat-oss
-#    - role: ../roles/wazuh/wazuh-dashboard
+    - role: ../roles/wazuh/wazuh-indexer
+    - role: ../roles/wazuh/ansible-wazuh-manager
+    - role: ../roles/wazuh/ansible-filebeat-oss
+    - role: ../roles/wazuh/wazuh-dashboard
 #    - role: suricata
 #    - role: prometheus
 #    - role: grafana
