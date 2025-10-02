@@ -39,22 +39,9 @@
       - "Username: {{ wazuh_api_users[0].username }}"
       - "Password: {{ wazuh_api_users[0].password }}"
 
-#- name: Authenticate to Wazuh API
-#  uri:
-#    url: "https://{{ server_ip }}:55000/security/user/authenticate?raw=true"
-#    validate_certs: no
-#    method: POST
-#    body_format: json
-#    body:
-#      username: "{{ wazuh_api_users[0].username }}"
-#      password: "{{ wazuh_api_users[0].password }}"
-#    return_content: true
-#    force_basic_auth: yes
-#  register: wazuh_auth
-
 - name: Authenticate to Wazuh API
   uri:
-    url: "http://{{ server_ip }}:55000/security/user/authenticate?raw=true"
+    url: "https://{{ server_ip }}:55000/security/user/authenticate?raw=true"
     validate_certs: no
     method: POST
     body_format: json
@@ -63,6 +50,19 @@
       password: "{{ wazuh_api_users[0].password }}"
     return_content: true
     force_basic_auth: yes
+  register: wazuh_auth
+
+#- name: Authenticate to Wazuh API
+#  uri:
+#    url: "http://{{ server_ip }}:55000/security/user/authenticate?raw=true"
+#    validate_certs: no
+#    method: POST
+#    body_format: json
+#    body:
+#      username: "{{ wazuh_api_users[0].username }}"
+#      password: "{{ wazuh_api_users[0].password }}"
+#    return_content: true
+#    force_basic_auth: yes
 
 
 - name: Test Wazuh API with token
