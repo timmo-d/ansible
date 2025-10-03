@@ -40,6 +40,7 @@
     - role: ../roles/wazuh/ansible-wazuh-manager
     - role: ../roles/wazuh/ansible-filebeat-oss
     - role: ../roles/wazuh/wazuh-dashboard
+    - role: ../roles/wazuh/ansible-wazuh-agent
     - role: suricata
     - role: prometheus
     - role: grafana
