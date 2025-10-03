@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# Exit on error
+set -e
+
+# Accept password as argument or environment variable
+NEW_PASSWORD="${1:-$WAZUH_API_PASSWORD}"
+
+if [ -z "$NEW_PASSWORD" ]; then
+  echo "Error: No password provided. Use argument or set WAZUH_API_PASSWORD environment variable."
+  exit 1
+fi
+
+# Reset RBAC database
+echo "Resetting Wazuh RBAC database..."
+/var/ossec/bin/rbac_control factory-reset --force
+
+# Use expect to set the new password
+echo "Setting new password for 'wazuh' API user..."
+expect <<EOF
+spawn /var/ossec/bin/rbac_control change-password
+expect "Enter the username to change the password for:"
+send "wazuh\r"
+expect "New password for 'wazuh' (skip):"
+send "$NEW_PASSWORD\r"
+expect "Confirm new password:"
+send "$NEW_PASSWORD\r"
+expect eof
+EOF
+
+echo "Password successfully updated."
