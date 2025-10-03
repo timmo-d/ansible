@@ -351,8 +351,8 @@
     command: /var/ossec/bin/rbac_control change-password
     responses:
       'Enter the username to change the password for:': 'wazuh'
-      'New password for \'wazuh\' \(skip\):': '{{ wazuh_api_users[0].password }}'
-      'Confirm new password:': '{{ wazuh_api_users[0].password }}'
+      "New password for 'wazuh' (skip):": "{{ wazuh_api_users[0].password }}"
+      'Confirm new password:': "{{ wazuh_api_users[0].password }}"
     timeout: 60
   become: true
   vars:
