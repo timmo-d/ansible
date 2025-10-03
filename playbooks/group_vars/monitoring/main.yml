@@ -120,8 +120,8 @@ wazuh_cluster_enabled: false
 
 
 wazuh_api_users:
-  - username: wazuh-api-user
-    password: "SuperSecret1!"
+  - username: wazuh
+    password: "changemeTo50methingSTRONG!"
 
 
 wazuh_version: "4.13.1"

@@ -342,6 +342,21 @@
     - wazuh_api_users is defined
     - wazuh_manager_config.cluster.node_type == "master"
 
+- name: Reset Wazuh RBAC database
+  command: /var/ossec/bin/rbac_control factory-reset --force
+  become: true
+
+- name: Set new password for Wazuh API user
+  expect:
+    command: /var/ossec/bin/rbac_control change-password
+    responses:
+      'Enter the username to change the password for:': 'wazuh'
+      'Enter new password:': '{{ wazuh_api_users[0].password }}'
+      'Confirm new password:': '{{ wazuh_api_users[0].password }}'
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
 - name: Create api.yaml
   template:
     src: templates/api.yaml.j2
