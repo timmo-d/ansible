@@ -351,11 +351,13 @@
     command: /var/ossec/bin/rbac_control change-password
     responses:
       'Enter the username to change the password for:': 'wazuh'
-      'Enter new password:': '{{ wazuh_api_users[0].password }}'
+      'New password for \'wazuh\' \(skip\):': '{{ wazuh_api_users[0].password }}'
       'Confirm new password:': '{{ wazuh_api_users[0].password }}'
+    timeout: 60
   become: true
   vars:
     ansible_python_interpreter: /usr/bin/python3
+
 
 - name: Create api.yaml
   template:
