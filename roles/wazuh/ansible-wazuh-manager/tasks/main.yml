@@ -353,9 +353,9 @@
   become: true
 
 - name: Delete RBAC reset script
-    file:
-      path: "{{ wazuh_dir }}/framework/scripts/reset_wazuh_rbac.sh"
-      state: absent
+  file:
+    path: "{{ wazuh_dir }}/framework/scripts/reset_wazuh_rbac.sh"
+    state: absent
 
 - name: Create api.yaml
   template:
