@@ -82,6 +82,17 @@
     mode: 0751
   changed_when: False
 
+- name: Import Wazuh SIEM Dashboard into Kibana
+  uri:
+    url: "http://{{ server_ip }}:5601/api/kibana/dashboards/import"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+      kbn-xsrf: "true"
+    body: "{{ lookup('file', 'wazuh_siem_dashboard.json') }}"
+    body_format: json
+    status_code: 200
+
 - name: Configure opensearch.password in opensearch_dashboards.keystore
   shell: >-
     echo '{{ dashboard_password }}' | /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore --allow-root add -f --stdin opensearch.password

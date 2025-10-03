@@ -1,0 +1,60 @@
+{
+  "title": "Wazuh SIEM Dashboard",
+  "panels": [
+    {
+      "title": "MITRE Tactics Overview",
+      "type": "bar",
+      "index_pattern": "wazuh-alerts-*",
+      "x_field": "rule.mitre.tactic",
+      "y_metric": "count"
+    },
+    {
+      "title": "MITRE Techniques Heatmap",
+      "type": "heatmap",
+      "index_pattern": "wazuh-alerts-*",
+      "x_field": "rule.mitre.tactic",
+      "y_field": "rule.mitre.techniques",
+      "metric": "count"
+    },
+    {
+      "title": "Alert Severity Over Time",
+      "type": "line",
+      "index_pattern": "wazuh-alerts-*",
+      "x_field": "timestamp",
+      "y_metric": "max(rule.level)",
+      "x_bucket": "date_histogram"
+    },
+    {
+      "title": "Top Alert Rules",
+      "type": "bar",
+      "index_pattern": "wazuh-alerts-*",
+      "x_field": "rule.id",
+      "y_metric": "count"
+    },
+    {
+      "title": "Alerts by Source IP",
+      "type": "pie",
+      "index_pattern": "wazuh-alerts-*",
+      "bucket_field": "srcip",
+      "metric": "count"
+    },
+    {
+      "title": "System Health Metrics",
+      "type": "metric",
+      "index_pattern": "wazuh-alerts-*",
+      "metric_field": "rule.level",
+      "aggregation": "max"
+    },
+    {
+      "title": "Alert Table",
+      "type": "table",
+      "index_pattern": "wazuh-alerts-*",
+      "fields": [
+        "rule.level",
+        "rule.firedtimes",
+        "agent.name",
+        "timestamp"
+      ]
+    }
+  ]
+}
