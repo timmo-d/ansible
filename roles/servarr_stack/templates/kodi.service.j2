@@ -1,0 +1,12 @@
+[Unit]
+Description=Kodi Media Center
+After=network.target
+
+[Service]
+User=kodi
+Group=media
+ExecStart=/usr/bin/xinit /usr/bin/kodi --standalone --
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

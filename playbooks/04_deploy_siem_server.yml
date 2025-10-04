@@ -19,23 +19,13 @@
         name: node-1       # Important: must be equal to indexer_node_name.
         ip: "{{ server_ip }}"
         role: indexer
-      #wazuh1:
-      #  name: node-1
-      #  ip: "{{ server_ip }}"
-      #  role: server
-      #dashboard:
-      #  name: node-1
-      #  ip: " {{ server_ip }}"
-    
     ansible_shell_allow_world_readable_temp: true
 
   roles:
-##    - role: monitoring_setup
-##    - role: siem_soc_setup
     - role: firewall
-##    - role: elasticsearch # Not required when Wazuh Indexer is used.
+      vars:
+        ruleset: "siem"
     - role: logstash
-#    - role: kibana # Not required when Wazuh Dashboard is used.
     - role: ../roles/wazuh/wazuh-indexer
     - role: ../roles/wazuh/ansible-wazuh-manager
     - role: ../roles/wazuh/ansible-filebeat-oss
@@ -44,50 +34,3 @@
     - role: prometheus
     - role: grafana
     - role: validate_siem
-
-
-# Certificates generation
-#- hosts: all
-#  roles:
-#    - role: ../roles/wazuh/wazuh-indexer
-#      perform_installation: false
-#  become: no
-#  #become_user: root
-#  vars_files:
-#    - group_vars/monitoring/main.yml
-#  vars:
-#    indexer_node_master: true
-#    instances:
-#      node1:
-#        name: node-1       # Important: must be equal to indexer_node_name.
-#        ip: "{{ server_ip }}"
-#        role: indexer
-#  tags:
-#    - generate-certs
-
-# Single node
-#- hosts: all
-#  become: yes
-#  become_user: root
-#  gather_facts: yes
-#  roles:
-#    - role: ../roles/wazuh/wazuh-indexer
-#    - role: ../roles/wazuh/ansible-wazuh-manager
-#    - role: ../roles/wazuh/ansible-filebeat-oss
-#    - role: ../roles/wazuh/wazuh-dashboard
-#  vars_files:
-#    - group_vars/monitoring/main.yml
-#  vars:
-#    single_node: true
-#    minimum_master_nodes: 1
-#    indexer_node_master: true
-#    indexer_network_host: "{{ server_ip }}"
-#    filebeat_node_name: node-1
-#    filebeat_output_indexer_hosts:
-#    - "{{ server_ip }}"
-#    instances:
-#      node1:
-#        name: node-1       # Important: must be equal to indexer_node_name.
-#        ip: "{{ server_ip }}"
-#        role: indexer
-#    ansible_shell_allow_world_readable_temp: true

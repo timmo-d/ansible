@@ -1,0 +1,46 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+  chain input {
+    type filter hook input priority 0;
+    policy drop;
+
+    # Allow loopback
+    iif lo accept
+
+    # Allow established/related
+    ct state established,related accept
+
+    # Allow SSH
+    tcp dport 22 accept
+
+    # Allow SIEM/SOC TCP ports from mgmt_allow_cidrs
+    {% for cidr in mgmt_allow_cidrs %}
+    {% for item in siem_ports %}
+    ip saddr {{ cidr }} tcp dport {{ item.port }} accept
+    {% endfor %}
+    {% endfor %}
+
+    # Allow TCP port ranges
+    tcp dport 9200-9299 accept
+    tcp dport 9300-9399 accept
+
+    # Allow UDP ports
+    {% for cidr in mgmt_allow_cidrs %}
+    ip saddr {{ cidr }} udp dport 514 accept
+    ip saddr {{ cidr }} udp dport 1514 accept
+    {% endfor %}
+  }
+
+  chain forward {
+    type filter hook forward priority 0;
+    policy drop;
+  }
+
+  chain output {
+    type filter hook output priority 0;
+    policy accept;
+  }
+}

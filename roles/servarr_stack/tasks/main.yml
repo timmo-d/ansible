@@ -1,0 +1,70 @@
+---
+- name: Ensure media group exists
+  group:
+    name: "{{ media_group }}"
+    state: present
+
+- name: Create users for all apps
+  user:
+    name: "{{ item }}"
+    group: "{{ media_group }}"
+    shell: /usr/sbin/nologin
+    create_home: yes
+  loop: "{{ servarr_apps + other_apps }}"
+
+- name: Install dependencies
+  apt:
+    name:
+      - curl
+      - gnupg
+      - ca-certificates
+      - software-properties-common
+      - xinit
+      - xserver-xorg
+    state: present
+    update_cache: yes
+
+- name: Install Servarr apps using tinyoverflow role
+  include_role:
+    name: tinyoverflow.servarr
+  vars:
+    servarr_app: "{{ item }}"
+    servarr_user: "{{ item }}"
+    servarr_group: "{{ media_group }}"
+  loop: "{{ servarr_apps }}"
+
+- name: Install qBittorrent-nox
+  apt:
+    name: qbittorrent-nox
+    state: present
+
+- name: Install Kodi
+  apt:
+    name: kodi
+    state: present
+
+- name: Create systemd service for qBittorrent
+  template:
+    src: qbittorrent.service.j2
+    dest: /etc/systemd/system/qbittorrent.service
+    mode: '0644'
+
+- name: Create systemd service for Kodi headless
+  template:
+    src: kodi.service.j2
+    dest: /etc/systemd/system/kodi.service
+    mode: '0644'
+
+- name: Enable and start qBittorrent service
+  systemd:
+    name: qbittorrent
+    enabled: yes
+    state: started
+
+- name: Enable and start Kodi service
+  systemd:
+    name: kodi
+    enabled: yes
+    state: started
+
+- import_tasks: config_restore.yml

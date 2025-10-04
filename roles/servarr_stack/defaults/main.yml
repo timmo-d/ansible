@@ -1,0 +1,14 @@
+---
+media_group: media
+backup_base_path: /etc/ansible/backups
+servarr_apps:
+  - radarr
+  - sonarr
+  - lidarr
+  - readarr
+  - whisparr
+  - prowlarr
+other_apps:
+  - qbittorrent
+  - huntarr
+  - kodi

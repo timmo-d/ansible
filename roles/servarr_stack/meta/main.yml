@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: Tim
+  description: Install and configure media automation stack with initial config restore
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: Ubuntu
+      versions:
+        - 24.04
+dependencies: []
