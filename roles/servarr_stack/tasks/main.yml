@@ -54,11 +54,23 @@
     group: root
     mode: '0755'
 
-- name: Add CIFS mount to /etc/fstab
+- name: Ensure CIFS mount entry is present in /etc/fstab
   lineinfile:
     path: /etc/fstab
-    line: "//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,iocharset=utf8,uid=1000,gid=1000,file_mode=0644,dir_mode=0755,vers=3.0 0 0"
+    regexp: '^//192\.168\.1\.106/data\s+/mnt/data\s+cifs\s+.*$'
+    line: '//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,x-systemd.automount,uid=1000,gid=1002,file_mode=0777,dir_mode=0777,vers=3.0 0 0'
     state: present
+    create: yes
+    backup: yes
+
+- name: Ensure CIFS mount entry is present in /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: '^//192\.168\.1\.106/r\s+/mnt/r\s+cifs\s+.*$'
+    line: '//192.168.1.106/r /mnt/r cifs credentials=/etc/smb_credentials,x-systemd.automount,uid=1000,gid=1002,file_mode=0777,dir_mode=0777,vers=3.0 0 0'
+    state: present
+    create: yes
+    backup: yes
 
 
 - name: Mount CIFS share
