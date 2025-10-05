@@ -66,7 +66,7 @@
   lineinfile:
     path: /etc/fstab
     regexp: '^//192\.168\.1\.106/data\s+/mnt/data\s+cifs\s+.*$'
-    line: '//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1002,file_mode=0644,dir_mode=0755,vers=3.0 0 0'
+    line: '//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1000,file_mode=0644,dir_mode=0755,vers=3.0,sec=ntlmssp,nodfs 0 0'
     state: present
 
 - name: Ensure CIFS mount entry is present in /etc/fstab
