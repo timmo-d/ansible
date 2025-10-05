@@ -49,6 +49,9 @@ table inet filter {
     # Allow outbound HTTPS
     tcp dport 443 accept
 
+    # Allow outbound MySQL
+    tcp dport 3306 accept
+
     # Allow outbound Secure DNS
     tcp dport 853 accept     # DNS over TLS
     # DNS over HTTPS uses port 443 (already allowed)

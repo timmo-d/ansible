@@ -1,0 +1,77 @@
+<advancedsettings>
+<cache>
+<buffermode>1</buffermode>
+<memorysize>2684354560</memorysize>
+<readfactor>20</readfactor>
+</cache>
+<videodatabase>
+<type>mysql</type>
+<host>{{ servarr_ip }}</host>
+<port>3306</port>
+<user>{{ kodi_username }}</user>
+<pass>{{ kodi_password }}</pass>
+</videodatabase>
+<musicdatabase>
+<type>mysql</type>
+<host>{{ servarr_ip }}</host>
+<port>3306</port>
+<user>{{ kodi_username }}</user>
+<pass>{{ kodi_password }}</pass>
+</musicdatabase>
+<videolibrary>
+<importwatchedstate>true</importwatchedstate>
+<importresumepoint>true</importresumepoint>
+<recentlyaddeditems>50</recentlyaddeditems>
+<!--  number of recently added items. Defaults to 25  -->
+<!--  Additional artwork to add for TV shows  -->
+<tvshowextraart>
+<arttype>characterart</arttype>
+<arttype>clearart</arttype>
+<arttype>clearlogo</arttype>
+<arttype>landscape</arttype>
+<arttype>keyart</arttype>
+</tvshowextraart>
+<!--  Additional artwork to add for TV show seasons  -->
+<tvseasonextraart>
+<arttype>landscape</arttype>
+</tvseasonextraart>
+<!--  Additional artwork to add for TV show episodes  -->
+<episodeextraart>
+<arttype>fanart</arttype>
+</episodeextraart>
+<!--  Additional artwork to add for movies  -->
+<movieextraart>
+<arttype>banner</arttype>
+<arttype>clearart</arttype>
+<arttype>clearlogo</arttype>
+<arttype>discart</arttype>
+<arttype>landscape</arttype>
+<arttype>keyart</arttype>
+</movieextraart>
+<!--  Additional artwork to add for movie sets / collections  -->
+<moviesetextraart>
+<arttype>banner</arttype>
+<arttype>clearart</arttype>
+<arttype>clearlogo</arttype>
+<arttype>discart</arttype>
+<arttype>landscape</arttype>
+<arttype>keyart</arttype>
+</moviesetextraart>
+<!--  Additional artwork to add for musicvideos  -->
+<musicvideoextraart>
+<arttype>banner</arttype>
+<arttype>clearart</arttype>
+<arttype>clearlogo</arttype>
+<arttype>discart</arttype>
+<arttype>landscape</arttype>
+</musicvideoextraart>
+</videolibrary>
+<!-- 
+  <pathsubstitution>
+    <substitute>
+      <from>special://profile/Thumbnails/</from>
+      <to>smb://192.168.1.106/media/Kodi/userdata/Thumbnails/</to>
+    </substitute>
+  </pathsubstitution>
+ -->
+</advancedsettings>
