@@ -49,6 +49,9 @@ table inet filter {
     # Allow outbound HTTPS
     tcp dport 443 accept
 
+    # Allow outbound HTTP
+    tcp dport 80 accept
+
     # Allow outbound MySQL
     tcp dport 3306 accept
 
