@@ -6,9 +6,8 @@
     - group_vars/all.yml
 
   roles:
-    - role: servarr_stack           # Install and configure applications
     - role: firewall                # Install nftables and configure
       vars:
         ruleset: "servarr"
-    
+    - role: servarr_stack           # Install and configure applications
     
