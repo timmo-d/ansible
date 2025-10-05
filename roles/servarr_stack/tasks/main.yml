@@ -37,14 +37,14 @@
     install_recommends: no
 
 - name: Create CIFS credentials file
-    copy:
-      dest: /etc/smb_credentials
-      content: |
-        username={{ username }}
-        password={{ password }}
-      owner: root
-      group: root
-      mode: '0600'
+  copy:
+    dest: /etc/smb_credentials
+    content: |
+      username={{ username }}
+      password={{ password }}
+    owner: root
+    group: root
+    mode: '0600'
 
 - name: Ensure mount point exists
   file:
