@@ -54,23 +54,27 @@
     group: root
     mode: '0755'
 
+- name: Ensure mount point exists
+  file:
+    path: /mnt/r
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: Ensure CIFS mount entry is present in /etc/fstab
   lineinfile:
     path: /etc/fstab
     regexp: '^//192\.168\.1\.106/data\s+/mnt/data\s+cifs\s+.*$'
-    line: '//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,x-systemd.automount,uid=1000,gid=1002,file_mode=0777,dir_mode=0777,vers=3.0 0 0'
+    line: '//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1002,file_mode=0644,dir_mode=0755,vers=3.0 0 0'
     state: present
-    create: yes
-    backup: yes
 
 - name: Ensure CIFS mount entry is present in /etc/fstab
   lineinfile:
     path: /etc/fstab
     regexp: '^//192\.168\.1\.106/r\s+/mnt/r\s+cifs\s+.*$'
-    line: '//192.168.1.106/r /mnt/r cifs credentials=/etc/smb_credentials,x-systemd.automount,uid=1000,gid=1002,file_mode=0777,dir_mode=0777,vers=3.0 0 0'
+    line: '//192.168.1.106/r /mnt/r cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1002,file_mode=0644,dir_mode=0755,vers=3.0 0 0'
     state: present
-    create: yes
-    backup: yes
 
 
 - name: Mount CIFS share
