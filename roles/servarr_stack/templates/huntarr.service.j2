@@ -1,0 +1,14 @@
+[Unit]
+Description=Huntarr Service
+After=network.target
+
+[Service]
+Type=simple
+User=huntarr
+Group=media
+WorkingDirectory=/var/lib/huntarr
+ExecStart=/var/lib/huntarr/huntarr-env/bin/python3 /var/lib/huntarr/start-huntarr.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

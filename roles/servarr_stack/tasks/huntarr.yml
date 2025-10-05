@@ -1,0 +1,63 @@
+
+   - name: Clone Huntarr.io repository to /tmp
+      git:
+        repo: "{{ huntarr_repo }}"
+        dest: "{{ huntarr_repo_tmp }}"
+        version: "HEAD"
+        force: yes
+
+    - name: Create install directory
+      file:
+        path: "{{ install_dir }}"
+        state: directory
+        owner: "{{ huntarr_user }}"
+        group: media
+        mode: '0755'
+
+    - name: Create data directory
+      file:
+        path: "{{ data_dir }}"
+        state: directory
+        owner: "{{ huntarr_user }}"
+        group: media
+        mode: '0755'
+
+    - name: Move Huntarr.io contents to install directory
+      command: >
+        mv {{ huntarr_repo_tmp }}/* {{ install_dir }}/
+      args:
+        removes: "{{ huntarr_repo_tmp }}/main.py"
+      become_user: "{{ huntarr_user }}"
+
+    - name: Create Python virtual environment
+      command: python3 -m venv {{ huntarr_venv_dir }}
+      args:
+        creates: "{{ huntarr_venv_dir }}/bin/activate"
+      become_user: "{{ huntarr_user }}"
+
+    - name: Install Python dependencies in virtualenv
+      pip:
+        requirements: "{{ install_dir }}/requirements.txt"
+        virtualenv: "{{ huntarr_venv_dir }}"
+        virtualenv_command: "python3 -m venv"
+      become_user: "{{ huntarr_user }}"
+
+    - name: Deploy Huntarr systemd service template
+      template:
+        src: huntarr.service.j2
+        dest: "{{ huntarr_service_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload systemd
+
+    - name: Enable and start Huntarr service
+      systemd:
+        name: huntarr.service
+        enabled: true
+        state: started
+
+    - name: Remove temporary Huntarr.io repo
+      file:
+        path: "{{ huntarr_repo_tmp }}"
+        state: absent
