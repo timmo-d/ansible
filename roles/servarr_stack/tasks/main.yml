@@ -67,7 +67,24 @@
     enabled: yes
     state: started
 
-- import_tasks: config_restore.yml
+- name: Restore config templates
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ backup_base_path }}/{{ item }}/config.xml"
+    owner: "{{ item }}"
+    group: "{{ media_group }}"
+    mode: '0644'
+  loop: "{{ servarr_apps + other_apps }}"
+
+- name: Restore database files from backup
+  copy:
+    src: "{{ backup_base_path }}/{{ item }}/{{ item }}.db"
+    dest: "/home/{{ item }}/config/database.db"
+    owner: "{{ item }}"
+    group: "{{ media_group }}"
+    mode: '0600'
+  loop: "{{ servarr_apps + other_apps }}"
+
 
 
 

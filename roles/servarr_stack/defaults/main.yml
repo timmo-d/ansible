@@ -1,6 +1,6 @@
 ---
 media_group: media
-backup_base_path: /etc/ansible/backups
+backup_base_path: /var/lib
 servarr_apps:
   - radarr
   - sonarr
