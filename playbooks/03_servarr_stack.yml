@@ -1,0 +1,14 @@
+---
+- name: Install and configure media automation stack
+  hosts: all
+  become: true
+  vars_files:
+    - group_vars/all.yml
+
+  roles:
+    - role: servarr_stack           # Install and configure applications
+    - role: firewall                # Install nftables and configure
+      vars:
+        ruleset: "servarr"
+    
+    
