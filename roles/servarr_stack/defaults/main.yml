@@ -9,7 +9,7 @@ servarr_apps:
   - whisparr
   - prowlarr
 other_apps:
-  - qbittorrent
+  - qbittorrent-nox
   - huntarr
   - kodi
 

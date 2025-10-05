@@ -9,7 +9,7 @@
     name: "{{ item }}"
     group: "{{ media_group }}"
     shell: /usr/sbin/nologin
-    create_home: no
+    create_home: yes
   loop: "{{ servarr_apps + other_apps }}"
 
 - name: Install dependencies
@@ -20,14 +20,57 @@
       - ca-certificates
       - software-properties-common
       - xinit
-      - xserver-xorg
       - git
       - python3
       - python3-venv
       - python3-pip
       - lxml
+      - xorg
+      - dbus-x11
+      - xserver-xorg-video-intel
+      - xserver-xorg-legacy
+      - pulseaudio
+      - upower
+      - samba
     state: present
     update_cache: yes
+    install_recommends: no
+
+- name: Create CIFS credentials file
+    copy:
+      dest: /etc/smb_credentials
+      content: |
+        username={{ username }}
+        password={{ password }}
+      owner: root
+      group: root
+      mode: '0600'
+
+- name: Ensure mount point exists
+  file:
+    path: /mnt/data
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Add CIFS mount to /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    line: "//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,iocharset=utf8,uid=1000,gid=1000,file_mode=0644,dir_mode=0755 0 0"
+    state: present
+
+- name: Mount CIFS share
+  command: mount -a
+
+- name: Restrict Samba to SMBv2 and SMBv3 only
+  blockinfile:
+    path: /etc/samba/smb.conf
+    block: |
+      [global]
+      server min protocol = SMB2
+      server max protocol = SMB3
+  notify: restart samba
 
 - name: Install Servarr apps using tinyoverflow role
   include_role:
@@ -38,63 +81,35 @@
     servarr_group: "{{ media_group }}"
   loop: "{{ servarr_apps }}"
 
-# Install qBittorrent
-- name: Install qBittorrent-nox
-  apt:
-    name: qbittorrent-nox
-    state: present
-
-- name: Install Kodi
-  apt:
-    name: kodi
-    state: present
-
-- name: Create systemd service for qBittorrent
-  template:
-    src: qbittorrent.service.j2
-    dest: /etc/systemd/system/qbittorrent.service
-    mode: '0644'
-
-- name: Enable and start qBittorrent service
-  systemd:
-    name: qbittorrent
-    enabled: yes
-    state: started
-
-# Install Kodi (headless)
-- name: Create systemd service for Kodi headless
-  template:
-    src: kodi.service.j2
-    dest: /etc/systemd/system/kodi.service
-    mode: '0644'
-
-- name: Enable and start Kodi service
-  systemd:
-    name: kodi
-    enabled: yes
-    state: started
-
-- name: Install Huntarr
-  include_tasks: huntarr.yml
-
-# Update app configurations and databnases from backups
+# Update app configurations and databases from backups
 - name: Restore config templates
   template:
-    src: "{{ item }}.j2"
+    src: "/mnt/data/servarr/{{ item }}/config.xml"
     dest: "{{ backup_base_path }}/{{ item }}/config.xml"
     owner: "{{ item }}"
     group: "{{ media_group }}"
     mode: '0644'
-  loop: "{{ servarr_apps + other_apps }}"
+  loop: "{{ servarr_apps }}"
 
 - name: Restore database files from backup
   copy:
-    src: "{{ backup_base_path }}/{{ item }}/{{ item }}.db"
-    dest: "/home/{{ item }}/config/database.db"
+    src: "/mnt/data/servarr/{{ item }}/{{ item }}.db"
+    dest: "{{ backup_base_path }}/{{ item }}/{{ item }}.db"
     owner: "{{ item }}"
     group: "{{ media_group }}"
     mode: '0600'
-  loop: "{{ servarr_apps + other_apps }}"
+  loop: "{{ servarr_apps }}"
+  
+- name: Install qBittorrent-nox
+  include_tasks: qbittorrent.yml
+
+- name: Install Kodi
+  include_tasks: kodi.yml
+
+- name: Install Huntarr
+  include_tasks: huntarr.yml
+
+
 
 
 

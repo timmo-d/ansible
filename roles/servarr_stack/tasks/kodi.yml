@@ -1,0 +1,69 @@
+# Install Kodi (headless)
+- name: Ensure Flatpak is installed
+  apt:
+    name: flatpak
+    state: present
+    update_cache: yes
+
+- name: Add Flathub repository if not already added
+  command: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  args:
+    creates: /var/lib/flatpak/repo
+
+- name: Install Kodi from Flathub
+  command: flatpak install -y flathub tv.kodi.Kodi
+  args:
+    creates: /var/lib/flatpak/app/tv.kodi.Kodi
+
+- name: Create systemd service for Kodi headless
+  template:
+    src: kodi.service.j2
+    dest: /etc/systemd/system/kodi.service
+    mode: '0644'
+
+# Enable Boot2Kodi    
+- name: Add kodi user to required groups
+  user:
+    name: kodi
+    groups: audio,video,input,dialout,plugdev,tty
+    append: yes
+
+- name: Replace allowed_users=console with allowed_users=anybody
+  replace:
+    path: /etc/X11/Xwrapper.config
+    regexp: '^allowed_users=console'
+    replace: 'allowed_users=anybody'
+
+- name: Ensure 'needs_root_rights=yes' is present in Xwrapper.config
+  lineinfile:
+    path: /etc/X11/Xwrapper.config
+    line: 'needs_root_rights=yes'
+    state: present
+    create: yes
+    insertafter: EOF
+
+- name: Copy kodi.service to systemd
+  copy:
+    src: kodi.service.j2
+    dest: /etc/systemd/system/kodi.service
+    mode: '0644'
+
+- name: Copy powermenu_in_kodi.pkla for Ubuntu 22.04 and under
+  copy:
+    src: powermenu_in_kodi.pkla.j2
+    dest: /etc/polkit-1/localauthority/50-local.d/powermenu_in_kodi.pkla
+    mode: '0644'
+  when: ansible_distribution_version is version('24.04', '<')
+
+- name: Copy powermenu_in_2404.rules for Ubuntu 24.04 and above
+  copy:
+    src: powermenu_in_2404.rules.j2
+    dest: /etc/polkit-1/rules.d/powermenu.rules
+    mode: '0644'
+  when: ansible_distribution_version is version('24.04', '>=')
+
+- name: Enable and start Kodi service
+  systemd:
+    name: kodi
+    enabled: yes
+    state: started

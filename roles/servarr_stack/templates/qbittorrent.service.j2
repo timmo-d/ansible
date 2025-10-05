@@ -5,8 +5,11 @@ After=network.target
 [Service]
 User=qbittorrent
 Group=media
-ExecStart=/usr/bin/qbittorrent-nox
+ExecStart=/opt/qbittorrent-nox --profile=/var/lib/qbittorrent-nox
 Restart=on-failure
+TimeoutStopSec=300
+KillMode=process
+
 
 [Install]
 WantedBy=multi-user.target
