@@ -20,6 +20,10 @@ table inet filter {
     ip protocol icmp icmp type echo-reply accept
     ip6 nexthdr icmpv6 icmpv6 type echo-reply accept
 
+    # Allow outbound Samba traffic to 192.168.1.106
+    ip saddr 192.168.1.106 tcp dport { 139, 445 } accept
+    ip saddr 192.168.1.106 udp dport { 137, 138 } accept
+
 
     # Log and drop everything else
     log prefix "nftables INPUT DROP: " flags all
