@@ -32,6 +32,7 @@
       - pulseaudio
       - upower
       - samba
+      - cifs-utils
     state: present
     update_cache: yes
     install_recommends: no
