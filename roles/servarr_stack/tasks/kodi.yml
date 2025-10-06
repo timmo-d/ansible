@@ -53,14 +53,14 @@
 
 - name: Copy powermenu_in_kodi.pkla for Ubuntu 22.04 and under
   copy:
-    src: powermenu_in_kodi.pkla.j2
+    src: kodi.powermenu_in_kodi.pkla.j2
     dest: /etc/polkit-1/localauthority/50-local.d/powermenu_in_kodi.pkla
     mode: '0644'
   when: ansible_distribution_version is version('24.04', '<')
 
 - name: Copy powermenu_in_2404.rules for Ubuntu 24.04 and above
   copy:
-    src: powermenu_in_2404.rules.j2
+    src: kodi.powermenu_in_2404.rules.j2
     dest: /etc/polkit-1/rules.d/powermenu.rules
     mode: '0644'
   when: ansible_distribution_version is version('24.04', '>=')
