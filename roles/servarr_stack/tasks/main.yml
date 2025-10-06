@@ -108,6 +108,7 @@
     owner: "{{ item }}"
     group: "{{ media_group }}"
     mode: '0644'
+    remote_src: yes
   loop: "{{ servarr_apps }}"
 
 - name: Restore database files from backup
@@ -116,7 +117,8 @@
     dest: "{{ backup_base_path }}/{{ item }}/{{ item }}.db"
     owner: "{{ item }}"
     group: "{{ media_group }}"
-    mode: '0600'
+    mode: '0644'
+    remote_src: yes
   loop: "{{ servarr_apps }}"
   
 - name: Install qBittorrent-nox
