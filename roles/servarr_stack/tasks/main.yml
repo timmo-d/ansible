@@ -110,7 +110,7 @@
     group: "{{ media_group }}"
     mode: '0644'
     remote_src: yes
-  loop: "{{ servarr_apps }}
+  loop: "{{ servarr_apps }}"
 
 
 - name: Restore database files from backup
