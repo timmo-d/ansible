@@ -3,6 +3,11 @@
     name: nftables
     state: present
 
+- name: Disable ufw
+  service:
+    name: ufw
+    state: stopped
+    enabled: no
 
 - name: Configure rules for Cloudflared/NGINX Reverse Proxy configuration
   template:
