@@ -1,19 +1,22 @@
 # Install Kodi (headless)
-- name: Ensure Flatpak is installed
-  apt:
+- name: Ensure Flatpak engine is installed
+  ansible.builtin.package:
     name: flatpak
     state: present
-    update_cache: yes
 
-- name: Add Flathub repository if not already added
-  command: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-  args:
-    creates: /var/lib/flatpak/repo
+- name: Ensure Flathub remote is configured (system)
+  community.general.flatpak_remote:
+    name: "{{ flathub_remote_name }}"
+    state: present
+    flatpakrepo_url: "{{ flathub_repo_url }}"
+    method: system
 
-- name: Install Kodi from Flathub
-  command: flatpak install -y flathub tv.kodi.Kodi
-  args:
-    creates: /var/lib/flatpak/app/tv.kodi.Kodi
+- name: Install or update Kodi from Flathub (system)
+  community.general.flatpak:
+    name: "{{ kodi_flatpak_id }}"
+    state: present
+    method: system
+    remote: "{{ flathub_remote_name }}"
 
 - name: Create systemd service for Kodi headless
   template:

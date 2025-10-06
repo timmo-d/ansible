@@ -13,6 +13,10 @@ other_apps:
   - huntarr
   - kodi
 
+kodi_flatpak_id: "tv.kodi.Kodi"
+flathub_remote_name: "flathub"
+flathub_repo_url: "https://dl.flathub.org/repo/flathub.flatpakrepo"  # repo file URL
+
 
 huntarr_repo: "https://github.com/plexguide/Huntarr.io.git"
 huntarr_user: "huntarr"

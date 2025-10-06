@@ -105,7 +105,7 @@
 #- name: Restore config files
 #  copy:
 #    src: "/mnt/data/servarr/{{ item }}/config.xml"
-#    dest: "{{ backup_base_path }}/{{ item }}/config.xml"
+#    dest: "{{ backup_base_path }}/{{ item }}/default/config.xml"
 #    owner: "{{ item }}"
 #    group: "{{ media_group }}"
 #    mode: '0644'
@@ -116,7 +116,7 @@
 #- name: Restore database files from backup
 #  copy:
 #    src: "/mnt/data/servarr/{{ item }}/{{ item }}.db"
-#    dest: "{{ backup_base_path }}/{{ item }}/{{ item }}.db"
+#    dest: "{{ backup_base_path }}/{{ item }}/default/{{ item }}.db"
 #    owner: "{{ item }}"
 #    group: "{{ media_group }}"
 #    mode: '0644'

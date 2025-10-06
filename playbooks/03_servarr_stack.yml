@@ -4,10 +4,12 @@
   become: true
   vars_files:
     - group_vars/all.yml
+  collections:
+    - community.general
 
   roles:
     - role: firewall                # Install nftables and configure
       vars:
         ruleset: "servarr"
     - role: servarr_stack           # Install and configure applications
-    
+
