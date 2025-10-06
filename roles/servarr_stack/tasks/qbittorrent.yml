@@ -5,22 +5,19 @@
     state: present
     update_cache: true
 
-
-- name: Restore from config files
-  copy:
-    src: "/path/on/remote/qbittorrent.{{ item }}"
+- name: Restore from config template
+  template:
+    src: "qbittorrent.{{ item }}.j2"
     dest: "/home/qbittorrent-nox/.config/qBittorrent/{{ item }}"
     owner: "qbittorrent-nox"
     group: "{{ media_group }}"
     mode: '0644'
-    remote_src: yes
   loop:
-    - settings.json
-    - categories.json
-    - qBittorrent-data.conf
-    - qBittorrent.conf
-    - watched_folders.json
-
+      - settings.json
+      - categories.json
+      - qBittorrent-data.conf
+      - qBittorrent.conf
+      - watched_folders.json
 
 - name: Create systemd service for qBittorrent
   template:
