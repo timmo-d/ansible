@@ -1,9 +1,9 @@
 ---
-- name: Verify operating system is Debian
-  ansible.builtin.assert:
-    that: ansible_distribution == "Debian"
-    msg: "Sorry, this role is only supported on Debian-based systems."
-    success_msg: "Found distribution: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+#- name: Verify operating system is Debian
+#  ansible.builtin.assert:
+#    that: ansible_distribution == "Debian"
+#    msg: "Sorry, this role is only supported on Debian-based systems."
+#    success_msg: "Found distribution: {{ ansible_distribution }} {{ ansible_distribution_version }}"
 
 - name: Verify the systems architecture
   block:
