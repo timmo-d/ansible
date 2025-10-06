@@ -97,6 +97,7 @@
     servarr_app: "{{ item }}"
     servarr_user: "{{ item }}"
     servarr_group: "{{ media_group }}"
+    servarr_instance_name: "default"
   loop: "{{ servarr_apps }}"
 
 # Update app configurations and databases from backups
