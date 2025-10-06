@@ -5,6 +5,14 @@
     state: present
     update_cache: true
 
+- name: Ensure config director exists
+  file:
+    path: /home/qbittorrent-nox/.config/qBittorrent
+    state: directory
+    owner: "qbittorrent-nox"
+    group: "{{ media_group }}"
+    mode: '0755'
+
 - name: Restore from config template
   template:
     src: "qbittorrent.{{ item }}.j2"
