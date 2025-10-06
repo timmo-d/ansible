@@ -1,2 +1,7 @@
 - name: Reload systemd
   command: systemctl daemon-reexec
+
+- name: restart samba
+  ansible.builtin.service:
+    name: samba
+    state: restarted
