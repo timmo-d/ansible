@@ -46,11 +46,6 @@
     group: media
   become: true
 
-
-- name: Upgrade pip, setuptools, wheel in virtualenv
-  command: "{{ huntarr_venv_dir }}/bin/pip install --upgrade pip setuptools wheel"
-
-
 - name: Install system dependencies for Python packages
   apt:
     name:
@@ -59,6 +54,12 @@
       - libyaml-dev
     state: present
     update_cache: true
+    
+- name: Upgrade pip, setuptools, wheel in virtualenv
+  command: "{{ huntarr_venv_dir }}/bin/pip install --upgrade pip setuptools wheel"
+
+
+
 
 
 - name: Install Python dependencies in virtualenv
