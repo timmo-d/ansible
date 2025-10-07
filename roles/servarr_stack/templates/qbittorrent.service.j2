@@ -3,9 +3,11 @@ Description=qBittorrent-nox service
 After=network.target
 
 [Service]
-User=qbittorrent
+Type=forking
+User=qbittorrent-nox
 Group=media
-ExecStart=/opt/qbittorrent-nox --profile=/var/lib/qbittorrent-nox
+UMask=002
+ExecStart=/opt/qbittorrent-nox --profile=/var/lib/qbittorrent-nox -d --webui-port=8080
 Restart=on-failure
 TimeoutStopSec=300
 KillMode=process
