@@ -43,6 +43,14 @@
     rsync -a {{ huntarr_repo_tmp }}/ {{ install_dir }}/
   become: true
 
+- name: Replace PyYAML version in requirements.txt
+  replace:
+    path: "{{ install_dir }}/requirements.txt"
+    regexp: '^pyyaml==6\.0$'
+    replace: 'pyyaml==5.4.1'
+  become: true
+
+
 - name: Create Python virtual environment
   command: python3 -m venv {{ huntarr_venv_dir }}
   args:
