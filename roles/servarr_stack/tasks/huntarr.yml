@@ -54,8 +54,17 @@
   command: "{{ huntarr_venv_dir }}/bin/pip install --upgrade pip setuptools wheel"
   become: true
 
+
 - name: Install Python dependencies in virtualenv
   command: "{{ huntarr_venv_dir }}/bin/pip install -r /opt/Huntarr.io/requirements.txt"
+
+- name: Set ownership of virtualenv to huntarr
+  file:
+    path: "{{ huntarr_venv_dir }}"
+    state: directory
+    recurse: true
+    owner: "{{ huntarr_user }}"
+    group: media
   become: true
 
 
