@@ -37,13 +37,15 @@
   become: true
 
 - name: Copy Huntarr.io contents to install directory
-  synchronize:
+  copy:
     src: "{{ huntarr_repo_tmp }}/"
     dest: "{{ install_dir }}/"
-    recursive: yes
-    delete: no
-  delegate_to: localhost
+    remote_src: yes
+    owner: "{{ huntarr_user }}"
+    group: media
+    mode: '0755'
   become: true
+
 
 - name: Create Python virtual environment
   command: python3 -m venv {{ huntarr_venv_dir }}
