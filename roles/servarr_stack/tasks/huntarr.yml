@@ -48,7 +48,7 @@
 
 - name: Install Python dependencies in virtualenv
   pip:
-    requirements: "{{ install_dir }}/requirements.txt"
+    requirements: "{{ install_dir }}/Huntarr.io/requirements.txt"
     virtualenv: "{{ huntarr_venv_dir }}"
     virtualenv_command: "python3 -m venv"
 
