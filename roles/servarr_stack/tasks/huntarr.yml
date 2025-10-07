@@ -31,42 +31,33 @@
     remote_src: yes
 
 
-- name: Create Python virtual environment as root
-  command: python3 -m venv {{ huntarr_venv_dir }}
-  args:
-    creates: "{{ huntarr_venv_dir }}/bin/activate"
-  become: true
 
-- name: Set ownership to huntarr
-  file:
-    path: "{{ huntarr_venv_dir }}"
-    state: directory
-    recurse: true
-    owner: "{{ huntarr_user }}"
-    group: media
-  become: true
-
-- name: Install system dependencies for Python packages
+- name: Install system packages required to build Python wheels
   apt:
     name:
       - build-essential
       - python3-dev
       - libyaml-dev
+      - libffi-dev
+      - libssl-dev
     state: present
     update_cache: true
-    
+  become: true
+
+- name: Create Python virtual environment
+  command: python3 -m venv {{ huntarr_venv_dir }}
+  args:
+    creates: "{{ huntarr_venv_dir }}/bin/activate"
+  become: true
+
 - name: Upgrade pip, setuptools, wheel in virtualenv
   command: "{{ huntarr_venv_dir }}/bin/pip install --upgrade pip setuptools wheel"
-
-
-
-
+  become: true
 
 - name: Install Python dependencies in virtualenv
-  pip:
-    requirements: "{{ install_dir }}/Huntarr.io/requirements.txt"
-    virtualenv: "{{ huntarr_venv_dir }}"
-    virtualenv_command: "python3 -m venv"
+  command: "{{ huntarr_venv_dir }}/bin/pip install -r /opt/Huntarr.io/requirements.txt"
+  become: true
+
 
 - name: Deploy Huntarr systemd service template
   template:
