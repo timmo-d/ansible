@@ -23,7 +23,7 @@
 
 - name: Move Huntarr.io contents to install directory
   copy:
-    src: "{{ huntarr_repo_tmp }}/Huntarr.io"
+    src: "{{ huntarr_repo_tmp }}"
     dest: "{{ install_dir }}"
     owner: "{{ huntarr_user }}"
     group: media
