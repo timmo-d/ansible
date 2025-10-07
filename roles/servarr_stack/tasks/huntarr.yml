@@ -22,11 +22,14 @@
     mode: '0755'
 
 - name: Move Huntarr.io contents to install directory
-  command: >
-    mv {{ huntarr_repo_tmp }}/* {{ install_dir }}/
-  args:
-    removes: "{{ huntarr_repo_tmp }}/main.py"
-  become_user: "{{ huntarr_user }}"
+  copy:
+    src: "{{ huntarr_repo_tmp }}/Huntarr.io"
+    dest: "{{ install_dir }}"
+    owner: "{{ huntarr_user }}"
+    group: media
+    mode: '0755'
+
+
 
 - name: Create Python virtual environment
   command: python3 -m venv {{ huntarr_venv_dir }}
