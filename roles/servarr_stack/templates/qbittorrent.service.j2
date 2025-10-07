@@ -7,7 +7,7 @@ Type=forking
 User=qbittorrent-nox
 Group=media
 UMask=002
-ExecStart=/opt/qbittorrent-nox --profile=/var/lib/qbittorrent-nox -d --webui-port=8080
+ExecStart=/usr/bin/qbittorrent-nox --profile=/var/lib/qbittorrent-nox -d --webui-port=8080
 Restart=on-failure
 TimeoutStopSec=300
 KillMode=process
