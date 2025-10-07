@@ -28,7 +28,7 @@
     owner: "{{ huntarr_user }}"
     group: media
     mode: '0755'
-
+    remote_src: yes
 
 
 - name: Create Python virtual environment
