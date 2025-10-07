@@ -49,9 +49,8 @@
 
 - name: Upgrade pip, setuptools, wheel in virtualenv
   command: "{{ huntarr_venv_dir }}/bin/pip install --upgrade pip setuptools wheel"
-  become: true
-  become_user: "{{ huntarr_user }}"
-  
+
+
 - name: Install system dependencies for Python packages
   apt:
     name:
