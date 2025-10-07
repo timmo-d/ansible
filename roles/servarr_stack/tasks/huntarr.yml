@@ -51,7 +51,6 @@
     requirements: "{{ install_dir }}/requirements.txt"
     virtualenv: "{{ huntarr_venv_dir }}"
     virtualenv_command: "python3 -m venv"
-  become_user: "{{ huntarr_user }}"
 
 - name: Deploy Huntarr systemd service template
   template:
