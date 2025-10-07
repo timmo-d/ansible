@@ -1,16 +1,16 @@
 ---
-- name: Ensure media group exists
-  group:
-    name: "{{ media_group }}"
-    state: present
+#- name: Ensure media group exists
+#  group:
+#    name: "{{ media_group }}"
+#    state: present
 
-- name: Create users for all apps
-  user:
-    name: "{{ item }}"
-    group: "{{ media_group }}"
-    shell: /usr/sbin/nologin
-    create_home: yes
-  loop: "{{ servarr_apps + other_apps }}"
+#- name: Create users for all apps
+#  user:
+#    name: "{{ item }}"
+#    group: "{{ media_group }}"
+#    shell: /usr/sbin/nologin
+#    create_home: yes
+#  loop: "{{ servarr_apps + other_apps }}"
 
 - name: Install dependencies
   apt:
