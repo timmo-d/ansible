@@ -31,11 +31,20 @@
     remote_src: yes
 
 
-- name: Create Python virtual environment
+- name: Create Python virtual environment as root
   command: python3 -m venv {{ huntarr_venv_dir }}
   args:
     creates: "{{ huntarr_venv_dir }}/bin/activate"
-  become_user: "{{ huntarr_user }}"
+  become: true
+
+- name: Set ownership to huntarr
+  file:
+    path: "{{ huntarr_venv_dir }}"
+    state: directory
+    recurse: true
+    owner: "{{ huntarr_user }}"
+    group: media
+  become: true
 
 - name: Install Python dependencies in virtualenv
   pip:
