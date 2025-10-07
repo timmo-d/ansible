@@ -1,3 +1,16 @@
+- name: Ensure required system packages are installed
+  apt:
+    name:
+      - git
+      - build-essential
+      - python3-dev
+      - libyaml-dev
+      - libffi-dev
+      - libssl-dev
+    state: present
+    update_cache: true
+  become: true
+
 - name: Clone Huntarr.io repository to /tmp
   git:
     repo: "{{ huntarr_repo }}"
@@ -12,6 +25,7 @@
     owner: "{{ huntarr_user }}"
     group: media
     mode: '0755'
+  become: true
 
 - name: Create data directory
   file:
@@ -20,28 +34,15 @@
     owner: "{{ huntarr_user }}"
     group: media
     mode: '0755'
+  become: true
 
-- name: Move Huntarr.io contents to install directory
-  copy:
-    src: "{{ huntarr_repo_tmp }}"
-    dest: "{{ install_dir }}"
-    owner: "{{ huntarr_user }}"
-    group: media
-    mode: '0755'
-    remote_src: yes
-
-
-
-- name: Install system packages required to build Python wheels
-  apt:
-    name:
-      - build-essential
-      - python3-dev
-      - libyaml-dev
-      - libffi-dev
-      - libssl-dev
-    state: present
-    update_cache: true
+- name: Copy Huntarr.io contents to install directory
+  synchronize:
+    src: "{{ huntarr_repo_tmp }}/"
+    dest: "{{ install_dir }}/"
+    recursive: yes
+    delete: no
+  delegate_to: localhost
   become: true
 
 - name: Create Python virtual environment
@@ -54,9 +55,9 @@
   command: "{{ huntarr_venv_dir }}/bin/pip install --upgrade pip setuptools wheel"
   become: true
 
-
 - name: Install Python dependencies in virtualenv
-  command: "{{ huntarr_venv_dir }}/bin/pip install -r /opt/Huntarr.io/requirements.txt"
+  command: "{{ huntarr_venv_dir }}/bin/pip install -r {{ install_dir }}/requirements.txt"
+  become: true
 
 - name: Set ownership of virtualenv to huntarr
   file:
@@ -67,7 +68,6 @@
     group: media
   become: true
 
-
 - name: Deploy Huntarr systemd service template
   template:
     src: huntarr.service.j2
@@ -76,14 +76,17 @@
     group: root
     mode: '0644'
   notify: Reload systemd
+  become: true
 
 - name: Enable and start Huntarr service
   systemd:
     name: huntarr.service
     enabled: true
     state: started
+  become: true
 
 - name: Remove temporary Huntarr.io repo
   file:
     path: "{{ huntarr_repo_tmp }}"
     state: absent
+  become: true
