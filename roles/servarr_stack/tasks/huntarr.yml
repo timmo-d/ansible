@@ -61,12 +61,17 @@
   command: "{{ huntarr_venv_dir }}/bin/pip install --upgrade pip setuptools wheel"
   become: true
 
-- name: Install PyYAML separately to avoid build issues
-  command: "{{ huntarr_venv_dir }}/bin/pip install pyyaml==6.0 --prefer-binary"
-  become: true
-
-- name: Install remaining Python dependencies in virtualenv
-  command: "{{ huntarr_venv_dir }}/bin/pip install -r {{ install_dir }}/requirements.txt --no-deps"
+- name: Install Python dependencies in virtualenv using shell
+  shell: |
+    source {{ huntarr_venv_dir }}/bin/activate
+    pip install -r {{ install_dir }}/requirements.txt
+  args:
+    executable: /bin/bash
+  environment:
+    TMPDIR: /tmp
+    LANG: en_US.UTF-8
+    LC_ALL: en_US.UTF-8
+    PATH: "{{ huntarr_venv_dir }}/bin:{{ ansible_env.PATH }}"
   become: true
 
 - name: Set ownership of virtualenv to huntarr
