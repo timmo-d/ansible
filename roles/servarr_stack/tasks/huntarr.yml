@@ -1,5 +1,3 @@
-
-
 - name: Ensure required system packages are installed
   apt:
     name:
@@ -43,14 +41,6 @@
     rsync -a {{ huntarr_repo_tmp }}/ {{ install_dir }}/
   become: true
 
-- name: Replace PyYAML version in requirements.txt
-  replace:
-    path: "{{ install_dir }}/requirements.txt"
-    regexp: '^pyyaml==6\.0$'
-    replace: 'pyyaml==5.4.1'
-  become: true
-
-
 - name: Create Python virtual environment
   command: python3 -m venv {{ huntarr_venv_dir }}
   args:
@@ -61,17 +51,19 @@
   command: "{{ huntarr_venv_dir }}/bin/pip install --upgrade pip setuptools wheel"
   become: true
 
-- name: Install Python dependencies in virtualenv using shell
-  shell: |
-    source {{ huntarr_venv_dir }}/bin/activate
-    pip install -r {{ install_dir }}/requirements.txt
-  args:
-    executable: /bin/bash
-  environment:
-    TMPDIR: /tmp
-    LANG: en_US.UTF-8
-    LC_ALL: en_US.UTF-8
-    PATH: "{{ huntarr_venv_dir }}/bin:{{ ansible_env.PATH }}"
+- name: Install PyYAML 6.0.3 using binary wheel
+  command: "{{ huntarr_venv_dir }}/bin/pip install pyyaml==6.0.3 --only-binary :all:"
+  become: true
+
+- name: Remove PyYAML from requirements.txt
+  replace:
+    path: "{{ install_dir }}/requirements.txt"
+    regexp: '^pyyaml==.*$'
+    replace: ''
+  become: true
+
+- name: Install remaining Python dependencies
+  command: "{{ huntarr_venv_dir }}/bin/pip install -r {{ install_dir }}/requirements.txt"
   become: true
 
 - name: Set ownership of virtualenv to huntarr
