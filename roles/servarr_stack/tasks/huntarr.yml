@@ -1,3 +1,18 @@
+- name: Check Python version in virtualenv
+  command: "{{ huntarr_venv_dir }}/bin/python --version"
+  register: python_version
+  become: true
+
+- name: Show Python version
+  debug:
+    var: python_version.stdout
+
+
+
+
+
+    
+
 - name: Ensure required system packages are installed
   apt:
     name:
