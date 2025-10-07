@@ -21,7 +21,7 @@ flathub_repo_url: "https://dl.flathub.org/repo/flathub.flatpakrepo"  # repo file
 huntarr_repo: "https://github.com/plexguide/Huntarr.io.git"
 huntarr_user: "huntarr"
 huntarr_repo_tmp: "/tmp/Huntarr.io"
-install_dir: "/opt/huntarr"
+install_dir: "/opt"
 data_dir: "/var/lib/huntarr"
 huntarr_venv_dir: "{{ install_dir }}/huntarr-env"
 huntarr_service_path: "/etc/systemd/system/huntarr.service"
