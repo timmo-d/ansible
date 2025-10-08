@@ -35,7 +35,7 @@ servarr_app_configurations:
     dependencies: [curl, sqlite3, wget]
     branch: main
     url: "https://services.sonarr.tv/v1/download/$branch/latest?os=linux&arch=$arch&version=$version"
-  whisparr:
+  whisparr2:
     port: 6969
     dependencies: [curl, sqlite3]
     branch: nightly

@@ -6,7 +6,7 @@ servarr_apps:
   - sonarr
   - lidarr
   - readarr
-  - whisparr
+  - whisparr2
   - prowlarr
 other_apps:
   - qbittorrent-nox
