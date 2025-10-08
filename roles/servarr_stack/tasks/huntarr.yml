@@ -79,11 +79,20 @@
   template:
     src: huntarr.service.j2
     dest: "{{ huntarr_service_path }}"
-    owner: root
-    group: root
+    owner: "{{ huntarr_user }}"
+    group: "{{ media_group }}"
     mode: '0644'
   notify: Reload systemd
   become: true
+
+- name: Copy start script
+  template:
+    src: "start-huntarr.sh.j2"
+    dest: "{{ install_dir }}/start-huntarr.sh"
+    owner: "{{ huntarr_user }}"
+    group: "{{ media_group }}"
+    mode: '0644'
+
 
 - name: Enable and start Huntarr service
   systemd:
