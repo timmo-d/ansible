@@ -1,12 +1,12 @@
-#- name: Install Servarr apps using tinyoverflow role
-#  include_role:
-#    name: tinyoverflow.servarr
-#  vars:
-#    servarr_app: "{{ item }}"
-#    servarr_user: "{{ item }}"
-#    servarr_group: "{{ media_group }}"
-#    servarr_instance_name: "default"
-#  loop: "{{ servarr_apps }}"
+- name: Install Servarr apps using tinyoverflow role
+  include_role:
+    name: tinyoverflow.servarr
+  vars:
+    servarr_app: "{{ item }}"
+    servarr_user: "{{ item }}"
+    servarr_group: "{{ media_group }}"
+    servarr_instance_name: "default"
+  loop: "{{ servarr_apps }}"
 
 # Update app configurations and databases from backups
 
