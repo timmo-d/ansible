@@ -81,7 +81,7 @@
     dest: "{{ install_dir }}/start-huntarr.sh"
     owner: "{{ huntarr_user }}"
     group: "{{ media_group }}"
-    mode: '0644'
+    mode: '0755'
 
 - name: Deploy Huntarr systemd service template
   template:

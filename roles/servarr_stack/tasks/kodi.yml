@@ -61,7 +61,7 @@
 
 - name: Ensure Kodi userdata directory exists
   ansible.builtin.file:
-    path: /home/kodi/.var.app/tv.kodi.Kodi/data/userdata/
+    path: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/
     state: directory
     owner: kodi
     group: media
