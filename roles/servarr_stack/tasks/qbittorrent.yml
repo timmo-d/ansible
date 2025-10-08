@@ -7,7 +7,7 @@
 
 - name: Ensure config director exists
   file:
-    path: /home/qbittorrent-nox/.config/qBittorrent
+    path: /var/lib/qbittorrent-nox/qBittorrent/cache
     state: directory
     owner: "qbittorrent-nox"
     group: "{{ media_group }}"
