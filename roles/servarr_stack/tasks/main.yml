@@ -37,91 +37,11 @@
     update_cache: yes
     install_recommends: no
 
-- name: Create CIFS credentials file
-  copy:
-    dest: /etc/smb_credentials
-    content: |
-      username={{ username }}
-      password={{ password }}
-    owner: root
-    group: root
-    mode: '0600'
+- name: Create mount points
+  include_tasks: mount_points.yml
 
-- name: Ensure mount point exists
-  file:
-    path: /mnt/data
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-
-- name: Ensure mount point exists
-  file:
-    path: /mnt/r
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-
-- name: Ensure CIFS mount entry is present in /etc/fstab
-  lineinfile:
-    path: /etc/fstab
-    regexp: '^//192\.168\.1\.106/data\s+/mnt/data\s+cifs\s+.*$'
-    line: '//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1000,file_mode=0644,dir_mode=0755,vers=3.0,sec=ntlmssp,nodfs 0 0'
-    state: present
-
-- name: Ensure CIFS mount entry is present in /etc/fstab
-  lineinfile:
-    path: /etc/fstab
-    regexp: '^//192\.168\.1\.106/r\s+/mnt/r\s+cifs\s+.*$'
-    line: '//192.168.1.106/r /mnt/r cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1002,file_mode=0644,dir_mode=0755,vers=3.0 0 0'
-    state: present
-
-
-- name: Mount CIFS share
-  command: mount -a
-
-- name: Restrict Samba to SMBv2 and SMBv3 only
-  blockinfile:
-    path: /etc/samba/smb.conf
-    block: |
-      [global]
-      server min protocol = SMB2
-      server max protocol = SMB3
-  notify: restart samba
-
-- name: Install Servarr apps using tinyoverflow role
-  include_role:
-    name: tinyoverflow.servarr
-  vars:
-    servarr_app: "{{ item }}"
-    servarr_user: "{{ item }}"
-    servarr_group: "{{ media_group }}"
-    servarr_instance_name: "default"
-  loop: "{{ servarr_apps }}"
-
-# Update app configurations and databases from backups
-
-- name: Restore config files
-  copy:
-    src: "/mnt/data/servarr/{{ item }}/config.xml"
-    dest: "{{ backup_base_path }}/{{ item }}/default/config.xml"
-    owner: "{{ item }}"
-    group: "{{ media_group }}"
-    mode: '0644'
-    remote_src: yes
-  loop: "{{ servarr_apps }}"
-
-
-#- name: Restore database files from backup
-#  copy:
-#    src: "/mnt/data/servarr/{{ item }}/{{ item }}.db"
-#    dest: "{{ backup_base_path }}/{{ item }}/default/{{ item }}.db"
-#    owner: "{{ item }}"
-#    group: "{{ media_group }}"
-#    mode: '0644'
-#    remote_src: yes
-#  loop: "{{ servarr_apps }}"
+- name: Install Servarr apps
+  include_tasks: servarr.yml
   
 - name: Install qBittorrent-nox
   include_tasks: qbittorrent.yml
