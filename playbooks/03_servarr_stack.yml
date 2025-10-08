@@ -11,5 +11,5 @@
     - role: firewall                # Install nftables and configure
       vars:
         ruleset: "servarr"
-    - role: servarr_stack           # Install and configure applications
+    #- role: servarr_stack           # Install and configure applications
 
