@@ -7,7 +7,7 @@ servarr_supported_apps:
   - "readarr"
   - "radarr"
   - "sonarr"
-  - "whisparr"
+  - "whisparr2"
 
 servarr_app_configurations:
   lidarr:
