@@ -7,6 +7,17 @@
     mode: "0644"
   notify: Restart servarr
 
+
+- name: Ensure Whisparr ExecStart uses Whisparr not Whisparr2
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/system/whisparr2-default.service
+    regexp: '^ExecStart=/opt/whisparr2/Whisparr2 -nobrowser -data=/var/lib/whisparr2/default$'
+    line: 'ExecStart=/opt/whisparr2/Whisparr -nobrowser -data=/var/lib/whisparr2/default'
+    backup: no
+    create: no
+  notify: Reload systemd
+
+
 - name: Enable services
   become: true
   ansible.builtin.systemd:
