@@ -13,19 +13,19 @@
 #    group: "{{ media_group }}"
 #    mode: '0755'
 
-#- name: Restore from config template
-#  template:
-#    src: "qbittorrent.{{ item }}.j2"
-#    dest: "/home/qbittorrent-nox/.config/qBittorrent/{{ item }}"
-#    owner: "qbittorrent-nox"
-#    group: "{{ media_group }}"
-#    mode: '0644'
-#  loop:
+- name: Restore from config template
+  template:
+    src: "qbittorrent.{{ item }}.j2"
+    dest: "/home/qbittorrent-nox/.config/qBittorrent/{{ item }}"
+    owner: "qbittorrent-nox"
+    group: "{{ media_group }}"
+    mode: '0644'
+  loop:
 #      - settings.json
-#      - categories.json
+      - categories.json
 #      - qBittorrent-data.conf
-#      - qBittorrent.conf
-#      - watched_folders.json
+      - qBittorrent.conf
+      - watched_folders.json
 
 - name: Create systemd service for qBittorrent
   template:

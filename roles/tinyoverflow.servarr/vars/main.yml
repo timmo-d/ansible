@@ -39,4 +39,4 @@ servarr_app_configurations:
     port: 6969
     dependencies: [curl, sqlite3]
     branch: nightly
-    url: "https://whisparr.servarr.com/v1/update/$branch/updatefile?os=linux&runtime=netcore&arch=$arch&version=$version"
+    url: "https://whisparr.servarr.com/v1/update/$branch/updatefile?os=linux&runtime=netcore&arch=$arch" #&version=$version"
