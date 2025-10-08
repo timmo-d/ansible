@@ -24,7 +24,6 @@
       - python3
       - python3-venv
       - python3-pip
-      #- lxml
       - xorg
       - dbus-x11
       - xserver-xorg-video-intel
@@ -37,11 +36,11 @@
     update_cache: yes
     install_recommends: no
 
-#- name: Create mount points
-#  include_tasks: mount_points.yml
+- name: Create mount points
+  include_tasks: mount_points.yml
 
-#- name: Install Servarr apps
-#  include_tasks: servarr.yml
+- name: Install Servarr apps
+  include_tasks: servarr.yml
   
 - name: Install qBittorrent-nox
   include_tasks: qbittorrent.yml

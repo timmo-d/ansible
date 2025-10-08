@@ -16,6 +16,7 @@ other_apps:
 kodi_flatpak_id: "tv.kodi.Kodi"
 flathub_remote_name: "flathub"
 flathub_repo_url: "https://dl.flathub.org/repo/flathub.flatpakrepo"  # repo file URL
+
 # ---- CIFS Mount Points ----
 kodi_username: "{{ lookup('env', 'KODI_USERNAME') }}"
 kodi_password: "{{ lookup('env', 'KODI_PASSWORD') }}"
