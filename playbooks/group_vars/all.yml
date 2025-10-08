@@ -15,6 +15,7 @@ ubtu24stig_run_audit: true
 # ---- CIFS Mount Points ----
 username: "{{ lookup('env', 'CIFS_USERNAME') }}"
 password: "{{ lookup('env', 'CIFS_PASSWORD') }}"
+file_server_ip: "{{ lookup('env', 'FILE_SERVER_IP') }}"
 
 # ---- Time Sync ----
 chrony_servers:

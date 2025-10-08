@@ -16,7 +16,10 @@ other_apps:
 kodi_flatpak_id: "tv.kodi.Kodi"
 flathub_remote_name: "flathub"
 flathub_repo_url: "https://dl.flathub.org/repo/flathub.flatpakrepo"  # repo file URL
-
+# ---- CIFS Mount Points ----
+kodi_username: "{{ lookup('env', 'KODI_USERNAME') }}"
+kodi_password: "{{ lookup('env', 'KODI_PASSWORD') }}"
+kodi_db_ip: "{{ lookup('env', 'KODI_DB_IP') }}"
 
 huntarr_repo: "https://github.com/plexguide/Huntarr.io.git"
 huntarr_user: "huntarr"

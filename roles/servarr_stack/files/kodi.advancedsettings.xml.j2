@@ -6,14 +6,14 @@
 </cache>
 <videodatabase>
 <type>mysql</type>
-<host>{{ servarr_ip }}</host>
+<host>{{ kodi_db_ip }}</host>
 <port>3306</port>
 <user>{{ kodi_username }}</user>
 <pass>{{ kodi_password }}</pass>
 </videodatabase>
 <musicdatabase>
 <type>mysql</type>
-<host>{{ servarr_ip }}</host>
+<host>{{ kodi_db_ip }}</host>
 <port>3306</port>
 <user>{{ kodi_username }}</user>
 <pass>{{ kodi_password }}</pass>
@@ -70,7 +70,7 @@
   <pathsubstitution>
     <substitute>
       <from>special://profile/Thumbnails/</from>
-      <to>smb://192.168.1.106/media/Kodi/userdata/Thumbnails/</to>
+      <to>smb://{{ file_server_ip }}/data/servarr/kodi/userdata/Thumbnails/</to>
     </substitute>
   </pathsubstitution>
  -->

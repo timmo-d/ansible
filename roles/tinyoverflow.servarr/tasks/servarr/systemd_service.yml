@@ -8,6 +8,11 @@
   notify: Restart servarr
 
 
+- name: Check if whisparr2.service file exists
+  ansible.builtin.stat:
+    path: /etc/systemd/system/whisparr2-default.service
+  register: whisparr2_service_file
+
 - name: Ensure Whisparr ExecStart uses Whisparr not Whisparr2
   ansible.builtin.lineinfile:
     path: /etc/systemd/system/whisparr2-default.service
@@ -15,6 +20,7 @@
     line: 'ExecStart=/opt/whisparr2/Whisparr -nobrowser -data=/var/lib/whisparr2/default'
     backup: no
     create: no
+  when: whisparr2_service_file.stat.exists
   notify: Reload systemd
 
 
