@@ -54,10 +54,10 @@
   become: true
 
 
-- name: Reload systemd
-  command: systemctl daemon-reexec
-  become: true
-  listen: Reload systemd
+#- name: Reload systemd
+#  command: systemctl daemon-reexec
+#  become: true
+#  listen: Reload systemd
 
 
 
