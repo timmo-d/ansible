@@ -21,12 +21,12 @@
   loop: "{{ servarr_apps }}"
 
 
-#- name: Restore database files from backup
-#  copy:
-#    src: "/mnt/data/servarr/{{ item }}/{{ item }}.db"
-#    dest: "{{ backup_base_path }}/{{ item }}/default/{{ item }}.db"
-#    owner: "{{ item }}"
-#    group: "{{ media_group }}"
-#    mode: '0644'
-#    remote_src: yes
-#  loop: "{{ servarr_apps }}"
+- name: Restore database files from backup
+  copy:
+    src: "/mnt/data/servarr/{{ item }}/{{ item }}.db"
+    dest: "{{ backup_base_path }}/{{ item }}/default/{{ item }}.db"
+    owner: "{{ item }}"
+    group: "{{ media_group }}"
+    mode: '0644'
+    remote_src: yes
+  loop: "{{ servarr_apps }}"
