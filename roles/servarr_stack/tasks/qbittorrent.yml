@@ -5,13 +5,13 @@
     state: present
     update_cache: true
 
-#- name: Ensure config director exists
-#  file:
-#    path: /var/lib/qbittorrent-nox/qBittorrent/cache
-#    state: directory
-#    owner: "qbittorrent-nox"
-#    group: "{{ media_group }}"
-#    mode: '0755'
+- name: Ensure config directory exists
+  file:
+    path: "/home/qbittorrent-nox/.config/qBittorrent"
+    state: directory
+    owner: "qbittorrent-nox"
+    group: "{{ media_group }}"
+    mode: '0755'
 
 - name: Restore from config template
   template:
