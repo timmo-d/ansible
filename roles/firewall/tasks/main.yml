@@ -37,6 +37,12 @@
     mode: '0644'
   when: ruleset == "servarr"
 
+
+- name: Wait for systemd to register nftables
+  pause:
+    seconds: 5
+
+
 - name: Enable and start nftables service
   systemd:
     name: nftables
@@ -47,6 +53,11 @@
   command: nft -f /etc/nftables.conf
   become: true
 
+
+- name: Reload systemd
+  command: systemctl daemon-reexec
+  become: true
+  listen: Reload systemd
 
 
 
