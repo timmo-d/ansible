@@ -45,12 +45,6 @@
     create: yes
     insertafter: EOF
 
-#- name: Copy kodi.service to systemd
-#  copy:
-#    src: kodi.service.j2
-#    dest: /etc/systemd/system/kodi.service
-#    mode: '0644'
-
 - name: Copy powermenu_in_kodi.pkla for Ubuntu 22.04 and under
   copy:
     src: kodi.powermenu_in_kodi.pkla.j2
@@ -65,16 +59,10 @@
     mode: '0644'
   when: ansible_distribution_version is version('24.04', '>=')
 
-- name: Copy advanced_settings.xml to config folder
-  copy:
-    src: kodi.advanced_settings.xml.j2
-    dest: /home/kodi/.var.app/tv.kodi.Kodi/data/userdata/advancedsettings.xml
-    mode: '0644'
-
 - name: Restore from config template
   copy:
     src: "kodi.{{ item }}.j2"
-    dest: "/home/qbittorrent-nox/.config/qBittorrent/{{ item }}"
+    dest: "/home/kodi/.var.app/tv.kodi.Kodi/data/userdata/{{ item }}"
     owner: "qbittorrent-nox"
     group: "{{ media_group }}"
     mode: '0644'
