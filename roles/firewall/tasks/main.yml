@@ -3,11 +3,17 @@
     name: nftables
     state: present
 
-- name: Disable ufw
+- name: Check if ufw is installed
+  command: which ufw
+  register: ufw_check
+  ignore_errors: yes
+
+- name: Disable ufw if installed
   service:
     name: ufw
     state: stopped
     enabled: no
+  when: ufw_check.rc == 0
 
 - name: Configure rules for Cloudflared/NGINX Reverse Proxy configuration
   template:
