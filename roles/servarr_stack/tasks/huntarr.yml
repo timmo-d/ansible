@@ -11,12 +11,13 @@
     update_cache: true
   become: true
 
-- name: Clone Huntarr.io repository to /tmp
-  git:
-    repo: "{{ huntarr_repo }}"
-    dest: "{{ huntarr_repo_tmp }}"
-    version: "HEAD"
-    force: yes
+- name: Create temp directory
+  file:
+    path: "{{ huntarr_repo_tmp }}"
+    state: directory
+    owner: "{{ huntarr_user }}"
+    group: media
+    mode: '0755'
 
 - name: Create install directory
   file:
@@ -26,7 +27,6 @@
     group: media
     mode: '0755'
 
-
 - name: Create data directory
   file:
     path: "{{ data_dir }}"
@@ -35,6 +35,12 @@
     group: media
     mode: '0755'
 
+- name: Clone Huntarr.io repository to /tmp
+  git:
+    repo: "{{ huntarr_repo }}"
+    dest: "{{ huntarr_repo_tmp }}"
+    version: "HEAD"
+    force: yes
 
 - name: Move Huntarr.io contents to install directory
   command: >
@@ -68,7 +74,7 @@
 
 - name: Set ownership of all files and folders under virtualenv to huntarr
   ansible.builtin.file:
-    path: "{{ huntarr_venv_dir }}"
+    path: "{{ install_dir }}"
     state: directory
     recurse: true
     owner: "{{ huntarr_user }}"
