@@ -66,14 +66,26 @@
   command: "{{ huntarr_venv_dir }}/bin/pip install -r {{ install_dir }}/requirements.txt"
   become: true
 
-- name: Set ownership of virtualenv to huntarr
-  file:
+- name: Set ownership of all files and folders under virtualenv to huntarr
+  ansible.builtin.file:
     path: "{{ huntarr_venv_dir }}"
     state: directory
     recurse: true
     owner: "{{ huntarr_user }}"
-    group: media
-  become: true
+    group: {{ media_group }}
+    mode: '0755'
+
+- name: Find all files under install_dir
+  ansible.builtin.find:
+    paths: "{{ install_dir }}"
+    file_type: file
+  register: huntarr_files
+
+- name: Set file permissions to 644
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    mode: '0644'
+  loop: "{{ huntarr_files.files }}"
 
 - name: Copy start script
   template:
@@ -91,17 +103,14 @@
     group: "{{ media_group }}"
     mode: '0644'
   notify: Reload systemd
-  become: true
 
 - name: Enable and start Huntarr service
   systemd:
     name: huntarr.service
     enabled: true
     state: started
-  become: true
 
 - name: Remove temporary Huntarr.io repo
   file:
     path: "{{ huntarr_repo_tmp }}"
     state: absent
-  become: true
