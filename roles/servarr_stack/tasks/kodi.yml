@@ -70,7 +70,7 @@
 - name: Restore from config template
   copy:
     src: "kodi.{{ item }}.j2"
-    dest: "/home/kodi/.var/.app/tv.kodi.Kodi/data/userdata/{{ item }}"
+    dest: "/home/kodi/.var/app/tv.kodi.Kodi/data/userdata/{{ item }}"
     owner: "kodi"
     group: media
     mode: '0644'
