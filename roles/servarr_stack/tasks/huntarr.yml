@@ -17,6 +17,9 @@
     dest: "{{ huntarr_repo_tmp }}"
     version: "HEAD"
     force: yes
+    owner: "{{ huntarr_user }}"
+    group: media
+    mode: '0755'
 
 - name: Create install directory
   file:
@@ -25,7 +28,7 @@
     owner: "{{ huntarr_user }}"
     group: media
     mode: '0755'
-  become: true
+
 
 - name: Create data directory
   file:
@@ -34,37 +37,37 @@
     owner: "{{ huntarr_user }}"
     group: media
     mode: '0755'
-  become: true
+
 
 - name: Move Huntarr.io contents to install directory
   command: >
     rsync -a {{ huntarr_repo_tmp }}/ {{ install_dir }}/
-  become: true
+
 
 - name: Create Python virtual environment
   command: python3 -m venv {{ huntarr_venv_dir }}
   args:
     creates: "{{ huntarr_venv_dir }}/bin/activate"
-  become: true
+
 
 - name: Upgrade pip, setuptools, wheel in virtualenv
   command: "{{ huntarr_venv_dir }}/bin/pip install --upgrade pip setuptools wheel"
-  become: true
+
 
 - name: Install PyYAML 6.0.3 using binary wheel
   command: "{{ huntarr_venv_dir }}/bin/pip install pyyaml==6.0.3 --only-binary :all:"
-  become: true
+
 
 - name: Remove PyYAML from requirements.txt
   replace:
     path: "{{ install_dir }}/requirements.txt"
     regexp: '^pyyaml==.*$'
     replace: ''
-  become: true
+
 
 - name: Install remaining Python dependencies
   command: "{{ huntarr_venv_dir }}/bin/pip install -r {{ install_dir }}/requirements.txt"
-  become: true
+
 
 - name: Set ownership of all files and folders under virtualenv to huntarr
   ansible.builtin.file:
