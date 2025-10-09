@@ -11,13 +11,13 @@
     update_cache: true
   become: true
 
-- name: Create temp directory
-  file:
-    path: "{{ huntarr_repo_tmp }}"
-    state: directory
-    owner: "{{ huntarr_user }}"
-    group: media
-    mode: '0755'
+#- name: Create temp directory
+#  file:
+#    path: "{{ huntarr_repo_tmp }}"
+#    state: directory
+#    owner: "{{ huntarr_user }}"
+#    group: media
+#    mode: '0755'
 
 - name: Create install directory
   file:
@@ -41,6 +41,15 @@
     dest: "{{ huntarr_repo_tmp }}"
     version: "HEAD"
     force: yes
+
+
+- name: Set ownership of cloned Huntarr.io repo
+  ansible.builtin.file:
+    path: "{{ huntarr_repo_tmp }}"
+    owner: huntarr
+    group: media
+    recurse: true
+
 
 - name: Move Huntarr.io contents to install directory
   command: >
