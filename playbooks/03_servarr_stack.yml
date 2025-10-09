@@ -2,6 +2,9 @@
 - name: Install and configure media automation stack
   hosts: all
   become: true
+  become_method: sudo
+  become_user: root
+
   vars_files:
     - group_vars/all.yml
   collections:
