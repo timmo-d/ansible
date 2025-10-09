@@ -17,9 +17,6 @@
     dest: "{{ huntarr_repo_tmp }}"
     version: "HEAD"
     force: yes
-    owner: "{{ huntarr_user }}"
-    group: media
-    mode: '0755'
 
 - name: Create install directory
   file:
