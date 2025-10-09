@@ -72,7 +72,7 @@
     state: directory
     recurse: true
     owner: "{{ huntarr_user }}"
-    group: {{ media_group }}
+    group: "{{ media_group }}""
     mode: '0755'
 
 - name: Find all files under install_dir
