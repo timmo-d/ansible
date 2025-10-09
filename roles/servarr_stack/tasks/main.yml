@@ -32,6 +32,7 @@
       - upower
       - samba
       - cifs-utils
+      - rsync
     state: present
     update_cache: yes
     install_recommends: no
