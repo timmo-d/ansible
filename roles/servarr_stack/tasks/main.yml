@@ -4,14 +4,15 @@
     name: "{{ media_group }}"
     state: present
 
-- name: Create users for all apps
+- name: Create users for non-servarr apps
   user:
     name: "{{ item }}"
     group: "{{ media_group }}"
     shell: /usr/sbin/nologin
     create_home: yes
-  loop: "{{ servarr_apps + other_apps }}"
-
+  loop: "{{ other_apps }}"
+  # loop: "{{ servarr_apps + other_apps }}"
+  
 - name: Install dependencies
   apt:
     name:
@@ -40,8 +41,8 @@
 #- name: Create mount points
 #  include_tasks: mount_points.yml
 
-#- name: Install Servarr apps
-#  include_tasks: servarr.yml
+- name: Install Servarr apps
+  include_tasks: servarr.yml
   
 #- name: Install qBittorrent-nox
 #  include_tasks: qbittorrent.yml
@@ -49,8 +50,8 @@
 #- name: Install Kodi
 #  include_tasks: kodi.yml
 
-- name: Install Huntarr
-  include_tasks: huntarr.yml
+#- name: Install Huntarr
+#  include_tasks: huntarr.yml
 
 
 

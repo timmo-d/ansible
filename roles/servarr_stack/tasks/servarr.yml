@@ -1,35 +1,48 @@
-- name: Install Servarr apps using tinyoverflow role
-  include_role:
-    name: tinyoverflow.servarr
-  vars:
-    servarr_app: "{{ item }}"
-    servarr_user: "{{ item }}"
-    servarr_group: "{{ media_group }}"
-    servarr_instance_name: "default"
-  loop: "{{ servarr_apps }}"
+#- name: Install Servarr apps using tinyoverflow role
+#  include_role:
+#    name: tinyoverflow.servarr
+#  vars:
+#    servarr_app: "{{ item }}"
+#    servarr_user: "{{ item }}"
+#    servarr_group: "{{ media_group }}"
+#    servarr_instance_name: "default"
+#  loop: "{{ servarr_apps }}"
 
 # Update app configurations and databases from backups
-#TO DO: copy backup.zip file to Backups/manual folder 
+- name: Restore config files
+  copy:
+    src: "/mnt/data/servarr/{{ item }}/config.xml"
+    dest: "{{ backup_base_path }}/{{ item }}/default/config.xml"
+    owner: "{{ item }}"
+    group: "{{ media_group }}"
+    mode: '0644'
+    remote_src: yes
+  loop: "{{ servarr_apps }}"
 
+- name: Restore database files for each Servarr app
+  block:
+    - name: Stop {{ item }} service
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: stopped
+      become: true
 
+    - name: Restore database file from backup
+      ansible.builtin.copy:
+        src: "/mnt/data/servarr/{{ item }}/{{ item }}.db"
+        dest: "{{ backup_base_path }}/{{ item }}/default/{{ item }}.db"
+        owner: "{{ item }}"
+        group: "{{ media_group }}"
+        mode: '0644'
+        remote_src: yes
+      become: true
 
-#- name: Restore config files
-#  copy:
-#    src: "/mnt/data/servarr/{{ item }}/config.xml"
-#    dest: "{{ backup_base_path }}/{{ item }}/default/config.xml"
-#    owner: "{{ item }}"
-#    group: "{{ media_group }}"
-#    mode: '0644'
-#    remote_src: yes
-#  loop: "{{ servarr_apps }}"
+    - name: Start {{ item }} service
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: started
+      become: true
 
-
-#- name: Restore database files from backup
-#  copy:
-#    src: "/mnt/data/servarr/{{ item }}/{{ item }}.db"
-#    dest: "{{ backup_base_path }}/{{ item }}/default/{{ item }}.db"
-#    owner: "{{ item }}"
-#    group: "{{ media_group }}"
-#    mode: '0644'
-#    remote_src: yes
-#  loop: "{{ servarr_apps }}"
+  loop: "{{ servarr_apps }}"
+  loop_control:
+    label: "{{ item }}"
