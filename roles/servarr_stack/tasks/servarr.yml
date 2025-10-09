@@ -13,7 +13,7 @@
 
 - name: Stop all Servarr services
   ansible.builtin.service:
-    name: "{{ item }}.service"
+    name: "{{ item }}-default.service"
     state: stopped
   loop: "{{ servarr_apps }}"
 
@@ -39,6 +39,6 @@
 
 - name: Start {{ item }} service
   ansible.builtin.service:
-    name: "{{ item }}"
+    name: "{{ item }}-default"
     state: started
   loop: "{{ servarr_apps }}"
