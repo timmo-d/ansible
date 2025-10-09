@@ -68,7 +68,7 @@
     mode: '0755'
 
 - name: Restore from config template
-  copy:
+  template:
     src: "kodi.{{ item }}.j2"
     dest: "/home/kodi/.var/app/tv.kodi.Kodi/data/userdata/{{ item }}"
     owner: "kodi"
