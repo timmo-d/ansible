@@ -3,17 +3,16 @@
     name: nftables
     state: present
 
-- name: Check if ufw is installed
-  command: which ufw
-  register: ufw_check
-  ignore_errors: yes
+- name: Gather service facts
+  ansible.builtin.service_facts:
 
-- name: Disable ufw if installed
+- name: Disable ufw if service exists
   service:
     name: ufw
     state: stopped
     enabled: no
-  when: ufw_check.rc == 0
+  when: "'ufw' in ansible_facts.services"
+
 
 - name: Configure rules for Cloudflared/NGINX Reverse Proxy configuration
   template:
