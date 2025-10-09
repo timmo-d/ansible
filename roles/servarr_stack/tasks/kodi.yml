@@ -70,9 +70,9 @@
 - name: Restore from config template
   copy:
     src: "kodi.{{ item }}.j2"
-    dest: "/home/kodi/.var.app/tv.kodi.Kodi/data/userdata/{{ item }}"
-    owner: "qbittorrent-nox"
-    group: "{{ media_group }}"
+    dest: "/home/kodi/.var/.app/tv.kodi.Kodi/data/userdata/{{ item }}"
+    owner: "kodi"
+    group: media
     mode: '0644'
   loop:
       - advancedsettings.xml
