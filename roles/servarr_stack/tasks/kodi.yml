@@ -74,6 +74,7 @@
       - sources.xml
       #- passwords.xml
       - profiles.xml
+      - guisettings.xml
 
 - name: Create systemd service for Kodi headless
   template:
@@ -87,3 +88,4 @@
     enabled: yes
 
     state: started
+
