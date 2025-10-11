@@ -111,12 +111,6 @@
     group: media
     mode: '0644'
 
-- name: Remove @reboot cron job (optional cleanup)
-  cron:
-    name: "Start Kodi at boot"
-    user: kodi
-    state: absent
-
 - name: Reload systemd daemon
   systemd:
     daemon_reload: yes
