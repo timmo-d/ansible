@@ -11,8 +11,16 @@
     shell: /usr/sbin/nologin
     create_home: yes
   loop: 
-    - "{{ other_apps }}"
-  # loop: "{{ servarr_apps + other_apps }}"
+    - qbittorrent-nox
+    - huntarr
+
+- name: Ensure Kodi user exists with login shell
+  user:
+    name: kodi
+    shell: /bin/bash
+    create_home: yes
+    state: present
+
   
 - name: Install dependencies
   apt:
