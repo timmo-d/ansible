@@ -24,6 +24,7 @@
     name: "{{ kodi_user }}"
     shell: /bin/bash
     create_home: yes
+    group: "{{ kodi_group }}"
     state: present
 
 - name: Ensure Kodi home directory exists
@@ -47,12 +48,6 @@
     state: present
     method: system
     remote: "{{ flathub_remote_name }}"
-
-- name: Create systemd service for Kodi headless
-  template:
-    src: kodi.service.j2
-    dest: /etc/systemd/system/kodi.service
-    mode: '0644'
 
 - name: Add kodi user to required groups
   user:
@@ -102,12 +97,42 @@
     - profiles.xml
     - guisettings.xml
 
+- name: Create .bash_profile to boot into Kodi on tty1
+  copy:
+    dest: "{{ kodi_home }}/.bash_profile"
+    content: |
+      #!/bin/bash
+
+      # Start Kodi in a virtual X session on tty1
+      if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+          exec xinit /usr/bin/flatpak run tv.kodi.Kodi -- :0 -nolisten tcp vt7
+      fi
+    owner: "{{ kodi_user }}"
+    group: "{{ kodi_group }}"
+    mode: '0644'
+
+- name: Create systemd override directory for getty@tty1
+  file:
+    path: /etc/systemd/system/getty@tty1.service.d
+    state: directory
+    mode: '0755'
+
+- name: Configure autologin for Kodi user on tty1
+  copy:
+    dest: /etc/systemd/system/getty@tty1.service.d/override.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=-/sbin/agetty --autologin {{ kodi_user }} --noclear %I $TERM
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Reload systemd daemon
   systemd:
     daemon_reload: yes
 
-- name: Enable and start Kodi service
+- name: Restart getty@tty1 service
   systemd:
-    name: kodi
-    enabled: yes
-    state: started
+    name: getty@tty1
+    state: restarted
