@@ -1,0 +1,130 @@
+# Install Kodi (headless)
+- name: Ensure Flatpak engine is installed
+  ansible.builtin.package:
+    name: flatpak
+    state: present
+
+- name: Ensure Flathub remote is configured (system)
+  community.general.flatpak_remote:
+    name: "{{ flathub_remote_name }}"
+    state: present
+    flatpakrepo_url: "{{ flathub_repo_url }}"
+    method: system
+
+- name: Install or update Kodi from Flathub (system)
+  community.general.flatpak:
+    name: "{{ kodi_flatpak_id }}"
+    state: present
+    method: system
+    remote: "{{ flathub_remote_name }}"
+
+- name: Create systemd service for Kodi headless
+  template:
+    src: kodi.service.j2
+    dest: /etc/systemd/system/kodi.service
+    mode: '0644'
+
+############################################
+# Enable Boot2Kodi    
+############################################
+- name: Add kodi user to required groups
+  user:
+    name: kodi
+    groups: audio,video,input,dialout,plugdev,tty
+    append: yes
+
+- name: Replace allowed_users=console with allowed_users=anybody
+  replace:
+    path: /etc/X11/Xwrapper.config
+    regexp: '^allowed_users=console'
+    replace: 'allowed_users=anybody'
+
+- name: Ensure 'needs_root_rights=yes' is present in Xwrapper.config
+  lineinfile:
+    path: /etc/X11/Xwrapper.config
+    line: 'needs_root_rights=yes'
+    state: present
+    create: yes
+    insertafter: EOF
+
+- name: Copy powermenu_in_kodi.pkla for Ubuntu 22.04 and under
+  copy:
+    src: kodi.powermenu_in_kodi.pkla.j2
+    dest: /etc/polkit-1/localauthority/50-local.d/powermenu_in_kodi.pkla
+    mode: '0644'
+  when: ansible_distribution_version is version('24.04', '<')
+
+- name: Copy powermenu_in_2404.rules for Ubuntu 24.04 and above
+  copy:
+    src: kodi.powermenu_in_2404.rules.j2
+    dest: /etc/polkit-1/rules.d/powermenu.rules
+    mode: '0644'
+  when: ansible_distribution_version is version('24.04', '>=')
+
+- name: Ensure Kodi userdata directory exists
+  ansible.builtin.file:
+    path: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/
+    state: directory
+    owner: kodi
+    group: media
+    mode: '0755'
+
+############################################
+# Restore config from backups
+############################################
+- name: Restore from config template
+  template:
+    src: "kodi.{{ item }}.j2"
+    dest: "/home/kodi/.var/app/tv.kodi.Kodi/data/userdata/{{ item }}"
+    owner: "kodi"
+    group: media
+    mode: '0644'
+  loop:
+      - advancedsettings.xml
+      - mediasources.xml
+      - sources.xml
+      #- passwords.xml
+      - profiles.xml
+      - guisettings.xml
+
+- name: Enable and start Kodi service
+  systemd:
+    name: kodi
+    enabled: yes
+    state: started
+
+############################################
+# Enable autologin to Kodi
+############################################
+
+
+- name: Create .bash_profile to start Kodi on login
+  copy:
+    dest: /home/kodi/.bash_profile
+    content: |
+      #!/bin/bash
+
+      # Start Kodi if not already running
+      if ! pgrep -x "Kodi" > /dev/null; then
+          sleep 5
+          flatpak run tv.kodi.Kodi >> /home/kodi/kodi.log 2>&1 &
+      fi
+    owner: kodi
+    group: media
+    mode: '0644'
+
+- name: Remove @reboot cron job (optional cleanup)
+  cron:
+    name: "Start Kodi at boot"
+    user: kodi
+    state: absent
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Restart getty@tty1 service
+  systemd:
+    name: getty@tty1
+    state: restarted
+
