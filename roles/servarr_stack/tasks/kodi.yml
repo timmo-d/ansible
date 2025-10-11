@@ -88,4 +88,32 @@
     enabled: yes
     state: started
 
+# Enable autologin to Kodi
+- name: Enable autologin for Kodi user in LightDM
+  become: true
+  block:
+    - name: Ensure LightDM is installed
+      apt:
+        name: lightdm
+        state: present
+        update_cache: true
+
+    - name: Set LightDM autologin configuration
+      copy:
+        dest: /etc/lightdm/lightdm.conf
+        content: |
+          [Seat:*]
+          autologin-user=kodi
+          autologin-user-timeout=0
+          autologin-session=kodi
+          greeter-session=lightdm-gtk-greeter
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Enable LightDM service
+      systemd:
+        name: lightdm
+        enabled: true
+        state: started
 
