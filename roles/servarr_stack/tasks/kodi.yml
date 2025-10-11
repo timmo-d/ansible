@@ -110,7 +110,7 @@
           flatpak run tv.kodi.Kodi >> /home/kodi/kodi.log 2>&1 &
       fi
     owner: kodi
-    group: kodi
+    group: media
     mode: '0644'
 
 - name: Remove @reboot cron job (optional cleanup)
@@ -127,3 +127,4 @@
   systemd:
     name: getty@tty1
     state: restarted
+
