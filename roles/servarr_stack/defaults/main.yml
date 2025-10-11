@@ -22,6 +22,11 @@ kodi_username: "{{ lookup('env', 'KODI_USERNAME') }}"
 kodi_password: "{{ lookup('env', 'KODI_PASSWORD') }}"
 kodi_db_ip: "{{ lookup('env', 'KODI_DB_IP') }}"
 
+kodi_user: kodi
+kodi_home: "/home/kodi"
+kodi_start_script: "/home/kodi/start-kodi.sh"
+
+
 huntarr_repo: "https://github.com/plexguide/Huntarr.io.git"
 huntarr_user: "huntarr"
 huntarr_repo_tmp: "/tmp/Huntarr.io"
