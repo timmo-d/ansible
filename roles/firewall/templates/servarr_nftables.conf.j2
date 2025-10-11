@@ -14,7 +14,7 @@ table inet filter {
     ct state established,related accept
 
     # Allow inbound SSH and app ports from 192.168.1.0/24
-    ip saddr 192.168.1.0/24 tcp dport { 22, 8989, 7878, 8686, 9696, 6969, 8080, 8787, 9705 } accept
+    ip saddr 192.168.1.0/24 tcp dport { 22, 8989, 7878, 8686, 9696, 6969, 8080, 8787, 9705, 8888 } accept
 
     # Allow ICMP (ping)
     ip protocol icmp icmp type echo-reply accept
@@ -72,4 +72,5 @@ table inet filter {
     log prefix "nftables OUTPUT DROP: " flags all
     counter drop
   }
+
 }
