@@ -97,52 +97,27 @@
 # Enable autologin to Kodi
 ############################################
 
-- name: Create Kodi start script
+
+- name: Create .bash_profile to start Kodi on login
   copy:
-    dest: "{{ kodi_start_script }}"
+    dest: /home/kodi/.bash_profile
     content: |
       #!/bin/bash
 
-      # Wait for system to settle
-      sleep 5
-
-      # Check if Kodi is already running
+      # Start Kodi if not already running
       if ! pgrep -x "Kodi" > /dev/null; then
-          flatpak run tv.kodi.Kodi >> {{ kodi_home }}/kodi.log 2>&1 &
+          sleep 5
+          flatpak run tv.kodi.Kodi >> /home/kodi/kodi.log 2>&1 &
       fi
     owner: kodi
-    group: media
-    mode: '0755'
+    group: kodi
+    mode: '0644'
 
-- name: Ensure cron is installed
-  apt:
-    name: cron
-    state: present
-    update_cache: true
-
-- name: Add @reboot cron job to start Kodi
+- name: Remove @reboot cron job (optional cleanup)
   cron:
     name: "Start Kodi at boot"
     user: kodi
-    special_time: reboot
-    job: "{{ kodi_start_script }}"
-
-- name: Create systemd override directory for getty@tty1
-  file:
-    path: /etc/systemd/system/getty@tty1.service.d
-    state: directory
-    mode: '0755'
-
-- name: Configure autologin for Kodi user on tty1 with shell
-  copy:
-    dest: /etc/systemd/system/getty@tty1.service.d/override.conf
-    content: |
-      [Service]
-      ExecStart=
-      ExecStart=-/sbin/agetty --autologin {{ kodi_user }} --noclear --skip-login --login-options "/bin/bash --login" %I $TERM
-    owner: root
-    group: root
-    mode: '0644'
+    state: absent
 
 - name: Reload systemd daemon
   systemd:
@@ -152,6 +127,3 @@
   systemd:
     name: getty@tty1
     state: restarted
-
-
-
