@@ -114,6 +114,12 @@
     group: media
     mode: '0755'
 
+- name: Ensure cron is installed
+  apt:
+    name: cron
+    state: present
+    update_cache: true
+
 - name: Add @reboot cron job to start Kodi
   cron:
     name: "Start Kodi at boot"
@@ -146,4 +152,5 @@
   systemd:
     name: getty@tty1
     state: restarted
+
 
