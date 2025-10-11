@@ -24,7 +24,9 @@
     dest: /etc/systemd/system/kodi.service
     mode: '0644'
 
+############################################
 # Enable Boot2Kodi    
+############################################
 - name: Add kodi user to required groups
   user:
     name: kodi
@@ -67,6 +69,9 @@
     group: media
     mode: '0755'
 
+############################################
+# Restore config from backups
+############################################
 - name: Restore from config template
   template:
     src: "kodi.{{ item }}.j2"
@@ -88,32 +93,50 @@
     enabled: yes
     state: started
 
+############################################
 # Enable autologin to Kodi
-- name: Enable autologin for Kodi user in LightDM
-  become: true
-  block:
-    - name: Ensure LightDM is installed
-      apt:
-        name: lightdm
-        state: present
-        update_cache: true
+############################################
+- name: Create Kodi start script
+  copy:
+    dest: "{{ kodi_start_script }}"
+    content: |
+      #!/bin/bash
+      sleep 5
+      flatpak run tv.kodi.Kodi
+    owner: "{{ kodi_user }}"
+    group: "{{ kodi_user }}"
+    mode: '0755'
 
-    - name: Set LightDM autologin configuration
-      copy:
-        dest: /etc/lightdm/lightdm.conf
-        content: |
-          [Seat:*]
-          autologin-user=kodi
-          autologin-user-timeout=0
-          autologin-session=kodi
-          greeter-session=lightdm-gtk-greeter
-        owner: root
-        group: root
-        mode: '0644'
+- name: Add @reboot cron job to start Kodi
+  cron:
+    name: "Start Kodi at boot"
+    user: "{{ kodi_user }}"
+    special_time: reboot
+    job: "{{ kodi_start_script }}"
 
-    - name: Enable LightDM service
-      systemd:
-        name: lightdm
-        enabled: true
-        state: started
+- name: Create systemd override directory for getty@tty1
+  file:
+    path: /etc/systemd/system/getty@tty1.service.d
+    state: directory
+    mode: '0755'
+
+- name: Configure autologin for Kodi user on tty1
+  copy:
+    dest: /etc/systemd/system/getty@tty1.service.d/override.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=-/sbin/agetty --autologin {{ kodi_user }} --noclear %I $TERM
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Restart getty@tty1 service
+  systemd:
+    name: getty@tty1
+    state: restarted
 
