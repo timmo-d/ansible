@@ -133,13 +133,13 @@
     state: directory
     mode: '0755'
 
-- name: Configure autologin for Kodi user on tty1
+- name: Configure autologin for Kodi user on tty1 with shell
   copy:
     dest: /etc/systemd/system/getty@tty1.service.d/override.conf
     content: |
       [Service]
       ExecStart=
-      ExecStart=-/sbin/agetty --autologin {{ kodi_user }} --noclear %I $TERM
+      ExecStart=-/sbin/agetty --autologin {{ kodi_user }} --noclear --skip-login --login-options "/bin/bash --login" %I $TERM
     owner: root
     group: root
     mode: '0644'
@@ -152,5 +152,6 @@
   systemd:
     name: getty@tty1
     state: restarted
+
 
 
