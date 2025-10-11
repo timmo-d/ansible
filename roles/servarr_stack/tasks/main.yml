@@ -10,7 +10,8 @@
     group: "{{ media_group }}"
     shell: /usr/sbin/nologin
     create_home: yes
-  loop: "{{ other_apps }}"
+  loop: 
+    - "{{ other_apps }}"
   # loop: "{{ servarr_apps + other_apps }}"
   
 - name: Install dependencies
