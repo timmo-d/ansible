@@ -96,13 +96,20 @@
 ############################################
 # Enable autologin to Kodi
 ############################################
+
 - name: Create Kodi start script
   copy:
     dest: "{{ kodi_start_script }}"
     content: |
       #!/bin/bash
+
+      # Wait for system to settle
       sleep 5
-      flatpak run tv.kodi.Kodi
+
+      # Check if Kodi is already running
+      if ! pgrep -x "Kodi" > /dev/null; then
+          flatpak run tv.kodi.Kodi >> {{ kodi_home }}/kodi.log 2>&1 &
+      fi
     owner: "{{ kodi_user }}"
     group: "{{ kodi_user }}"
     mode: '0755'
@@ -139,4 +146,3 @@
   systemd:
     name: getty@tty1
     state: restarted
-
