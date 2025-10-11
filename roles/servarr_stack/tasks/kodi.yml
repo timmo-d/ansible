@@ -1,57 +1,35 @@
-- name: Set Kodi variables
-  set_fact:
-    kodi_user: kodi
-    kodi_group: media
-    kodi_home: "/home/kodi"
-    kodi_flatpak_id: "tv.kodi.Kodi"
-    flathub_remote_name: "flathub"
-    flathub_repo_url: "https://flathub.org/repo/flathub.flatpakrepo"
-
-- name: Ensure required packages are installed
-  apt:
-    name:
-      - flatpak
-      - xinit
-      - xvfb
-      - x11-utils
-      - x11-xserver-utils
-      - xserver-xorg
-    state: present
-    update_cache: true
-
-- name: Ensure Kodi user exists
-  user:
-    name: "{{ kodi_user }}"
-    shell: /bin/bash
-    create_home: yes
-    group: "{{ kodi_group }}"
+# Install Kodi (headless)
+- name: Ensure Flatpak engine is installed
+  ansible.builtin.package:
+    name: flatpak
     state: present
 
-- name: Ensure Kodi home directory exists
-  file:
-    path: "{{ kodi_home }}"
-    state: directory
-    owner: "{{ kodi_user }}"
-    group: "{{ kodi_group }}"
-    mode: '0755'
-
-- name: Ensure Flathub remote is configured
+- name: Ensure Flathub remote is configured (system)
   community.general.flatpak_remote:
     name: "{{ flathub_remote_name }}"
     state: present
     flatpakrepo_url: "{{ flathub_repo_url }}"
     method: system
 
-- name: Install or update Kodi from Flathub
+- name: Install or update Kodi from Flathub (system)
   community.general.flatpak:
     name: "{{ kodi_flatpak_id }}"
     state: present
     method: system
     remote: "{{ flathub_remote_name }}"
 
+- name: Create systemd service for Kodi headless
+  template:
+    src: kodi.service.j2
+    dest: /etc/systemd/system/kodi.service
+    mode: '0644'
+
+############################################
+# Enable Boot2Kodi    
+############################################
 - name: Add kodi user to required groups
   user:
-    name: "{{ kodi_user }}"
+    name: kodi
     groups: audio,video,input,dialout,plugdev,tty
     append: yes
 
@@ -69,64 +47,75 @@
     create: yes
     insertafter: EOF
 
-- name: Copy power menu policy for Ubuntu 24.04 and above
+- name: Copy powermenu_in_kodi.pkla for Ubuntu 22.04 and under
+  copy:
+    src: kodi.powermenu_in_kodi.pkla.j2
+    dest: /etc/polkit-1/localauthority/50-local.d/powermenu_in_kodi.pkla
+    mode: '0644'
+  when: ansible_distribution_version is version('24.04', '<')
+
+- name: Copy powermenu_in_2404.rules for Ubuntu 24.04 and above
   copy:
     src: kodi.powermenu_in_2404.rules.j2
     dest: /etc/polkit-1/rules.d/powermenu.rules
     mode: '0644'
+  when: ansible_distribution_version is version('24.04', '>=')
 
 - name: Ensure Kodi userdata directory exists
-  file:
-    path: "{{ kodi_home }}/.var/app/{{ kodi_flatpak_id }}/data/userdata/"
+  ansible.builtin.file:
+    path: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/
     state: directory
-    owner: "{{ kodi_user }}"
-    group: "{{ kodi_group }}"
+    owner: kodi
+    group: media
     mode: '0755'
 
-- name: Restore Kodi configuration files from templates
+############################################
+# Restore config from backups
+############################################
+- name: Restore from config template
   template:
     src: "kodi.{{ item }}.j2"
-    dest: "{{ kodi_home }}/.var/app/{{ kodi_flatpak_id }}/data/userdata/{{ item }}"
-    owner: "{{ kodi_user }}"
-    group: "{{ kodi_group }}"
+    dest: "/home/kodi/.var/app/tv.kodi.Kodi/data/userdata/{{ item }}"
+    owner: "kodi"
+    group: media
     mode: '0644'
   loop:
-    - advancedsettings.xml
-    - mediasources.xml
-    - sources.xml
-    - profiles.xml
-    - guisettings.xml
+      - advancedsettings.xml
+      - mediasources.xml
+      - sources.xml
+      #- passwords.xml
+      - profiles.xml
+      - guisettings.xml
 
-- name: Create .bash_profile to boot into Kodi on tty1
+- name: Enable and start Kodi service
+  systemd:
+    name: kodi
+    enabled: yes
+    state: started
+
+############################################
+# Enable autologin to Kodi
+############################################
+- name: Create .bash_profile to start Kodi on login
   copy:
-    dest: "{{ kodi_home }}/.bash_profile"
+    dest: /home/kodi/.bash_profile
     content: |
       #!/bin/bash
 
-      # Start Kodi in a virtual X session on tty1
-      if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
-          exec xinit /usr/bin/flatpak run tv.kodi.Kodi -- :0 -nolisten tcp vt7
+      # Start Kodi if not already running
+      if ! pgrep -x "Kodi" > /dev/null; then
+          sleep 5
+          flatpak run tv.kodi.Kodi >> /home/kodi/kodi.log 2>&1 &
       fi
-    owner: "{{ kodi_user }}"
-    group: "{{ kodi_group }}"
+    owner: kodi
+    group: media
     mode: '0644'
 
-- name: Create systemd override directory for getty@tty1
-  file:
-    path: /etc/systemd/system/getty@tty1.service.d
-    state: directory
-    mode: '0755'
-
-- name: Configure autologin for Kodi user on tty1
-  copy:
-    dest: /etc/systemd/system/getty@tty1.service.d/override.conf
-    content: |
-      [Service]
-      ExecStart=
-      ExecStart=-/sbin/agetty --autologin {{ kodi_user }} --noclear %I $TERM
-    owner: root
-    group: root
-    mode: '0644'
+- name: Remove @reboot cron job (optional cleanup)
+  cron:
+    name: "Start Kodi at boot"
+    user: kodi
+    state: absent
 
 - name: Reload systemd daemon
   systemd:
@@ -136,3 +125,4 @@
   systemd:
     name: getty@tty1
     state: restarted
+

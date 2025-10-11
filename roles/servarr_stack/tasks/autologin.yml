@@ -1,0 +1,84 @@
+###########################################################################
+# GUI MODE (GDM) – Autologin at display manager
+###########################################################################
+- name: Ensure /etc/gdm3/custom.conf exists (GDM mode)
+  ansible.builtin.file:
+    path: /etc/gdm3/custom.conf
+    state: touch
+    mode: '0644'
+  when: autologin_mode == 'gdm'
+
+- name: Enable AutomaticLoginEnable in GDM custom.conf
+  ansible.builtin.ini_file:
+    path: /etc/gdm3/custom.conf
+    section: daemon
+    option: AutomaticLoginEnable
+    value: 'true'
+    no_extra_spaces: true
+    backup: true
+  notify: Restart display manager
+  when: autologin_mode == 'gdm'
+
+- name: Set AutomaticLogin user in GDM custom.conf
+  ansible.builtin.ini_file:
+    path: /etc/gdm3/custom.conf
+    section: daemon
+    option: AutomaticLogin
+    value: "{{ autologin_user }}"
+    no_extra_spaces: true
+    backup: true
+  notify: Restart display manager
+  when: autologin_mode == 'gdm'
+
+- name: Gather service facts (for GDM service name resolution)
+  ansible.builtin.service_facts:
+  when: autologin_mode == 'gdm'
+
+- name: Determine display manager service name
+  ansible.builtin.set_fact:
+    gdm_service_name: >-
+      {{ 'gdm3' if ('gdm3.service' in ansible_facts.services) else
+          ('gdm' if ('gdm.service' in ansible_facts.services) else 'gdm3') }}
+  when: autologin_mode == 'gdm'
+
+###########################################################################
+# CLI MODE (HEADLESS) – Autologin on tty1
+###########################################################################
+- name: Create systemd override dir for getty@tty1 (CLI mode)
+  ansible.builtin.file:
+    path: /etc/systemd/system/getty@tty1.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: autologin_mode == 'cli'
+
+- name: Configure autologin override for getty@tty1
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/getty@tty1.service.d/override.conf
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=-{{ agetty_path }} --autologin {{ autologin_user }} --noclear %I $TERM
+  notify:
+    - Systemd daemon-reload
+    - Restart getty@tty1
+  when: autologin_mode == 'cli'
+
+handlers:
+- name: Restart display manager
+  ansible.builtin.systemd:
+    name: "{{ gdm_service_name | default('gdm3') }}"
+    state: restarted
+
+- name: Systemd daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart getty@tty1
+  ansible.builtin.systemd:
+    name: getty@tty1
+    state: restarted

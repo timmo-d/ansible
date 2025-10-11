@@ -25,7 +25,9 @@ kodi_db_ip: "{{ lookup('env', 'KODI_DB_IP') }}"
 kodi_user: kodi
 kodi_home: "/home/kodi"
 kodi_start_script: "/home/kodi/start-kodi.sh"
-
+autologin_user: "{{ lookup('env', 'AUTOLOGIN_USERNAME') }}"
+autologin_mode: "cli"               # "gdm" or "cli"
+agetty_path: "/sbin/agetty"         # override to "/usr/sbin/agetty" if needed
 
 huntarr_repo: "https://github.com/plexguide/Huntarr.io.git"
 huntarr_user: "huntarr"
