@@ -18,12 +18,6 @@
     method: system
     remote: "{{ flathub_remote_name }}"
 
-- name: Create systemd service for Kodi headless
-  template:
-    src: kodi.service.j2
-    dest: /etc/systemd/system/kodi.service
-    mode: '0644'
-
 # Enable Boot2Kodi    
 - name: Add kodi user to required groups
   user:
@@ -81,8 +75,15 @@
       #- passwords.xml
       - profiles.xml
 
+- name: Create systemd service for Kodi headless
+  template:
+    src: kodi.service.j2
+    dest: /etc/systemd/system/kodi.service
+    mode: '0644'
+
 - name: Enable and start Kodi service
   systemd:
     name: kodi
     enabled: yes
+
     state: started
