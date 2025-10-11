@@ -7,7 +7,7 @@ User=kodi
 Group=media
 Environment=DISPLAY=:0
 ExecStart=/usr/bin/xinit /usr/bin/flatpak run tv.kodi.Kodi -- :0 -nolisten tcp vt7
-Restart=always
+Restart=on-failure
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
