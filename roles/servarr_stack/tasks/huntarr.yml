@@ -129,6 +129,35 @@
     mode: '0644'
   notify: Reload systemd
 
+############################################
+# Restore config from backups
+############################################
+#- name: Ensure destination directory exists
+#  ansible.builtin.file:
+#    path: "{{ install_dir }}/"
+#    state: directory
+#    owner: "{{ huntarr_user }}"
+#    group: "{{ media_group }}"
+#    mode: '0755'
+
+# Run rsync ON the remote host so src and dest are remote paths
+#- name: Rsync Kodi userdata (idempotent, (*** takes ~5 min on first run ***))
+#  ansible.posix.synchronize:
+#    src: /mnt/data/servarr/kodi/userdata/            # note trailing slash = copy contents
+#    dest: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/
+#    archive: true                                    # -a : perms, times, recurse, etc.
+#    delete: false                                    # set true if you want a perfect mirror
+#    checksum: false                                  # default: size+mtime; set true for stricter checks
+#  delegate_to: "{{ inventory_hostname }}"
+
+# Ensure ownership recursively (in case rsync preserved different owners)
+#- name: Ensure ownership of destination is kodi:kodi
+#  ansible.builtin.file:
+#    path: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata
+#    owner: "{{ huntarr_user }}"
+#    group: "{{ media_group }}"
+#    recurse: true
+
 - name: Enable and start Huntarr service
   systemd:
     name: huntarr.service
