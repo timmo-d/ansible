@@ -99,20 +99,29 @@
     group: media
     mode: '0755'
 
-- name: Restore from config template
-  template:
-    src: "kodi.{{ item }}.j2"
-    dest: "/home/kodi/.var/app/tv.kodi.Kodi/data/userdata/{{ item }}"
-    owner: "kodi"
+- name: Copy Kodi userdata to target directory (*** takes about five minutes ***)
+  ansible.builtin.copy:
+    src: /mnt/data/servarr/kodi/userdata/
+    dest: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/
+    owner: kodi
     group: media
-    mode: '0644'
-  loop:
-      - advancedsettings.xml
-      - mediasources.xml
-      - sources.xml
-      #- passwords.xml
-      - profiles.xml
-      - guisettings.xml
+    mode: '0755'
+    remote_src: true
+
+#- name: Restore from config template
+#  template:
+#    src: "kodi.{{ item }}.j2"
+#    dest: "/home/kodi/.var/app/tv.kodi.Kodi/data/userdata/{{ item }}"
+#    owner: "kodi"
+#    group: media
+#    mode: '0644'
+#  loop:
+#      - advancedsettings.xml
+#      - mediasources.xml
+#      - sources.xml
+#      #- passwords.xml
+#      - profiles.xml
+#      - guisettings.xml
 
 - name: Enable and start Kodi service
   systemd:
