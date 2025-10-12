@@ -22,7 +22,7 @@
     path: "{{ item }}"
     state: directory
     owner: root
-    group: root
+    group: media
     mode: '0755'
   loop:
     - /mnt/data
@@ -36,7 +36,7 @@
     state: present
   loop:
     - { regexp: '^//192\\.168\\.1\\.106/data\\s+/mnt/data\\s+cifs\\s+.*$', line: '//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1000,file_mode=0644,dir_mode=0755,vers=3.0,sec=ntlmssp,nodfs 0 0' }
-    - { regexp: '^//192\\.168\\.1\\.106/r\\s+/mnt/r\\s+cifs\\s+.*$', line: '//192.168.1.106/r /mnt/r cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1002,file_mode=0644,dir_mode=0755,vers=3.0 0 0' }
+    - { regexp: '^//192\\.168\\.1\\.106/r\\s+/mnt/r\\s+cifs\\s+.*$', line: '//192.168.1.106/r /mnt/r cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1000,file_mode=0644,dir_mode=0755,vers=3.0,sec=ntlmssp,nodfs 0 0' }
 
 - name: Mount CIFS shares
   mount:
@@ -54,7 +54,7 @@
     - {
         path: "/mnt/r",
         src: "//192.168.1.106/r",
-        opts: "credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1002,file_mode=0644,dir_mode=0755,vers=3.0"
+        opts: "credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1000,file_mode=0644,dir_mode=0755,vers=3.0,sec=ntlmssp,nodfs"
       }
 
 - name: Restrict Samba to SMBv2 and SMBv3 only

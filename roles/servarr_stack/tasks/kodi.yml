@@ -58,7 +58,7 @@
 - name: Add kodi user to required groups
   user:
     name: kodi
-    groups: audio,video,input,dialout,plugdev,tty
+    groups: audio,video,input,dialout,plugdev,tty, media
     append: yes
 
 - name: Replace allowed_users=console with allowed_users=anybody
