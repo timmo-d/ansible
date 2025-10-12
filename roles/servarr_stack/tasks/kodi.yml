@@ -12,6 +12,7 @@
       - xserver-xorg-legacy
       - pulseaudio
       - upower
+      - rsync
     state: present
     update_cache: yes
     install_recommends: no
@@ -91,22 +92,31 @@
 ############################################
 # Restore config from backups
 ############################################
-- name: Ensure Kodi userdata directory exists
+- name: Ensure destination directory exists
   ansible.builtin.file:
-    path: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/
+    path: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata
     state: directory
     owner: kodi
     group: media
     mode: '0755'
 
-- name: Copy Kodi userdata to target directory (*** takes about five minutes ***)
-  ansible.builtin.copy:
-    src: /mnt/data/servarr/kodi/userdata/
+# Run rsync ON the remote host so src and dest are remote paths (*** takes ~5 min on first run ***)
+- name: Rsync Kodi userdata (idempotent, only changed files)
+  ansible.posix.synchronize:
+    src: /mnt/data/servarr/kodi/userdata/            # note trailing slash = copy contents
     dest: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/
+    archive: true                                    # -a : perms, times, recurse, etc.
+    delete: false                                    # set true if you want a perfect mirror
+    checksum: false                                  # default: size+mtime; set true for stricter checks
+  delegate_to: "{{ inventory_hostname }}"
+
+# Ensure ownership recursively (in case rsync preserved different owners)
+- name: Ensure ownership of destination is kodi:kodi
+  ansible.builtin.file:
+    path: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata
     owner: kodi
     group: media
-    mode: '0755'
-    remote_src: true
+    recurse: true
 
 #- name: Restore from config template
 #  template:
