@@ -100,8 +100,8 @@
     group: media
     mode: '0755'
 
-# Run rsync ON the remote host so src and dest are remote paths (*** takes ~5 min on first run ***)
-- name: Rsync Kodi userdata (idempotent, only changed files)
+# Run rsync ON the remote host so src and dest are remote paths
+- name: Rsync Kodi userdata (idempotent, (*** takes ~5 min on first run ***))
   ansible.posix.synchronize:
     src: /mnt/data/servarr/kodi/userdata/            # note trailing slash = copy contents
     dest: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/
