@@ -30,6 +30,18 @@
 #    group: media
 #    mode: '0755'
 
+#- name: Clone Huntarr.io repository to /tmp
+#  git:
+#    repo: "{{ huntarr_repo }}"
+#    dest: "{{ huntarr_repo_tmp }}"
+#    version: "HEAD"
+#    force: yes
+
+- name: Clone Huntarr.io repository to user home
+  ansible.builtin.git:
+    repo: "{{ huntarr_repo }}"                  
+    dest: /home/{{ ansible_user }}/huntarr
+
 - name: Create install directory
   file:
     path: "{{ install_dir }}"
@@ -38,33 +50,28 @@
     group: media
     mode: '0755'
 
-- name: Create data directory
-  file:
-    path: "{{ data_dir }}"
-    state: directory
-    owner: "{{ huntarr_user }}"
-    group: media
-    mode: '0755'
-
-- name: Clone Huntarr.io repository to /tmp
-  git:
-    repo: "{{ huntarr_repo }}"
-    dest: "{{ huntarr_repo_tmp }}"
-    version: "HEAD"
-    force: yes
+#- name: Create data directory
+#  file:
+#    path: "{{ data_dir }}"
+#    state: directory
+#    owner: "{{ huntarr_user }}"
+#    group: media
+#    mode: '0755'
 
 
-- name: Set ownership of cloned Huntarr.io repo
-  ansible.builtin.file:
-    path: "{{ huntarr_repo_tmp }}"
-    owner: huntarr
-    group: media
-    recurse: true
+
+
+#- name: Set ownership of cloned Huntarr.io repo
+#  ansible.builtin.file:
+#    path: "{{ huntarr_repo_tmp }}"
+#    owner: huntarr
+#    group: media
+#    recurse: true
 
 
 - name: Move Huntarr.io contents to install directory
   command: >
-    rsync -a {{ huntarr_repo_tmp }}/ {{ install_dir }}/
+    rsync -a /home/{{ ansible_user }}/huntarr/ {{ install_dir }}/
 
 
 - name: Create Python virtual environment
