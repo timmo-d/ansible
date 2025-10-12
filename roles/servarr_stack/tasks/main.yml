@@ -17,7 +17,7 @@
 #    install_recommends: no
 
 - name: Create mount points
- include_tasks: mount_points.yml
+  include_tasks: mount_points.yml
 
 - name: Install Servarr apps
   include_tasks: servarr.yml
