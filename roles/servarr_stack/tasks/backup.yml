@@ -1,0 +1,15 @@
+- name: Create Servarr backup script
+  ansible.builtin.template:
+    src: servarr_backup.sh.j2
+    dest: /usr/local/bin/servarr_backup.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Schedule daily Servarr backup at 2 AM
+  ansible.builtin.cron:
+    name: "Daily Servarr backup"
+    minute: "0"
+    hour: "2"
+    user: root
+    job: "/usr/local/bin/servarr_backup.sh"

@@ -36,3 +36,12 @@ install_dir: "/opt/huntarr"
 data_dir: "/var/lib/huntarr"
 huntarr_venv_dir: "{{ install_dir }}/huntarr-env"
 huntarr_service_path: "/etc/systemd/system/huntarr.service"
+
+qbittorrent_instances:
+  - name: qbittorrent1
+    port: 8080
+    config_dir: /home/qbittorrent1/.config/qBittorrent
+  - name: qbittorrent2
+    port: 8081
+    config_dir: /home/qbittorrent2/.config/qBittorrent
+

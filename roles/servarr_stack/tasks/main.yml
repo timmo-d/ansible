@@ -31,7 +31,8 @@
 - name: Install Huntarr
   include_tasks: huntarr.yml
 
-
+- name: Establish backup routine
+  include_tasks: huntarr.yml
 
 
 

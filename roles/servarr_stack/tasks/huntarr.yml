@@ -104,7 +104,7 @@
     mode: '0755'
 
 # Run rsync ON the remote host so src and dest are remote paths
-- name: Rsync Kodi userdata (idempotent, (*** takes ~5 min on first run ***))
+- name: Rsync Huntarr userdata (idempotent, (*** takes ~5 min on first run ***))
   ansible.posix.synchronize:
     src: /mnt/data/servarr/huntarr/            # note trailing slash = copy contents
     dest: /home/{{ huntarr_user }}/.config/huntarr/

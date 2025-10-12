@@ -1,8 +1,6 @@
-- name: Install nftables
-  apt:
-    name: nftables
-    state: present
-
+#####################################################
+# Upgrade firewall application
+#####################################################
 - name: Gather service facts
   ansible.builtin.service_facts:
 
@@ -13,7 +11,14 @@
     enabled: no
   when: "'ufw' in ansible_facts.services"
 
+- name: Install nftables
+  apt:
+    name: nftables
+    state: present
 
+###################################################
+# Copy across applicable ruleset
+###################################################
 - name: Configure rules for Cloudflared/NGINX Reverse Proxy configuration
   template:
     src: nginx_nftables.conf.j2
@@ -42,6 +47,9 @@
     mode: '0644'
   when: ruleset == "servarr"
 
+###########################################
+# Start nftables and apply ruleset
+###########################################
 - name: Enable and start nftables service
   systemd:
     name: nftables

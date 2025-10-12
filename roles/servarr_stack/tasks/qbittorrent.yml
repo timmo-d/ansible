@@ -1,48 +1,65 @@
-- name: Create user for qbittorrent-nox
-  user:
-    name: qbittorrent-nox
-    group: "{{ media_group }}"
-    shell: /usr/sbin/nologin
-    create_home: yes
-
 # Install qBittorrent
 - name: Install qBittorrent-nox
   apt:
     name: qbittorrent-nox
     state: present
     update_cache: true
+    
+- name: Create qbittorrent users and config directories
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    groups: "{{ media_group }}"
+    shell: /usr/sbin/nologin
+    create_home: yes
+  loop: "{{ qbittorrent_instances }}"
 
-
-- name: Ensure config directory exists
-  file:
-    path: "/home/qbittorrent-nox/.config/qBittorrent"
+- name: Ensure config directories exist
+  ansible.builtin.file:
+    path: "{{ item.config_dir }}"
     state: directory
-    owner: "qbittorrent-nox"
+    owner: "{{ item.name }}"
     group: "{{ media_group }}"
     mode: '0755'
+  loop: "{{ qbittorrent_instances }}"
 
-- name: Restore from config template
+- name: Restore 'data'-configuration from config template
   template:
-    src: "qbittorrent.{{ item }}.j2"
-    dest: "/home/qbittorrent-nox/.config/qBittorrent/{{ item }}"
-    owner: "qbittorrent-nox"
+    src: "qbittorrent.conf.j2"
+    dest: "{{ qbittorrent_instances[0].config_dir }}/qbittorrent.conf"
+    owner: "{{ qbittorrent_instances[0].name }}"
     group: "{{ media_group }}"
     mode: '0644'
-  loop:
-#      - settings.json
-      - categories.json
-#      - qBittorrent-data.conf
-      - qBittorrent.conf
-      - watched_folders.json
 
-- name: Create systemd service for qBittorrent
+- name: Restore 'whisparr'-configuration from config template
   template:
-    src: qbittorrent.service.j2
-    dest: /etc/systemd/system/qbittorrent-nox.service
+    src: "qbittorrent-r.conf.j2"
+    dest: "{{ qbittorrent_instances[1].config_dir }}/qbittorrent.conf"
+    owner: "{{ qbittorrent_instances[1].name }}"
+    group: "{{ media_group }}"
     mode: '0644'
 
-- name: Enable and start qBittorrent service
-  systemd:
-    name: qbittorrent-nox
-    enabled: yes
+- name: Restore other common configuration from config template
+  template:
+    src: "qbittorrent.categories.json.j2"
+    dest: "{{ item.config_dir }}/categories.json"
+    owner: "{{ item.name }}"
+    group: "{{ media_group }}"
+    mode: '0644'
+  loop: "{{ qbittorrent_instances }}"
+
+- name: Create systemd service for each qbittorrent-nox instance
+  ansible.builtin.template:
+    src: qbittorrent-nox@.service.j2
+    dest: "/etc/systemd/system/qbittorrent-nox@{{ item.name }}.service"
+    mode: '0644'
+  loop: "{{ qbittorrent_instances }}"
+  notify: Reload systemd
+
+- name: Enable and start qbittorrent-nox instances
+  ansible.builtin.systemd:
+    name: "qbittorrent-nox@{{ item.name }}.service"
+    enabled: true
     state: started
+  loop: "{{ qbittorrent_instances }}"
+
+

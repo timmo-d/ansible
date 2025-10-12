@@ -1,0 +1,46 @@
+- name: Create user for qbittorrent-nox
+  user:
+    name: qbittorrent-nox
+    group: "{{ media_group }}"
+    shell: /usr/sbin/nologin
+    create_home: yes
+
+# Install qBittorrent
+- name: Install qBittorrent-nox
+  apt:
+    name: qbittorrent-nox
+    state: present
+    update_cache: true
+
+
+- name: Ensure config directory exists
+  file:
+    path: "/home/qbittorrent-nox/.config/qBittorrent"
+    state: directory
+    owner: "qbittorrent-nox"
+    group: "{{ media_group }}"
+    mode: '0755'
+
+- name: Restore from config template
+  template:
+    src: "qbittorrent.{{ item }}.j2"
+    dest: "/home/qbittorrent-nox/.config/qBittorrent/{{ item }}"
+    owner: "qbittorrent-nox"
+    group: "{{ media_group }}"
+    mode: '0644'
+  loop:
+      - categories.json
+      - qBittorrent.conf
+      - watched_folders.json
+
+- name: Create systemd service for qBittorrent
+  template:
+    src: qbittorrent.service.j2
+    dest: /etc/systemd/system/qbittorrent-nox.service
+    mode: '0644'
+
+- name: Enable and start qBittorrent service
+  systemd:
+    name: qbittorrent-nox
+    enabled: yes
+    state: started

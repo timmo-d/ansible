@@ -1,0 +1,12 @@
+[Unit]
+Description=qBittorrent-nox instance for %i
+After=network.target
+
+[Service]
+User=%i
+Group={{ media_group }}
+ExecStart=/usr/bin/qbittorrent-nox --profile=/home/%i/.config/qBittorrent
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

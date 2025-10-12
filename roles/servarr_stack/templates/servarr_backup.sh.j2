@@ -1,0 +1,19 @@
+#!/bin/bash
+
+{% for item in servarr_apps %}
+# Backup config for {{ item }}
+cp "{{ backup_base_path }}/{{ item }}/default/config.xml" "/mnt/data/servarr/{{ item }}/config.xml"
+chown {{ item }}:{{ media_group }} "/mnt/data/servarr/{{ item }}/config.xml"
+chmod 0644 "/mnt/data/servarr/{{ item }}/config.xml"
+
+# Backup DB for {{ item }}
+cp "{{ backup_base_path }}/{{ item }}/default/{{ item }}.db" "/mnt/data/servarr/{{ item }}/{{ item }}.db"
+chown {{ item }}:{{ media_group }} "/mnt/data/servarr/{{ item }}/{{ item }}.db"
+chmod 0644 "/mnt/data/servarr/{{ item }}/{{ item }}.db"
+{% endfor %}
+
+# Rsync Huntarr
+rsync -a /home/{{ huntarr_user }}/.config/huntarr/ /mnt/data/servarr/huntarr/
+
+# Rsync Kodi
+rsync -a /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/ /mnt/data/servarr/kodi/userdata/
