@@ -118,51 +118,8 @@
     group: media
     recurse: true
 
-#- name: Restore from config template
-#  template:
-#    src: "kodi.{{ item }}.j2"
-#    dest: "/home/kodi/.var/app/tv.kodi.Kodi/data/userdata/{{ item }}"
-#    owner: "kodi"
-#    group: media
-#    mode: '0644'
-#  loop:
-#      - advancedsettings.xml
-#      - mediasources.xml
-#      - sources.xml
-#      #- passwords.xml
-#      - profiles.xml
-#      - guisettings.xml
-
 - name: Enable and start Kodi service
   systemd:
     name: kodi
     enabled: yes
     state: started
-
-############################################
-# Enable autologin to Kodi
-############################################
-#- name: Create .bash_profile to start Kodi on login
-#  copy:
-#    dest: /home/kodi/.bash_profile
-#    content: |
-#      #!/bin/bash
-
-#      # Start Kodi if not already running
-#      if ! pgrep -x "Kodi" > /dev/null; then
-#          sleep 5
-#          flatpak run tv.kodi.Kodi >> /home/kodi/kodi.log 2>&1 &
-#      fi
-#    owner: kodi
-#    group: media
-#    mode: '0644'
-
-#- name: Reload systemd daemon
-#  systemd:
-#    daemon_reload: yes
-
-#- name: Restart getty@tty1 service
-#  systemd:
-#    name: getty@tty1
-#    state: restarted
-
