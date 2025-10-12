@@ -1,3 +1,21 @@
+############################################
+# Install required packages (from apt and flatpak)
+############################################
+# Install dependencies
+- name: Install dependencies
+  apt:
+    name:
+      - xinit
+      - xorg
+      - dbus-x11
+      - xserver-xorg-video-intel
+      - xserver-xorg-legacy
+      - pulseaudio
+      - upower
+    state: present
+    update_cache: yes
+    install_recommends: no
+
 # Install Kodi (headless)
 - name: Ensure Flatpak engine is installed
   ansible.builtin.package:
@@ -25,8 +43,17 @@
     mode: '0644'
 
 ############################################
-# Enable Boot2Kodi    
+# Enable Boot2Kodi (adapted from https://github.com/abacao/Boot2Kodi)
 ############################################
+- name: Add user 'kodi' with disabled password and login
+  ansible.builtin.user:
+    name: kodi
+    password: '!'          # disables password
+    shell: /usr/sbin/nologin
+    comment: ""
+    create_home: yes
+    state: present
+
 - name: Add kodi user to required groups
   user:
     name: kodi
@@ -61,6 +88,9 @@
     mode: '0644'
   when: ansible_distribution_version is version('24.04', '>=')
 
+############################################
+# Restore config from backups
+############################################
 - name: Ensure Kodi userdata directory exists
   ansible.builtin.file:
     path: /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/
@@ -69,9 +99,6 @@
     group: media
     mode: '0755'
 
-############################################
-# Restore config from backups
-############################################
 - name: Restore from config template
   template:
     src: "kodi.{{ item }}.j2"
@@ -96,27 +123,27 @@
 ############################################
 # Enable autologin to Kodi
 ############################################
-- name: Create .bash_profile to start Kodi on login
-  copy:
-    dest: /home/kodi/.bash_profile
-    content: |
-      #!/bin/bash
+#- name: Create .bash_profile to start Kodi on login
+#  copy:
+#    dest: /home/kodi/.bash_profile
+#    content: |
+#      #!/bin/bash
 
-      # Start Kodi if not already running
-      if ! pgrep -x "Kodi" > /dev/null; then
-          sleep 5
-          flatpak run tv.kodi.Kodi >> /home/kodi/kodi.log 2>&1 &
-      fi
-    owner: kodi
-    group: media
-    mode: '0644'
+#      # Start Kodi if not already running
+#      if ! pgrep -x "Kodi" > /dev/null; then
+#          sleep 5
+#          flatpak run tv.kodi.Kodi >> /home/kodi/kodi.log 2>&1 &
+#      fi
+#    owner: kodi
+#    group: media
+#    mode: '0644'
 
-- name: Reload systemd daemon
-  systemd:
-    daemon_reload: yes
+#- name: Reload systemd daemon
+#  systemd:
+#    daemon_reload: yes
 
-- name: Restart getty@tty1 service
-  systemd:
-    name: getty@tty1
-    state: restarted
+#- name: Restart getty@tty1 service
+#  systemd:
+#    name: getty@tty1
+#    state: restarted
 

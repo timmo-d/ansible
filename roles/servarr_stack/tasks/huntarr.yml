@@ -2,14 +2,24 @@
   apt:
     name:
       - git
-      - build-essential
-      - python3-dev
-      - libyaml-dev
-      - libffi-dev
-      - libssl-dev
+      #- build-essential
+      #- python3-dev
+      #- libyaml-dev
+      #- libffi-dev
+      #- libssl-dev
+      - python3
+      - python3-venv
+      - python3-pip
     state: present
     update_cache: true
   become: true
+
+- name: Create user for huntarr
+  user:
+    name: huntarr
+    group: "{{ media_group }}"
+    shell: /usr/sbin/nologin
+    create_home: yes
 
 #- name: Create temp directory
 #  file:

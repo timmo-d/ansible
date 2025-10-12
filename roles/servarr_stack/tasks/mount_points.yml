@@ -1,3 +1,12 @@
+- name: Install dependencies
+  apt:
+    name:
+      - samba
+      - cifs-utils
+    state: present
+    update_cache: yes
+    install_recommends: no
+
 - name: Create CIFS credentials file
   copy:
     dest: /etc/smb_credentials

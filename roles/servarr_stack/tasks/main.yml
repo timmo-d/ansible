@@ -4,48 +4,37 @@
     name: "{{ media_group }}"
     state: present
 
-- name: Create users for non-servarr apps
-  user:
-    name: "{{ item }}"
-    group: "{{ media_group }}"
-    shell: /usr/sbin/nologin
-    create_home: yes
-  loop: 
-    - qbittorrent-nox
-    - huntarr
+#- name: Create users for non-servarr apps
+#  user:
+#    name: "{{ item }}"
+#    group: "{{ media_group }}"
+#    shell: /usr/sbin/nologin
+#    create_home: yes
+#  loop: 
+#    - qbittorrent-nox
+#    - huntarr
 
-- name: Ensure Kodi user exists with login shell
-  user:
-    name: kodi
-    shell: /bin/bash
-    create_home: yes
-    state: present
+
+
+#- name: Ensure Kodi user exists with login shell
+#  user:
+#    name: kodi
+#    shell: /bin/bash
+#    create_home: yes
+#    state: present
 
   
-- name: Install dependencies
-  apt:
-    name:
-      - curl
-      - gnupg
-      - ca-certificates
-      - software-properties-common
-      - xinit
-      - git
-      - python3
-      - python3-venv
-      - python3-pip
-      - xorg
-      - dbus-x11
-      - xserver-xorg-video-intel
-      - xserver-xorg-legacy
-      - pulseaudio
-      - upower
-      - samba
-      - cifs-utils
-      - rsync
-    state: present
-    update_cache: yes
-    install_recommends: no
+#- name: Install dependencies
+#  apt:
+#    name:
+#      - curl
+#      - gnupg
+#      - ca-certificates
+#      - software-properties-common
+#      - rsync
+#    state: present
+#    update_cache: yes
+#    install_recommends: no
 
 - name: Create mount points
   include_tasks: mount_points.yml

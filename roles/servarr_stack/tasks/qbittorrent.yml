@@ -1,9 +1,17 @@
+- name: Create user for qbittorrent-nox
+  user:
+    name: qbittorrent-nox
+    group: "{{ media_group }}"
+    shell: /usr/sbin/nologin
+    create_home: yes
+
 # Install qBittorrent
 - name: Install qBittorrent-nox
   apt:
     name: qbittorrent-nox
     state: present
     update_cache: true
+
 
 - name: Ensure config directory exists
   file:
