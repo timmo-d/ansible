@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User={{ item.name }}
 Group={{ media_group }}
-ExecStart=/usr/bin/qbittorrent-nox --profile=/home/{{ item.name }}/.config/qBittorrent -d --webui-port={{ item.port }}
+ExecStart=/usr/bin/qbittorrent-nox --profile=/home/{{ item.name }}/.config/qBittorrent/qBittorrent/config -d --webui-port={{ item.port }}
 Restart=on-failure
 
 [Install]
