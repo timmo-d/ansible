@@ -42,6 +42,28 @@
     - qbittorrent1
     - qbittorrent2
 
+- name: Deploy categories files from templates
+  template:
+    src: "{{ item }}.categories.json.j2"
+    dest: "/home/{{ item }}/.config/qBittorrent/categories.json"
+    owner: "{{ item }}"
+    group: media
+    mode: '0644'
+  loop:
+    - qbittorrent1
+    - qbittorrent2
+
+- name: Deploy categories files from templates
+  template:
+    src: "{{ item }}.watched_folders.json.j2"
+    dest: "/home/{{ item }}/.config/qBittorrent/watched_folders.json"
+    owner: "{{ item }}"
+    group: media
+    mode: '0644'
+  loop:
+    - qbittorrent1
+    - qbittorrent2
+
 - name: Deploy systemd service files
   template:
     src: "{{ item }}.service.j2"

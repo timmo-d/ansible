@@ -7,6 +7,15 @@
     update_cache: yes
     install_recommends: no
 
+- name: Get GID of 'media' group
+  command: getent group media
+  register: media_group_info
+  changed_when: false
+
+- name: Set GID fact for media group
+  set_fact:
+    media_gid: "{{ media_group_info.stdout.split(':')[2] }}"
+
 - name: Create CIFS credentials file
   copy:
     dest: /etc/smb_credentials
@@ -28,35 +37,21 @@
     - /mnt/data
     - /mnt/r
 
-- name: Ensure CIFS mount entries are present in /etc/fstab
-  lineinfile:
-    path: /etc/fstab
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  loop:
-    - { regexp: '^//192\\.168\\.1\\.106/data\\s+/mnt/data\\s+cifs\\s+.*$', line: '//192.168.1.106/data /mnt/data cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1001,file_mode=0664,dir_mode=0775,vers=3.0,sec=ntlmssp,nodfs 0 0' }
-    - { regexp: '^//192\\.168\\.1\\.106/r\\s+/mnt/r\\s+cifs\\s+.*$', line: '//192.168.1.106/r /mnt/r cifs credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1001,file_mode=0664,dir_mode=0775,vers=3.0,sec=ntlmssp,nodfs 0 0' }
-###################
-### TODO: make gid dynamic
-##################
 - name: Mount CIFS shares
   mount:
     path: "{{ item.path }}"
     src: "{{ item.src }}"
     fstype: cifs
-    opts: "{{ item.opts }}"
+    opts: "credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid={{ media_gid }},file_mode=0664,dir_mode=0775,vers=3.0,sec=ntlmssp,nodfs"
     state: mounted
   loop:
     - {
         path: "/mnt/data",
-        src: "//192.168.1.106/data",
-        opts: "credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1000,file_mode=0664,dir_mode=0775,vers=3.0,sec=ntlmssp,nodfs"
+        src: "//{{ file_server_ip }}/data"
       }
     - {
         path: "/mnt/r",
-        src: "//192.168.1.106/r",
-        opts: "credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid=1000,file_mode=0664,dir_mode=0775,vers=3.0,sec=ntlmssp,nodfs"
+        src: "//{{ file_server_ip }}/r"
       }
 
 - name: Restrict Samba to SMBv2 and SMBv3 only
@@ -66,4 +61,3 @@
       [global]
       server min protocol = SMB2
       server max protocol = SMB3
-  notify: restart samba
