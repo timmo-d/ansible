@@ -15,7 +15,7 @@
 
 - name: Ensure config directories exist
   ansible.builtin.file:
-    path: "{{ item.config_dir }}"
+    path: "{{ item.config_dir }}/qBittorrent"
     state: directory
     owner: "{{ item.name }}"
     group: "{{ media_group }}"
@@ -25,7 +25,7 @@
 - name: Restore 'data'-configuration from config template
   template:
     src: "qbittorrent.qBittorrent.conf.j2"
-    dest: "{{ qbittorrent_instances[0].config_dir }}/qbittorrent.conf"
+    dest: "{{ qbittorrent_instances[0].config_dir }}/qBittorrent/qbittorrent.conf"
     owner: "{{ qbittorrent_instances[0].name }}"
     group: "{{ media_group }}"
     mode: '0644'
@@ -33,7 +33,7 @@
 - name: Restore 'whisparr'-configuration from config template
   template:
     src: "qbittorrent.qBittorrent-r.conf.j2"
-    dest: "{{ qbittorrent_instances[1].config_dir }}/qbittorrent.conf"
+    dest: "{{ qbittorrent_instances[1].config_dir }}/qBittorrent/qbittorrent.conf"
     owner: "{{ qbittorrent_instances[1].name }}"
     group: "{{ media_group }}"
     mode: '0644'
@@ -41,7 +41,7 @@
 - name: Restore other common configuration from config template
   template:
     src: "qbittorrent.categories.json.j2"
-    dest: "{{ item.config_dir }}/categories.json"
+    dest: "{{ item.config_dir }}/qBittorrent/categories.json"
     owner: "{{ item.name }}"
     group: "{{ media_group }}"
     mode: '0644'
