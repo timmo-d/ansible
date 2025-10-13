@@ -5,6 +5,8 @@ After=network.target
 [Service]
 User=qbittorrent1
 Group=media
+Environment=XDG_CONFIG_HOME=/home/qbittorrent1/.config
+WorkingDirectory=/home/qbittorrent1
 ExecStart=/usr/bin/qbittorrent-nox --webui-port=8080
 Restart=on-failure
 

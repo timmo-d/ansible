@@ -3,10 +3,13 @@ Description=qBittorrent-nox instance for qbittorrent2
 After=network.target
 
 [Service]
-User=qbittorrent1
+User=qbittorrent2
 Group=media
+Environment=XDG_CONFIG_HOME=/home/qbittorrent2/.config
+WorkingDirectory=/home/qbittorrent2
 ExecStart=/usr/bin/qbittorrent-nox --webui-port=8081
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
+
