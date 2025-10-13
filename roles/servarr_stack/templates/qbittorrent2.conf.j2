@@ -5,22 +5,22 @@ FileLogger\Backup=true
 FileLogger\DeleteOld=true
 FileLogger\Enabled=true
 FileLogger\MaxSizeBytes=66560
-FileLogger\Path=/home/{{ qbittorrent_instances[0].name }}/.local/share/qBittorrent/logs
+FileLogger\Path=/home/{{ qbittorrent_instances[1].name }}/.local/share/qBittorrent/logs
 
 [BitTorrent]
 Session\AddExtensionToIncompleteFiles=true
 Session\AlternativeGlobalDLSpeedLimit=0
 Session\AlternativeGlobalUPSpeedLimit=0
 Session\AnonymousModeEnabled=true
-Session\DefaultSavePath=/mnt/data/torrents
+Session\DefaultSavePath=/mnt/r/torrents
 Session\DisableAutoTMMByDefault=false
 Session\ExcludedFileNames=
 Session\GlobalMaxInactiveSeedingMinutes=1
 Session\GlobalMaxSeedingMinutes=1
-Session\Port=42327
+Session\Port=42328
 Session\Preallocation=true
 Session\QueueingSystemEnabled=false
-Session\TempPath=/mnt/data/torrents/temp
+Session\TempPath=/mnt/r/torrents/temp
 Session\TempPathEnabled=true
 
 [Core]
