@@ -40,8 +40,8 @@ huntarr_service_path: "/etc/systemd/system/huntarr.service"
 qbittorrent_instances:
   - name: qbittorrent1
     port: 8080
-    config_dir: /home/qbittorrent1/.config/qBittorrent
+    #config_dir: /home/qbittorrent1/.config/qBittorrent
   - name: qbittorrent2
     port: 8081
-    config_dir: /home/qbittorrent2/.config/qBittorrent
+    #config_dir: /home/qbittorrent2/.config/qBittorrent
 
