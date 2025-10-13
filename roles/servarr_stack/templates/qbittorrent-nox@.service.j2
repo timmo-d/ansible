@@ -1,11 +1,11 @@
 [Unit]
-Description=qBittorrent-nox instance for %i
+Description=qBittorrent-nox instance for {{ item.name }}
 After=network.target
 
 [Service]
-User=%i
+User={{ item.name }}
 Group={{ media_group }}
-ExecStart=/usr/bin/qbittorrent-nox --profile=/home/%i/.config/qBittorrent
+ExecStart=/usr/bin/qbittorrent-nox --profile=/home/{{ item.name }}/.config/qBittorrent -d --webui-port={{ item.port }}
 Restart=on-failure
 
 [Install]
