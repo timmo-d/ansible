@@ -17,15 +17,15 @@ table inet filter {
     ip saddr 192.168.1.0/24 tcp dport { 22, 8989, 7878, 8686, 9696, 6969, 8080, 8081, 8787, 9705, 8888 } accept
 
     # Allow inbound qBittorrent and custom tracker ports
-    ip tcp dport { 42327, 42328 } accept
-    ip udp dport { 42327, 42328 } accept
+    tcp dport { 42327, 42328 } accept
+    udp dport { 42327, 42328 } accept
 
     # Allow ICMP (ping)
     ip protocol icmp icmp type echo-reply accept
     ip6 nexthdr icmpv6 icmpv6 type echo-reply accept
 
     # Log and drop everything else
-    log prefix "nftables INPUT DROP: " flags all
+    log prefix "nftables INPUT DROP: " flags all limit rate 10/second
     counter drop
   }
 
@@ -68,14 +68,15 @@ table inet filter {
     # DNS over HTTPS uses port 443 (already allowed)
 
     # Allow DHCP (client side)
-    udp sport 68 udp dport 67 accept
+    #udp sport 68 udp dport 67 accept
 
     # Allow outbound qBittorrent traffic
-    tcp sport { 42327, 42328, 6771, 49223, 1337, 6969, 451 } accept
-    udp sport { 42327, 42328, 6771, 49223, 1337, 6969, 451 } accept
+    tcp dport 1024-65535 accept
+    #tcp sport { 42327, 42328, 6771, 49223, 1337, 6969, 451 } accept
+    #udp sport { 42327, 42328, 6771, 49223, 1337, 6969, 451 } accept
 
     # Log and drop everything else
-    log prefix "nftables OUTPUT DROP: " flags all
+    log prefix "nftables OUTPUT DROP: " flags all limit rate 10/second
     counter drop
   }
 
