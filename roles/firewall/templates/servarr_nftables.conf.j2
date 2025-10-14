@@ -71,8 +71,8 @@ table inet filter {
     #udp sport 68 udp dport 67 accept
 
     # Allow outbound qBittorrent traffic
-    tcp dport 1024-65535 accept
-    #tcp sport { 42327, 42328, 6771, 49223, 1337, 6969, 451 } accept
+    # tcp dport 1024-65535 accept
+    tcp sport { 42327, 42328, 6771, 49223, 1337, 6969, 451 } accept
     #udp sport { 42327, 42328, 6771, 49223, 1337, 6969, 451 } accept
 
     # Log and drop everything else
