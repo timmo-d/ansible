@@ -7,24 +7,18 @@
 - name: Install essential packages for Ubuntu 24.04 minimal server
   ansible.builtin.apt:
     name:
-      #- build-essential
-      - curl
-      #- wget
-      - net-tools
-      #- iproute2
-      #- gnupg
-      - ca-certificates
-      - software-properties-common
-      - unzip
-      - zip
+      #- curl
+      #- net-tools
+      #- ca-certificates
+      #- software-properties-common
+      #- unzip
+      #- zip
       - htop
       - nano
       - git
       - rsyslog
-      #- lsof
       - bash-completion
       - openssh-server
-      - htop
     state: present
     update_cache: yes
   tags: [essential]
