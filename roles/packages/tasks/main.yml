@@ -15,10 +15,10 @@
       #- zip
       - htop
       - nano
-      - git
+      #- git
       - rsyslog
       - bash-completion
-      - openssh-server
+      #- openssh-server
     state: present
     update_cache: yes
   tags: [essential]
