@@ -1,11 +1,11 @@
 
-- name: Update and upgrade APT packages
-  ansible.builtin.apt:
-    update_cache: yes
-    upgrade: dist
-    force_apt_get: yes
-    dpkg_options: 'force-confdef,force-confold'
-  tags: [update]
+#- name: Update and upgrade APT packages
+#  ansible.builtin.apt:
+#    update_cache: yes
+#    upgrade: dist
+#    force_apt_get: yes
+#    dpkg_options: 'force-confdef,force-confold'
+#  tags: [update]
 
 
 - name: Install essential packages for Ubuntu 24.04 minimal server
