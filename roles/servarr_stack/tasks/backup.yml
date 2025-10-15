@@ -1,10 +1,12 @@
 - name: Ensure required system packages are installed
   apt:
     name:
-      - crontab
+      - cron
     state: present
     update_cache: true
-  become: true
+  notify:
+    - Enable cron service
+    - Start cron service
 
 - name: Create Servarr backup script
   ansible.builtin.template:

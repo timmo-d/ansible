@@ -10,3 +10,13 @@
   service:
     name: smbd
     state: restarted
+
+- name: Enable cron service
+  ansible.builtin.systemd:
+    name: cron
+    enabled: yes
+
+- name: Start cron service
+  ansible.builtin.systemd:
+    name: cron
+    state: started
