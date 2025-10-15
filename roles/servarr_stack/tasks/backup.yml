@@ -8,18 +8,35 @@
     - Enable cron service
     - Start cron service
 
-- name: Create Servarr backup script
-  ansible.builtin.template:
-    src: servarr_backup.sh.j2
-    dest: /usr/local/bin/servarr_backup.sh
+- name: Create cron job in /etc/cron.d
+  ansible.builtin.copy:
+    dest: /etc/cron.d/servarr_backup.sh
+    content: "0 2 * * * root /usr/local/bin/servarr_backup.sh\n"
     owner: root
     group: root
-    mode: '0755'
+    mode: '0644'
+  become: yes
 
-- name: Schedule daily Servarr backup at 2 AM
-  ansible.builtin.cron:
-    name: "Daily Servarr backup"
-    minute: "0"
-    hour: "2"
-    user: root
-    job: "/usr/local/bin/servarr_backup.sh"
+- name: Ensure script is executable
+  ansible.builtin.file:
+    path: /usr/local/bin/servarr_backup.sh
+    mode: '0755'
+    owner: root
+    group: root
+  become: yes
+
+#- name: Create Servarr backup script
+#  ansible.builtin.template:
+#    src: servarr_backup.sh.j2
+#    dest: /etc/cron.d/servarr_backup.sh
+#    owner: root
+#    group: root
+#    mode: '0755'
+
+#- name: Schedule daily Servarr backup at 2 AM
+#  ansible.builtin.cron:
+#    name: "Daily Servarr backup"
+#    minute: "0"
+#    hour: "2"
+#    user: root
+#    job: "/usr/local/bin/servarr_backup.sh"
