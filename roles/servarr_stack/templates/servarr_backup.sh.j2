@@ -1,19 +1,23 @@
 #!/bin/bash
 
 {% for item in servarr_apps %}
-# Backup config for {{ item }}
-cp "{{ backup_base_path }}/{{ item }}/default/config.xml" "/mnt/data/servarr/{{ item }}/config.xml"
-chown {{ item }}:{{ media_group }} "/mnt/data/servarr/{{ item }}/config.xml"
-chmod 0644 "/mnt/data/servarr/{{ item }}/config.xml"
+    # Backup config for {{ item }}
+    echo "Backing up {{ item }} config file."
+    cp "{{ backup_base_path }}/{{ item }}/default/config.xml" "/mnt/data/servarr/{{ item }}/config.xml"
+    chown {{ item }}:{{ media_group }} "/mnt/data/servarr/{{ item }}/config.xml"
+    chmod 0644 "/mnt/data/servarr/{{ item }}/config.xml"
 
-# Backup DB for {{ item }}
-cp "{{ backup_base_path }}/{{ item }}/default/{{ item }}.db" "/mnt/data/servarr/{{ item }}/{{ item }}.db"
-chown {{ item }}:{{ media_group }} "/mnt/data/servarr/{{ item }}/{{ item }}.db"
-chmod 0644 "/mnt/data/servarr/{{ item }}/{{ item }}.db"
+    # Backup DB for {{ item }}
+    echo "Backing up {{ item }} database file."
+    cp "{{ backup_base_path }}/{{ item }}/default/{{ item }}.db" "/mnt/data/servarr/{{ item }}/{{ item }}.db"
+    chown {{ item }}:{{ media_group }} "/mnt/data/servarr/{{ item }}/{{ item }}.db"
+    chmod 0644 "/mnt/data/servarr/{{ item }}/{{ item }}.db"
 {% endfor %}
 
 # Rsync Huntarr
+echo "Backing up Huntarr config file."
 rsync -a /home/{{ huntarr_user }}/.config/huntarr/ /mnt/data/servarr/huntarr/
 
 # Rsync Kodi
+echo "Backing up Kodi userdata directory."
 rsync -a /home/kodi/.var/app/tv.kodi.Kodi/data/userdata/ /mnt/data/servarr/kodi/userdata/
