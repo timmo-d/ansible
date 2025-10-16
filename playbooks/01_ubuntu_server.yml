@@ -11,7 +11,7 @@
     - community.general
 
   roles:
-    - role: packages            # Install essential packages
+    #- role: packages            # Install essential packages
     - role: time_sync
     - role: network_security
     - role: ssh_hardening          # requires playbook restart
