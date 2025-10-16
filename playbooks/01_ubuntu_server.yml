@@ -2,8 +2,13 @@
 - name: Provision New Ubuntu 24.04 Server
   hosts: all
   become: true
+  become_method: sudo
+  become_user: root
+
   vars_files:
     - group_vars/all.yml
+  collections:
+    - community.general
 
   roles:
     - role: packages            # Install essential packages
@@ -18,18 +23,3 @@
     - role: session_timeouts
     - role: packages_patching
     - role: compliance_lockdown
-
-    # OLD ROLES TO POTENTIALLY KEEP
-    #- role: users               # Create admin user and SSH keypair
-    
-
-    
-    # OLD ROLES, TO BE REMOVED
-    #- role: ubuntu_pro_attach   # Attach Ubuntu Pro if not already, and enable USG
-    #  vars:
-    #    ubuntu_pro_token: "{{ ubuntu_pro_token }}"
-    #- role: ssh                 # Harden SSH configuration
-    #- role: hardening       # Apply full STIG controls
-    #- role: firewall        # Install UFW and configure default rules.
-    #- role: ssh             # Harden SSH implementation if not doone during provisioning.
-    #- role: common              # Update apt cach and packages, and set timezone
