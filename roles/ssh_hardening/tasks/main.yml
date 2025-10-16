@@ -12,5 +12,5 @@
     owner: root
     group: root
     mode: "0600"
-  notify: Validate and restart sshd safely
+  notify: restart sshd
   tags: [ssh, ssh_hardening]
