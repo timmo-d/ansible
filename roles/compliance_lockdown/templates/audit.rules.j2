@@ -1,0 +1,24 @@
+## Wazuh-compatible audit rules
+
+## Identity files
+-w /etc/passwd -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/shadow -p wa -k identity
+
+## Monitor sudo usage
+-w /var/log/sudo.log -p wa -k sudo_log
+
+## Monitor permission changes
+-a always,exit -F arch=b64 -S chmod,chown,fchmod,fchown -F auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch=b32 -S chmod,chown,fchmod,fchown -F auid>=1000 -F auid!=4294967295 -k perm_mod
+
+## Monitor kernel module loading/unloading
+-a always,exit -F arch=b64 -S init_module,delete_module -F auid>=1000 -F auid!=4294967295 -k modules
+-a always,exit -F arch=b32 -S init_module,delete_module -F auid>=1000 -F auid!=4294967295 -k modules
+
+## Monitor audit configuration changes
+-w /etc/audit/ -p wa -k auditconfig
+
+## Make audit rules immutable
+-e 2
+``

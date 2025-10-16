@@ -1,1 +1,4 @@
----
+auditd_conf_path: /etc/audit/auditd.conf
+audit_rules_path: /etc/audit/rules.d/audit.rules
+auditd_rules_immutable: tru
+

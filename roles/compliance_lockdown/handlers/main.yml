@@ -1,4 +1,4 @@
----
-- name: Reload rules (if mutable)
-  ansible.builtin.command: augenrules --load
-  changed_when: false
+- name: restart auditd
+  service:
+    name: auditd
+    state: restarted

@@ -1,4 +1,27 @@
----
+
+- name: Ensure auditd is installed
+  package:
+    name: audit
+    state: present
+
+- name: Deploy auditd.conf template
+  template:
+    src: templates/auditd.conf.j2
+    dest: "{{ auditd_conf_path }}"
+    owner: root
+    group: root
+    mode: '0640'
+  notify: restart auditd
+
+- name: Deploy audit.rules template
+  template:
+    src: templates/audit.rules.j2
+    dest: "{{ audit_rules_path }}"
+    owner: root
+    group: root
+    mode: '0640'
+  notify: restart auditd
+
 - name: Set permissions on audit configs
   ansible.builtin.file:
     path: "{{ item }}"
@@ -6,18 +29,8 @@
     group: root
     mode: "0640"
   loop:
-    - /etc/audit/auditd.conf
+    - "{{ auditd_conf_path }}"
     - /etc/audit/rules.d
-  tags: [lockdown, audit]
-
-- name: Ensure audit rule immutability (-e 2)
-  ansible.builtin.lineinfile:
-    path: /etc/audit/rules.d/audit.rules
-    create: true
-    line: "-e 2"
-    state: present
-  when: auditd_rules_immutable
-  notify: Reload rules (if mutable)
   tags: [lockdown, audit]
 
 - name: Secure audit log file and directory
