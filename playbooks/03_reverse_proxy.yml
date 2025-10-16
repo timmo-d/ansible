@@ -6,7 +6,9 @@
     - group_vars/all.yml
 
   roles:
-    - role: nginx           # Hardened reverse proxy on loopback
-    - role: cloudflared     # Secure outbound tunnel to Cloudflare
-
+    #- role: nginx           # Hardened reverse proxy on loopback
+    #- role: cloudflared     # Secure outbound tunnel to Cloudflare
+    - role: firewall                # Install nftables and configure
+      vars:
+        ruleset: "reverse_proxy"
 
