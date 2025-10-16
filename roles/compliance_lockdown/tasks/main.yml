@@ -1,7 +1,7 @@
 
 - name: Ensure auditd is installed
   package:
-    name: audit
+    name: auditd
     state: present
 
 - name: Deploy auditd.conf template
