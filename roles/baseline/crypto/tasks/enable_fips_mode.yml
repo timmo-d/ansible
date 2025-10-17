@@ -14,8 +14,12 @@
 
 - name: Set fact for Ubuntu Pro attachment status
   set_fact:
-    pro_attached: "{{ (pro_status_attach.stdout | from_json).status == 'attached' }}"
+    pro_attached: "{{ (pro_status_attach.stdout | from_json).account is defined }}"
   when: pro_status_attach.stdout is defined
+
+- name: Debug | Parsed Ubuntu Pro status
+  debug:
+    var: pro_status_attach.stdout | from_json
 
 - name: Attach Ubuntu Pro subscription
   command: pro attach {{ pro_token }}
