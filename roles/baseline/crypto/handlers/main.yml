@@ -1,3 +1,12 @@
+##############################################
+#🔍 Why it's set to 900 seconds:
+#
+# 1. FIPS-related kernel changes may cause longer boot times.
+# 2. Slow systems or virtual machines might take longer to shut down and restart.
+# 3. Post-reboot services (like SSH, networking, or cloud-init) may take time to stabilize before Ansible can reconnect.
+# 4. Safety margin: It prevents premature failure in automation pipelines.
+###############################################
+
 - name: Reboot if FIPS enabled
   become: true
   ansible.builtin.reboot:
