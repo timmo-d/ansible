@@ -1,0 +1,12 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | authz | disable_su_unless_sudo.yml
+        # Guarded by variable: enable_disable_su_unless_sudo
+        # -------------------------------------------------------------------
+
+- name: Restrict su to sudo group via pam_wheel
+  lineinfile:
+    path: /etc/pam.d/su
+    regexp: '^#?auth\s+required\s+pam_wheel.so use_uid group=sudo'
+    line: 'auth required pam_wheel.so use_uid group=sudo'
+    backup: yes

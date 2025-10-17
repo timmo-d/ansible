@@ -1,0 +1,18 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | access_control | world_writable_dirs_sticky.yml
+        # Guarded by variable: enable_world_writable_dirs_sticky
+        # -------------------------------------------------------------------
+
+- name: Find local world-writable directories (require sticky bit)
+  shell: |
+    df --local -P | awk 'NR!=1 {print $6}' | xargs -I '{}' find '{}' -xdev -type d -perm -0002
+  register: wwd
+  changed_when: false
+
+- name: Set sticky bit on world-writable directories
+  file:
+    path: "{{ item }}"
+    mode: a+t
+  loop: "{{ wwd.stdout_lines }}"
+  when: wwd.stdout | length > 0

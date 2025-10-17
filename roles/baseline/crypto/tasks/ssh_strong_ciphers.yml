@@ -1,0 +1,14 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | crypto | ssh_strong_ciphers.yml
+        # Guarded by variable: enable_ssh_strong_ciphers
+        # -------------------------------------------------------------------
+
+- name: Deploy hardened sshd_config
+  template:
+    src: "{{ role_path }}/crypto/templates/sshd_config.j2"
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: '0600'
+  notify: restart_sshd

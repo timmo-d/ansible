@@ -1,0 +1,15 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | system_config | vendor_supported_release.yml
+        # Guarded by variable: enable_vendor_supported_release
+        # -------------------------------------------------------------------
+
+- name: Check vendor-supported release (informational)
+  shell: |
+    . /etc/lsb-release && echo "$DISTRIB_DESCRIPTION"
+  register: lsb
+  changed_when: false
+
+- name: Display release information
+  debug:
+    msg: "Detected release: {{ lsb.stdout }} — Ensure this is a vendor-supported 24.04 LTS build."

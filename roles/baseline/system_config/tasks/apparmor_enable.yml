@@ -1,0 +1,23 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | system_config | apparmor_enable.yml
+        # Guarded by variable: enable_apparmor_enable
+        # -------------------------------------------------------------------
+
+- name: Install AppArmor packages
+  apt:
+    name: [apparmor, apparmor-utils]
+    state: present
+    update_cache: yes
+
+- name: Ensure AppArmor service is enabled and running
+  systemd:
+    name: apparmor
+    enabled: yes
+    state: started
+
+- name: Verify AppArmor status (reporting only)
+  command: aa-status
+  register: aa
+  changed_when: false
+  failed_when: false

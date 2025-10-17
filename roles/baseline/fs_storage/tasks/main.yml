@@ -1,0 +1,21 @@
+---
+# fs_storage control group — included by baseline/tasks/main.yml
+
+- name: Run secure mounts
+  import_tasks: secure_mounts.yml
+  when: enable_secure_mounts
+
+
+- name: Run encrypt swap and tmp
+  import_tasks: encrypt_swap_and_tmp.yml
+  when: enable_encrypt_swap_and_tmp
+
+
+- name: Run aide integrity
+  import_tasks: aide_integrity.yml
+  when: enable_aide_integrity
+
+
+- name: Run aide periodic check
+  import_tasks: aide_periodic_check.yml
+  when: enable_aide_periodic_check

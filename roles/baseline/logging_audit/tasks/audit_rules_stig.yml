@@ -1,0 +1,14 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | logging_audit | audit_rules_stig.yml
+        # Guarded by variable: enable_audit_rules_stig
+        # -------------------------------------------------------------------
+
+- name: Deploy STIG-aligned audit rules
+  template:
+    src: "{{ role_path }}/logging_audit/templates/audit.rules.j2"
+    dest: /etc/audit/rules.d/stig.rules
+    owner: root
+    group: root
+    mode: '0640'
+  notify: restart_auditd

@@ -1,0 +1,13 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | authz | pam_common_auth.yml
+        # Guarded by variable: enable_pam_common_auth
+        # -------------------------------------------------------------------
+
+- name: Require pwquality during password changes (common-password)
+  lineinfile:
+    path: /etc/pam.d/common-password
+    regexp: '^password\s+requisite\s+pam_pwquality.so'
+    line: 'password requisite pam_pwquality.so try_first_pass local_users_only retry=3 enforce_for_root'
+    create: yes
+    backup: yes

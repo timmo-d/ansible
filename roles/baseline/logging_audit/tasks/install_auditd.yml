@@ -1,0 +1,17 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | logging_audit | install_auditd.yml
+        # Guarded by variable: enable_install_auditd
+        # -------------------------------------------------------------------
+
+- name: Install auditd and plugins
+  apt:
+    name: [auditd, audispd-plugins]
+    state: present
+    update_cache: yes
+
+- name: Enable and start auditd service
+  systemd:
+    name: auditd
+    enabled: yes
+    state: started

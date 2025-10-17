@@ -1,0 +1,35 @@
+---
+- name: Remove insecure network packages
+  ansible.builtin.package:
+    name: "{{ remove_insecure_network_pkgs }}"
+    state: absent
+  tags: [network_security]
+
+#- name: Ensure ufw is installed
+#  ansible.builtin.package:
+#    name: ufw
+#    state: present
+#  tags: [network_security]
+
+#- name: Allow SSH before enabling UFW
+#  community.general.ufw:
+#    rule: allow
+#    port: "{{ ufw_ssh_port }}"
+#    proto: tcp
+#  when: ufw_enable and ufw_allow_ssh
+#  tags: [network_security]
+
+#- name: Enable UFW and set default inbound policy
+#  community.general.ufw:
+#    state: enabled
+#    direction: incoming
+#    policy: "{{ ufw_default_incoming }}"
+#  when: ufw_enable
+#  tags: [network_security]
+
+#- name: Ensure UFW outgoing policy
+#  community.general.ufw:
+#    direction: outgoing
+#    policy: "{{ ufw_default_outgoing }}"
+#  when: ufw_enable
+#  tags: [network_security]

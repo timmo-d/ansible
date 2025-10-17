@@ -1,0 +1,26 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | authz | pam_lockout.yml
+        # Guarded by variable: enable_pam_lockout
+        # -------------------------------------------------------------------
+
+- name: Ensure PAM modules present
+  apt:
+    name: [libpam-modules, libpam-pwquality]
+    state: present
+
+- name: Enforce login lockouts (common-auth)
+  lineinfile:
+    path: /etc/pam.d/common-auth
+    insertafter: BOF
+    line: 'auth required pam_faillock.so preauth silent audit deny=5 unlock_time=900'
+    create: yes
+    backup: yes
+
+- name: Enforce account lockouts (common-account)
+  lineinfile:
+    path: /etc/pam.d/common-account
+    insertafter: BOF
+    line: 'account required pam_faillock.so'
+    create: yes
+    backup: yes

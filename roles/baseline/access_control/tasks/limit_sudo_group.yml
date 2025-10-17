@@ -1,0 +1,18 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | access_control | limit_sudo_group.yml
+        # Guarded by variable: enable_limit_sudo_group
+        # -------------------------------------------------------------------
+
+- name: Get current sudo group members
+  shell: "getent group sudo | cut -d: -f4"
+  register: sudo_members
+  changed_when: false
+
+- name: Remove users not in the approved sudo list
+  user:
+    name: "{{ item }}"
+    groups: "{{ (item in approved_sudo_users) | ternary('sudo','') }}"
+    append: no
+  loop: "{{ sudo_members.stdout.split(',') if sudo_members.stdout else [] }}"
+  when: item and (item not in approved_sudo_users)

@@ -1,0 +1,21 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | fs_storage | secure_mounts.yml
+        # Guarded by variable: enable_secure_mounts
+        # -------------------------------------------------------------------
+
+- name: Ensure /tmp is mounted with nodev,nosuid,noexec (tmpfs)
+  mount:
+    path: /tmp
+    src: tmpfs
+    fstype: tmpfs
+    opts: defaults,rw,nosuid,nodev,noexec,relatime
+    state: mounted
+
+- name: Ensure /home has nodev (if separate)
+  mount:
+    path: /home
+    state: mounted
+    fstype: auto
+    opts: defaults,nodev
+  ignore_errors: yes

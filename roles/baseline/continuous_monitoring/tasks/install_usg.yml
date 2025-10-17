@@ -1,0 +1,25 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | continuous_monitoring | install_usg.yml
+        # Guarded by variable: enable_install_usg
+        # -------------------------------------------------------------------
+
+- name: Install Ubuntu Security Guide (USG)
+  apt:
+    name: ubuntu-security-guide
+    state: present
+    update_cache: yes
+
+- name: Optionally apply DISA-STIG baseline (may be disruptive)
+  command: usg fix disa_stig
+  when: usg_apply_fix | default(false)
+
+- name: Audit DISA-STIG rules with USG
+  command: usg audit disa_stig
+  register: usg_audit
+  changed_when: false
+
+- name: Save USG audit report
+  copy:
+    dest: /var/tmp/usg_audit.txt
+    content: "{{ usg_audit.stdout }}"

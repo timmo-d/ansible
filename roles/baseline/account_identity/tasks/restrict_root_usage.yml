@@ -1,0 +1,19 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | account_identity | restrict_root_usage.yml
+        # Guarded by variable: enable_restrict_root_usage
+        # -------------------------------------------------------------------
+
+- name: Disable remote root login via SSH
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+    create: yes
+    backup: yes
+  notify: restart_sshd
+
+- name: Ensure sudo is installed
+  apt:
+    name: sudo
+    state: present

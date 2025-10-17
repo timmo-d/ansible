@@ -1,0 +1,4 @@
+
+{% if rsyslog_remote_host %}
+*.* @@{{ rsyslog_remote_host }}:{{ rsyslog_remote_port }}
+{% endif %}

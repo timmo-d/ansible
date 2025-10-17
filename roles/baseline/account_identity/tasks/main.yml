@@ -1,0 +1,21 @@
+---
+# account_identity control group — included by baseline/tasks/main.yml
+
+- name: Run enforce password policy
+  import_tasks: enforce_password_policy.yml
+  when: enable_enforce_password_policy
+
+
+- name: Run disable blank passwords
+  import_tasks: disable_blank_passwords.yml
+  when: enable_disable_blank_passwords
+
+
+- name: Run restrict root usage
+  import_tasks: restrict_root_usage.yml
+  when: enable_restrict_root_usage
+
+
+- name: Run pki auth mapping
+  import_tasks: pki_auth_mapping.yml
+  when: enable_pki_auth_mapping

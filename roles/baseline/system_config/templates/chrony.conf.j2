@@ -1,0 +1,9 @@
+
+{% for srv in chrony_servers %}
+server {{ srv }} iburst
+{% endfor %}
+driftfile /var/lib/chrony/chrony.drift
+makestep 1.0 3
+rtcsync
+keyfile /etc/chrony/chrony.keys
+logdir /var/log/chrony

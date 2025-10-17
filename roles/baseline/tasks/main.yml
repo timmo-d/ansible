@@ -1,16 +1,45 @@
-- name: Harden SSH configuration
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-    - { regexp: '^PermitRootLogin', line: 'PermitRootLogin no' }
-    - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication yes' }
-    - { regexp: '^X11Forwarding', line: 'X11Forwarding no' }
+---
+# Baseline wrapper: includes each category in order
 
-- name: Restart SSH
-  become: true
-  service:
-    name: ssh
-    state: restarted
+- name: Include account_identity controls
+  import_tasks: account_identity/tasks/main.yml
+
+
+- name: Include access_control controls
+  import_tasks: access_control/tasks/main.yml
+
+
+- name: Include authz controls
+  import_tasks: authz/tasks/main.yml
+
+
+- name: Include crypto controls
+  import_tasks: crypto/tasks/main.yml
+
+
+- name: Include logging_audit controls
+  import_tasks: logging_audit/tasks/main.yml
+
+
+- name: Include system_config controls
+  import_tasks: system_config/tasks/main.yml
+
+
+- name: Include patch_vuln controls
+  import_tasks: patch_vuln/tasks/main.yml
+
+
+- name: Include network_security controls
+  import_tasks: network_security/tasks/main.yml
+
+
+- name: Include fs_storage controls
+  import_tasks: fs_storage/tasks/main.yml
+
+
+- name: Include software_appcontrol controls
+  import_tasks: software_appcontrol/tasks/main.yml
+
+
+- name: Include continuous_monitoring controls
+  import_tasks: continuous_monitoring/tasks/main.yml

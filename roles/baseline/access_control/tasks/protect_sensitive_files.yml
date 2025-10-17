@@ -1,0 +1,17 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | access_control | protect_sensitive_files.yml
+        # Guarded by variable: enable_protect_sensitive_files
+        # -------------------------------------------------------------------
+
+- name: Enforce secure ownership/permissions on critical auth files
+  file:
+    path: "{{ item.path }}"
+    owner: root
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: '/etc/shadow',   mode: '0600' }
+    - { path: '/etc/gshadow',  mode: '0600' }
+    - { path: '/etc/passwd',   mode: '0644' }
+    - { path: '/etc/group',    mode: '0644' }

@@ -1,0 +1,8 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | network_security | ssh_hardening.yml
+        # Guarded by variable: enable_ssh_hardening
+        # -------------------------------------------------------------------
+
+- name: Include SSH hardening tasks from crypto category
+  import_tasks: ../crypto/tasks/ssh_strong_ciphers.yml

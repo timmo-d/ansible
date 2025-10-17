@@ -1,0 +1,17 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | logging_audit | logrotate_hardening.yml
+        # Guarded by variable: enable_logrotate_hardening
+        # -------------------------------------------------------------------
+
+- name: Ensure logrotate installed
+  apt:
+    name: logrotate
+    state: present
+
+- name: Set secure permissions on logrotate configuration
+  file:
+    path: /etc/logrotate.conf
+    owner: root
+    group: root
+    mode: '0644'

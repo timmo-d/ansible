@@ -1,0 +1,100 @@
+
+---
+# Global feature switches (per-control) — set to false to skip a control area.
+# Account & Identity
+enable_enforce_password_policy: true
+enable_disable_blank_passwords: true
+enable_restrict_root_usage: true
+enable_pki_auth_mapping: true
+
+# Access Control
+enable_limit_sudo_group: true
+enable_protect_sensitive_files: true
+enable_world_writable_dirs_sticky: true
+
+# Authentication & Authorization
+enable_pam_lockout: true
+enable_pam_common_auth: true
+enable_disable_su_unless_sudo: true
+
+# Crypto
+enable_enable_fips_mode: false       # requires Ubuntu Pro token
+enable_ssh_strong_ciphers: true
+enable_disable_weak_protocols: true
+
+# Logging & Auditing
+enable_install_auditd: true
+enable_audit_rules_stig: true
+enable_rsyslog_remote: false
+enable_logrotate_hardening: true
+enable_auditd_log_group_root: true
+
+# System Configuration
+enable_disable_unnecessary_services: true
+enable_secure_boot_settings: true
+enable_kernel_hardening_sysctl: true
+enable_motd_banners: true
+enable_time_sync: true
+enable_blacklist_unused_filesystems: true
+enable_apparmor_enable: true
+enable_vendor_supported_release: true
+
+# Patch & Vulnerability
+enable_enable_unattended_upgrades: true
+enable_verify_package_signatures: true
+
+# Network Security
+enable_ufw_firewall: true
+enable_ssh_hardening: true
+enable_disable_unused_protocols: true
+
+# File System & Storage
+enable_secure_mounts: true
+enable_encrypt_swap_and_tmp: false
+enable_aide_integrity: true
+enable_aide_periodic_check: true
+
+# Software/Application Control
+enable_remove_unnecessary_packages: true
+enable_restrict_repos: false
+
+# Continuous Monitoring
+enable_install_usg: true
+enable_oscap_scan: true
+enable_banner_motd_privacy: true
+
+# ---- Policy knobs ----
+# SSH & Crypto
+ssh_port: 22
+ssh_password_auth: false
+ssh_ciphers: 'aes256-gcm@openssh.com,chacha20-poly1305@openssh.com'
+ssh_macs: 'hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com'
+ssh_kex: 'curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512'
+
+# Password policy (pwquality/login.defs)
+pw_minlen: 14
+pw_minclass: 4
+pw_dcredit: -1
+pw_ucredit: -1
+pw_lcredit: -1
+pw_ocredit: -1
+pass_max_days: 60
+pass_min_days: 1
+pass_warn_age: 7
+default_umask: 027
+
+# GRUB/sysctl/time
+grub_cmdline_linux: 'quiet splash audit=1 audit_backlog_limit=8192'
+chrony_servers: ['pool.ntp.org']
+bootloader_password_pbkdf2: ""
+
+# Logging
+rsyslog_remote_host: ""
+rsyslog_remote_port: 514
+
+# Compliance tools
+pro_token: ""          # Ubuntu Pro token for FIPS
+usg_apply_fix: false
+
+# Repositories
+approved_sources_list: ""

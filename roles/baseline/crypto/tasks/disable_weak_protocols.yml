@@ -1,0 +1,13 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | crypto | disable_weak_protocols.yml
+        # Guarded by variable: enable_disable_weak_protocols
+        # -------------------------------------------------------------------
+
+- name: Force SSH Protocol 2 only
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^Protocol'
+    line: 'Protocol 2'
+    create: yes
+  notify: restart_sshd

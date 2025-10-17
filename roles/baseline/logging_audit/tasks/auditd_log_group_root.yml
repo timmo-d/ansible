@@ -1,0 +1,21 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | logging_audit | auditd_log_group_root.yml
+        # Guarded by variable: enable_auditd_log_group_root
+        # -------------------------------------------------------------------
+
+- name: Ensure audit log group is root in auditd.conf
+  lineinfile:
+    path: /etc/audit/auditd.conf
+    regexp: '^log_group\s*='
+    line: 'log_group = root'
+    create: yes
+  notify: restart_auditd
+
+- name: Ensure audit log files group owner is root
+  file:
+    path: /var/log/audit
+    state: directory
+    owner: root
+    group: root
+    recurse: yes

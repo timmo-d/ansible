@@ -1,0 +1,14 @@
+# V-ID ↔ Task Mapping (Ubuntu 24.04 LTS STIG)
+
+| V-ID | Rule ID | Title | Category | Task Path | Enable Var | Notes |
+|------|---------|-------|----------|-----------|------------|-------|
+| V-270744 | UBTU-24-600030 | Implement NIST FIPS-validated cryptography | crypto | `roles/baseline/crypto/tasks/enable_fips_mode.yml` | `enable_enable_fips_mode` | Requires Ubuntu Pro; sets fips=1 and enables fips-updates |
+| V-270736 | UBTU-24-?????? | Map authenticated identity for PKI-based auth | account_identity | `roles/baseline/account_identity/tasks/pki_auth_mapping.yml` | `enable_pki_auth_mapping` | Site-specific SSSD/PKI realm details required |
+| V-270748 | UBTU-24-?????? | Limit sudo group to users needing security functions | access_control | `roles/baseline/access_control/tasks/limit_sudo_group.yml` | `enable_limit_sudo_group` | Enforces approved_sudo_users list |
+| V-270717 | UBTU-24-?????? | No unattended/automatic SSH login | crypto | `roles/baseline/crypto/tasks/ssh_strong_ciphers.yml` | `enable_ssh_strong_ciphers` | Ensures PermitEmptyPasswords no; key-based auth; root login disabled |
+| V-270714 | UBTU-24-?????? | Disallow PAM accounts with blank/null passwords | account_identity | `roles/baseline/account_identity/tasks/disable_blank_passwords.yml` | `enable_disable_blank_passwords` | Locks accounts with empty password fields |
+| V-270656 | UBTU-24-100400 | auditd package must be installed | logging_audit | `roles/baseline/logging_audit/tasks/install_auditd.yml` | `enable_install_auditd` | Installs & enables auditd |
+| V-270829 | UBTU-24-901350 | Audit log files group ownership restricted | logging_audit | `roles/baseline/logging_audit/tasks/auditd_log_group_root.yml` | `enable_auditd_log_group_root` | Sets log_group=root & fixes /var/log/audit perms |
+| V-270651 | UBTU-24-100120 | AIDE periodic file integrity check ≤30 days | fs_storage | `roles/baseline/fs_storage/tasks/aide_periodic_check.yml` | `enable_aide_periodic_check` | Adds monthly cron check for AIDE |
+| (various) | UBTU-24-100300/100310 | Application firewall installed and UFW enabled | network_security | `roles/baseline/network_security/tasks/ufw_firewall.yml` | `enable_ufw_firewall` | Default deny inbound, allow SSH |
+| (various) | UBTU-24-100500/100510 | AppArmor installed and enforcing | system_config | `roles/baseline/system_config/tasks/apparmor_enable.yml` | `enable_apparmor_enable` | Ensures AppArmor pkg and service |

@@ -1,0 +1,21 @@
+
+---
+- name: restart_sshd
+  service:
+    name: ssh
+    state: restarted
+
+- name: restart_auditd
+  service:
+    name: auditd
+    state: restarted
+
+- name: restart_rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+
+- name: restart_chrony
+  service:
+    name: chrony
+    state: restarted

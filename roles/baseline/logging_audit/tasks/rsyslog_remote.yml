@@ -1,0 +1,22 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | logging_audit | rsyslog_remote.yml
+        # Guarded by variable: enable_rsyslog_remote
+        # -------------------------------------------------------------------
+
+- name: Ensure rsyslog present
+  apt:
+    name: rsyslog
+    state: present
+
+- name: Configure remote syslog forwarding (if host provided)
+  template:
+    src: "{{ role_path }}/logging_audit/templates/rsyslog.conf.j2"
+    dest: /etc/rsyslog.d/50-remote.conf
+  notify: restart_rsyslog
+
+- name: Ensure rsyslog enabled and running
+  systemd:
+    name: rsyslog
+    enabled: yes
+    state: started

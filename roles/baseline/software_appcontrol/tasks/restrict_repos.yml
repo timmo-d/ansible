@@ -1,0 +1,14 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | software_appcontrol | restrict_repos.yml
+        # Guarded by variable: enable_restrict_repos
+        # -------------------------------------------------------------------
+
+- name: Replace sources.list only when explicit allowlist provided
+  copy:
+    dest: /etc/apt/sources.list
+    content: "{{ approved_sources_list }}"
+    owner: root
+    group: root
+    mode: '0644'
+  when: approved_sources_list is defined and approved_sources_list | length > 0

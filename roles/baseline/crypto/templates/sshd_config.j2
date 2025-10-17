@@ -1,0 +1,23 @@
+
+# Managed by Ansible — Ubuntu 24.04 STIG baseline
+Port {{ ssh_port }}
+Protocol 2
+ListenAddress 0.0.0.0
+PermitRootLogin no
+PasswordAuthentication {{ 'yes' if ssh_password_auth else 'no' }}
+ChallengeResponseAuthentication no
+PubkeyAuthentication yes
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+LoginGraceTime 30
+MaxAuthTries 3
+MaxSessions 10
+ClientAliveInterval 300
+ClientAliveCountMax 0
+AllowTcpForwarding no
+X11Forwarding no
+Ciphers {{ ssh_ciphers }}
+MACs {{ ssh_macs }}
+KexAlgorithms {{ ssh_kex }}
+Banner /etc/issue.net
+UsePAM yes

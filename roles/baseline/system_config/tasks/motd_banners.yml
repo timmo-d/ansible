@@ -1,0 +1,21 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | system_config | motd_banners.yml
+        # Guarded by variable: enable_motd_banners
+        # -------------------------------------------------------------------
+
+- name: Configure /etc/issue (console banner)
+  template:
+    src: "{{ role_path }}/system_config/templates/issue.j2"
+    dest: /etc/issue
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Configure /etc/issue.net (remote banner)
+  template:
+    src: "{{ role_path }}/system_config/templates/issue.net.j2"
+    dest: /etc/issue.net
+    owner: root
+    group: root
+    mode: '0644'

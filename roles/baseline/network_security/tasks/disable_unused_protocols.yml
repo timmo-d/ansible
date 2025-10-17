@@ -1,0 +1,11 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | network_security | disable_unused_protocols.yml
+        # Guarded by variable: enable_disable_unused_protocols
+        # -------------------------------------------------------------------
+
+- name: Remove insecure/legacy network packages
+  apt:
+    name: [telnet, rsh-server, rsh-client, tftp, xinetd]
+    state: absent
+  ignore_errors: yes

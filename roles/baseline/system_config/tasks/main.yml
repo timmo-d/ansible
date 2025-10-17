@@ -1,0 +1,41 @@
+---
+# system_config control group — included by baseline/tasks/main.yml
+
+- name: Run disable unnecessary services
+  import_tasks: disable_unnecessary_services.yml
+  when: enable_disable_unnecessary_services
+
+
+- name: Run secure boot settings
+  import_tasks: secure_boot_settings.yml
+  when: enable_secure_boot_settings
+
+
+- name: Run kernel hardening sysctl
+  import_tasks: kernel_hardening_sysctl.yml
+  when: enable_kernel_hardening_sysctl
+
+
+- name: Run motd banners
+  import_tasks: motd_banners.yml
+  when: enable_motd_banners
+
+
+- name: Run time sync
+  import_tasks: time_sync.yml
+  when: enable_time_sync
+
+
+- name: Run blacklist unused filesystems
+  import_tasks: blacklist_unused_filesystems.yml
+  when: enable_blacklist_unused_filesystems
+
+
+- name: Run apparmor enable
+  import_tasks: apparmor_enable.yml
+  when: enable_apparmor_enable
+
+
+- name: Run vendor supported release
+  import_tasks: vendor_supported_release.yml
+  when: enable_vendor_supported_release

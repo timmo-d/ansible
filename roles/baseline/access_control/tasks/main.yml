@@ -1,0 +1,16 @@
+---
+# access_control control group — included by baseline/tasks/main.yml
+
+- name: Run limit sudo group
+  import_tasks: limit_sudo_group.yml
+  when: enable_limit_sudo_group
+
+
+- name: Run protect sensitive files
+  import_tasks: protect_sensitive_files.yml
+  when: enable_protect_sensitive_files
+
+
+- name: Run world writable dirs sticky
+  import_tasks: world_writable_dirs_sticky.yml
+  when: enable_world_writable_dirs_sticky

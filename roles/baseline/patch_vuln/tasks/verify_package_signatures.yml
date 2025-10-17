@@ -1,0 +1,11 @@
+---
+        # -------------------------------------------------------------------
+        # Ubuntu 24.04 LTS — DISA-STIG | patch_vuln | verify_package_signatures.yml
+        # Guarded by variable: enable_verify_package_signatures
+        # -------------------------------------------------------------------
+
+- name: Enforce signed repositories only
+  lineinfile:
+    path: /etc/apt/apt.conf.d/99verify
+    line: 'Acquire::AllowInsecureRepositories "false";'
+    create: yes

@@ -1,0 +1,11 @@
+---
+# software_appcontrol control group — included by baseline/tasks/main.yml
+
+- name: Run remove unnecessary packages
+  import_tasks: remove_unnecessary_packages.yml
+  when: enable_remove_unnecessary_packages
+
+
+- name: Run restrict repos
+  import_tasks: restrict_repos.yml
+  when: enable_restrict_repos
