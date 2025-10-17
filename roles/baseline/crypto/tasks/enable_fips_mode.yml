@@ -54,12 +54,14 @@
 - name: Enable FIPS updates channel (idempotent)
   command: pro enable fips-updates --assume-yes
   register: fips_enable
-  changed_when: "'enabled' in fips_enable.stdout | lower"
-  failed_when: fips_enable.rc is defined and fips_enable.rc != 0
+  changed_when: fips_enable.stdout is defined and 'enabled' in fips_enable.stdout | lower
+  failed_when: >
+    fips_enable.rc != 0 and
+    ('already enabled' not in fips_enable.stdout | lower)
   when:
     - pro_token is defined and pro_token != ''
     - not fips_enabled | default(false)
-
+    
 #- name: Wait for FIPS enable to complete
 #  async_status:
 #    jid: "{{ fips_enable_job.ansible_job_id }}"
