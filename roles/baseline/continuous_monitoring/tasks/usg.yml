@@ -1,4 +1,3 @@
-
 ---
 - name: Ensure Universe repo is enabled (USG deps sometimes live here)
   become: true
@@ -25,16 +24,29 @@
   when: enable_usg | default(true)
   tags: ['usg']
 
-- name: Attach to Ubuntu Pro if token provided (non-interactive)
+- name: Check if system is already attached to Ubuntu Pro
+  become: true
+  ansible.builtin.command: pro status --format json
+  register: pro_status
+  changed_when: false
+  failed_when: false
+  when:
+    - enable_usg | default(true)
+    - pro_token is defined
+    - pro_token | length > 0
+  tags: ['usg']
+
+- name: Attach to Ubuntu Pro if not already attached
   become: true
   ansible.builtin.command: pro attach {{ pro_token }}
   when:
     - enable_usg | default(true)
     - pro_token is defined
     - pro_token | length > 0
+    - "'not-attached' in pro_status.stdout"
   register: pro_attach
-  changed_when: pro_attach.rc == 0
-  failed_when: pro_attach.rc not in [0, 2]
+  changed_when: "'This machine is now attached' in pro_attach.stdout"
+  failed_when: pro_attach.rc not in [0]
   tags: ['usg']
 
 - name: Enable the USG channel via Pro
