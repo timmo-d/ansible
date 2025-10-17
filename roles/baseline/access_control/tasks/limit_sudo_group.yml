@@ -1,11 +1,5 @@
 ---
 
-- name: Add Ansible user to sudo group
-  become: true
-  user:
-    name: "{{ ansible_user }}"
-    groups: sudo
-    append: yes
 
 - name: Get current sudo group members
   shell: "getent group sudo | cut -d: -f4"
