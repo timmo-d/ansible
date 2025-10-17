@@ -1,0 +1,8 @@
+- name: Reboot if FIPS enabled
+  become: true
+  ansible.builtin.reboot:
+    msg: "Rebooting to apply FIPS kernel settings"
+    reboot_timeout: 900
+    pre_reboot_delay: 5
+    post_reboot_delay: 10
+    test_command: whoami
