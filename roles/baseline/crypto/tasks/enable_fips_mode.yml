@@ -1,10 +1,7 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | crypto | enable_fips_mode.yml
-        # Guarded by variable: enable_enable_fips_mode
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Install Ubuntu Pro client (required for FIPS repositories)
+- name: Install Ubuntu Pro client (required for FIPS)
   apt:
     name: ubuntu-advantage-tools
     state: present
@@ -16,18 +13,16 @@
   register: pro_attach
   changed_when: "'Attached' in pro_attach.stdout or 'already attached' in pro_attach.stdout | lower"
 
-- name: Enable FIPS updates channel
+- name: Enable FIPS updates
   command: pro enable fips-updates
   when: pro_token is defined and pro_token != ''
 
-- name: Ensure FIPS is enabled on next boot
+- name: Ensure FIPS is enabled on next boot (adds fips=1)
   copy:
     dest: /etc/default/grub.d/99-fips.cfg
     content: |
       GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX fips=1"
-    owner: root
-    group: root
-    mode: '0644'
+  notify: []
 
 - name: Update grub
   command: update-grub

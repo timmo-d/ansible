@@ -1,8 +1,5 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | system_config | secure_boot_settings.yml
-        # Guarded by variable: enable_secure_boot_settings
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
 - name: Deploy hardened GRUB defaults
   template:
@@ -12,7 +9,7 @@
     group: root
     mode: '0644'
 
-- name: Configure bootloader superuser/password if provided
+- name: Configure bootloader password if provided
   blockinfile:
     path: /etc/grub.d/40_custom
     create: yes
@@ -21,5 +18,5 @@
       password_pbkdf2 root {{ bootloader_password_pbkdf2 }}
   when: bootloader_password_pbkdf2 | length > 0
 
-- name: Apply GRUB changes
+- name: Update grub
   command: update-grub

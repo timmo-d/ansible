@@ -2,15 +2,16 @@
 # continuous_monitoring control group — included by baseline/tasks/main.yml
 
 - name: Run install usg
-  import_tasks: install_usg.yml
+  import_tasks: { role_path }/continuous_monitoring/tasks/install_usg.yml
   when: enable_install_usg
 
 
 - name: Run oscap scan
-  import_tasks: oscap_scan.yml
+  import_tasks: { role_path }/continuous_monitoring/tasks/oscap_scan.yml
   when: enable_oscap_scan
 
 
 - name: Run banner motd privacy
-  import_tasks: banner_motd_privacy.yml
+  import_tasks: { role_path }/continuous_monitoring/tasks/banner_motd_privacy.yml
   when: enable_banner_motd_privacy
+

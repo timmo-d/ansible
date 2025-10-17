@@ -1,10 +1,7 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | system_config | kernel_hardening_sysctl.yml
-        # Guarded by variable: enable_kernel_hardening_sysctl
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Apply kernel/sysctl hardening settings
+- name: Apply kernel/sysctl hardening
   template:
     src: "{{ role_path }}/system_config/templates/sysctl-hardening.conf.j2"
     dest: /etc/sysctl.d/99-stig-hardening.conf
@@ -12,5 +9,5 @@
     group: root
     mode: '0644'
 
-- name: Reload sysctl settings
+- name: Reload sysctl
   command: sysctl --system

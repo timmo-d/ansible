@@ -1,8 +1,5 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | authz | disable_su_unless_sudo.yml
-        # Guarded by variable: enable_disable_su_unless_sudo
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
 - name: Restrict su to sudo group via pam_wheel
   lineinfile:

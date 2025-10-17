@@ -1,26 +1,23 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | network_security | ufw_firewall.yml
-        # Guarded by variable: enable_ufw_firewall
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
 - name: Ensure UFW present
   apt:
     name: ufw
     state: present
 
-- name: Set default deny inbound policy
+- name: Default deny inbound
   ufw:
     state: enabled
     policy: deny
     direction: incoming
 
-- name: Set default allow outbound policy
+- name: Default allow outbound
   ufw:
     policy: allow
     direction: outgoing
 
-- name: Allow SSH on configured port
+- name: Allow SSH
   ufw:
     rule: allow
     port: "{{ ssh_port }}"

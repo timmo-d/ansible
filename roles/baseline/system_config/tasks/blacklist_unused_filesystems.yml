@@ -1,10 +1,7 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | system_config | blacklist_unused_filesystems.yml
-        # Guarded by variable: enable_blacklist_unused_filesystems
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Blacklist uncommon filesystem kernel modules
+- name: Blacklist uncommon filesystem modules
   copy:
     dest: /etc/modprobe.d/blacklist-stig.conf
     content: |
@@ -16,6 +13,3 @@
       install squashfs /bin/true
       install udf /bin/true
       install vfat /bin/true
-    owner: root
-    group: root
-    mode: '0644'

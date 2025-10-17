@@ -1,10 +1,7 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | authz | pam_common_auth.yml
-        # Guarded by variable: enable_pam_common_auth
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Require pwquality during password changes (common-password)
+- name: Require pwquality during password changes
   lineinfile:
     path: /etc/pam.d/common-password
     regexp: '^password\s+requisite\s+pam_pwquality.so'

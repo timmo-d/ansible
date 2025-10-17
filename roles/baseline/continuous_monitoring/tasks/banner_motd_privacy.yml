@@ -1,10 +1,7 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | continuous_monitoring | banner_motd_privacy.yml
-        # Guarded by variable: enable_banner_motd_privacy
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Reduce MOTD information disclosures (non-essential snippets)
+- name: Reduce MOTD information disclosures
   file:
     path: "/etc/update-motd.d/{{ item }}"
     mode: '0644'

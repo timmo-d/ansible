@@ -1,10 +1,7 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | software_appcontrol | remove_unnecessary_packages.yml
-        # Guarded by variable: enable_remove_unnecessary_packages
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Remove unused/insecure packages (tune per environment)
+- name: Remove unused/insecure packages
   apt:
     name: [nis, rsh-server, talk, telnet, ldap-utils]
     state: absent

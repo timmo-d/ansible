@@ -1,20 +1,17 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | fs_storage | aide_integrity.yml
-        # Guarded by variable: enable_aide_integrity
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Install AIDE for file integrity monitoring
+- name: Install AIDE
   apt:
     name: aide
     state: present
 
-- name: Initialize AIDE database (one-time; time-consuming)
+- name: Initialize AIDE DB
   command: aideinit
   args:
     creates: /var/lib/aide/aide.db.new
 
-- name: Activate AIDE database
+- name: Activate AIDE DB
   command: mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
   args:
     creates: /var/lib/aide/aide.db

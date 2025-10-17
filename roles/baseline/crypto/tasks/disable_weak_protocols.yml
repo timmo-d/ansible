@@ -1,8 +1,5 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | crypto | disable_weak_protocols.yml
-        # Guarded by variable: enable_disable_weak_protocols
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
 - name: Force SSH Protocol 2 only
   lineinfile:

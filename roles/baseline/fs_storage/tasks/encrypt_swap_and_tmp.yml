@@ -1,14 +1,11 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | fs_storage | encrypt_swap_and_tmp.yml
-        # Guarded by variable: enable_encrypt_swap_and_tmp
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Ensure cryptsetup present for encryption tasks
+- name: Ensure cryptsetup present
   apt:
     name: cryptsetup
     state: present
 
-- name: NOTE - Encryption of existing swap/tmp may require rebuild
+- name: NOTE - Encrypting existing swap/tmp may require rebuild
   debug:
-    msg: 'Recommend implementing LUKS and tmp/swap encryption during imaging/provisioning for reliability.'
+    msg: 'Recommend implementing LUKS and tmp/swap encryption during imaging.'

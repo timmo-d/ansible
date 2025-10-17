@@ -1,8 +1,5 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | patch_vuln | enable_unattended_upgrades.yml
-        # Guarded by variable: enable_enable_unattended_upgrades
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
 - name: Install unattended-upgrades
   apt:

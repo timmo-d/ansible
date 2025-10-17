@@ -1,10 +1,7 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | fs_storage | aide_periodic_check.yml
-        # Guarded by variable: enable_aide_periodic_check
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Configure monthly AIDE check (≤ 30 days) via cron
+- name: Configure monthly AIDE check
   cron:
     name: 'STIG: monthly AIDE check'
     user: root

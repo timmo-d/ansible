@@ -2,10 +2,11 @@
 # patch_vuln control group — included by baseline/tasks/main.yml
 
 - name: Run enable unattended upgrades
-  import_tasks: enable_unattended_upgrades.yml
+  import_tasks: { role_path }/patch_vuln/tasks/enable_unattended_upgrades.yml
   when: enable_enable_unattended_upgrades
 
 
 - name: Run verify package signatures
-  import_tasks: verify_package_signatures.yml
+  import_tasks: { role_path }/patch_vuln/tasks/verify_package_signatures.yml
   when: enable_verify_package_signatures
+

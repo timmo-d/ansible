@@ -1,10 +1,7 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | system_config | disable_unnecessary_services.yml
-        # Guarded by variable: enable_disable_unnecessary_services
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Disable legacy and insecure network services (best effort)
+- name: Disable legacy network services
   systemd:
     name: "{{ item }}"
     state: stopped

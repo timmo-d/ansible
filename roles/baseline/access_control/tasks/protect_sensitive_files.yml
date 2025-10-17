@@ -1,10 +1,7 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | access_control | protect_sensitive_files.yml
-        # Guarded by variable: enable_protect_sensitive_files
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Enforce secure ownership/permissions on critical auth files
+- name: Secure permissions on critical auth files
   file:
     path: "{{ item.path }}"
     owner: root

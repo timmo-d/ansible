@@ -1,14 +1,11 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | account_identity | pki_auth_mapping.yml
-        # Guarded by variable: enable_pki_auth_mapping
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Install SSSD and smart card tooling (site-specific config follows)
+- name: Install SSSD + opensc (site-specific)
   apt:
     name: [sssd, sssd-tools, opensc]
     state: present
 
-- name: PKI/SSSD mapping requires realm details (placeholder)
+- name: Placeholder for PKI/SSSD mapping
   debug:
-    msg: "Provide realm, LDAP/IdM, and cert OID details to render SSSD/Kerberos templates."
+    msg: 'Provide realm/LDAP/IdM and cert OID to render templates.'

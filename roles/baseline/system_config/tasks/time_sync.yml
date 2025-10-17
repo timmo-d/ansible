@@ -1,21 +1,18 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | system_config | time_sync.yml
-        # Guarded by variable: enable_time_sync
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Install chrony time synchronization
+- name: Install chrony
   apt:
     name: chrony
     state: present
 
-- name: Configure chrony servers and options
+- name: Configure chrony
   template:
     src: "{{ role_path }}/system_config/templates/chrony.conf.j2"
     dest: /etc/chrony/chrony.conf
   notify: restart_chrony
 
-- name: Ensure chrony service enabled and running
+- name: Ensure chrony enabled
   systemd:
     name: chrony
     enabled: yes

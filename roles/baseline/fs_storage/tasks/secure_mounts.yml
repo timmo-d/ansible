@@ -1,10 +1,7 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | fs_storage | secure_mounts.yml
-        # Guarded by variable: enable_secure_mounts
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
-- name: Ensure /tmp is mounted with nodev,nosuid,noexec (tmpfs)
+- name: Ensure /tmp is mounted with nodev,nosuid,noexec
   mount:
     path: /tmp
     src: tmpfs

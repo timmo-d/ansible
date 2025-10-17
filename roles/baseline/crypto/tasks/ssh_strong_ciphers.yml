@@ -1,8 +1,5 @@
 ---
-        # -------------------------------------------------------------------
-        # Ubuntu 24.04 LTS — DISA-STIG | crypto | ssh_strong_ciphers.yml
-        # Guarded by variable: enable_ssh_strong_ciphers
-        # -------------------------------------------------------------------
+# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
 
 - name: Deploy hardened sshd_config
   template:
