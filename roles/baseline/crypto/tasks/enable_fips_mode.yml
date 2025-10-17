@@ -16,19 +16,14 @@
   set_fact:
     pro_attached: "{{ (pro_status_attach.stdout | from_json).account is defined }}"
   when: pro_status_attach.stdout is defined
-
-- name: Debug | Parsed Ubuntu Pro status
-  debug:
-    var: pro_status_attach.stdout | from_json
-
 - name: Attach Ubuntu Pro subscription
   command: pro attach {{ pro_token }}
-  when:
-    - pro_token is defined and pro_token != ''
-    - not pro_attached | default(false)
   register: pro_attach
   changed_when: "'attached' in pro_attach.stdout | lower"
   failed_when: pro_attach.rc != 0 and 'already attached' not in pro_attach.stderr | lower
+  when:
+    - pro_token is defined and pro_token != ''
+    - not pro_attached | default(false)
 
 # --- Check FIPS status ---
 - name: Check if FIPS updates are already enabled
