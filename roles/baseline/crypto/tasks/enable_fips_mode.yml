@@ -35,13 +35,30 @@
   debug:
     var: pro_status_check.stdout
 
-- name: Enable FIPS updates channel (async)
-  command: pro enable fips-updates
-  async: 60
-  poll: 0
-  register: fips_enable_job
+- name: Check if FIPS updates are already enabled
+  command: pro status --format json
+  register: pro_status
+  changed_when: false
+  failed_when: false
   when: pro_token is defined and pro_token != ''
-  tags: ['fips']
+
+- name: Set fact for FIPS updates status
+  set_fact:
+    fips_enabled: >-
+      {{
+        (pro_status.stdout | from_json).services['fips-updates'].status is defined and
+        (pro_status.stdout | from_json).services['fips-updates'].status == 'enabled'
+      }}
+  when: pro_status.stdout is defined
+
+- name: Enable FIPS updates channel (idempotent)
+  command: pro enable fips-updates --assume-yes
+  register: fips_enable
+  changed_when: "'enabled' in fips_enable.stdout | lower"
+  failed_when: fips_enable.rc is defined and fips_enable.rc != 0
+  when:
+    - pro_token is defined and pro_token != ''
+    - not fips_enabled | default(false)
 
 - name: Wait for FIPS enable to complete
   async_status:
