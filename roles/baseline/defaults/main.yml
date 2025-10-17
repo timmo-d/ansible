@@ -37,6 +37,7 @@ enable_motd_banners: true
 enable_time_sync: true
 enable_blacklist_unused_filesystems: true
 enable_apparmor_enable: true
+enable_ubuntu_pro: true
 enable_vendor_supported_release: true
 
 # Patch & Vulnerability
