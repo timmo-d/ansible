@@ -126,4 +126,3 @@ rsyslog_remote_port: 514                         # Port used for remote syslog c
 
 # Repositories
 approved_sources_list: ""                        # Optional list of approved APT sources; leave empty to use system defaults.
-``
