@@ -93,7 +93,7 @@ rsyslog_remote_host: ""
 rsyslog_remote_port: 514
 
 # Compliance tools
-pro_token: ""          # Ubuntu Pro token for FIPS
+pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"          # Ubuntu Pro token for FIPS
 usg_apply_fix: false
 
 # Repositories
