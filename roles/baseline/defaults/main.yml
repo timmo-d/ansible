@@ -2,7 +2,7 @@
 ---
 # Global feature switches (per-control) — set to false to skip a control area.
 # Account & Identity
-enable_enforce_password_policy: true
+enable_enforce_password_policy: false
 enable_disable_blank_passwords: true
 enable_restrict_root_usage: true
 enable_pki_auth_mapping: true
