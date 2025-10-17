@@ -4,40 +4,32 @@
     state: present
   when: pro_token is defined and pro_token != ''
 
+# --- Check attachment status ---
 - name: Check if system is already attached to Ubuntu Pro
   command: pro status --format json
-  register: pro_status
+  register: pro_status_attach
   changed_when: false
   failed_when: false
   when: pro_token is defined and pro_token != ''
 
 - name: Set fact for Ubuntu Pro attachment status
   set_fact:
-    pro_attached_status: "{{ pro_status.stdout | from_json | json_query('status') }}"
-  when: pro_status.stdout is defined
+    pro_attached: "{{ (pro_status_attach.stdout | from_json).status == 'attached' }}"
+  when: pro_status_attach.stdout is defined
 
 - name: Attach Ubuntu Pro subscription
   command: pro attach {{ pro_token }}
   when:
     - pro_token is defined and pro_token != ''
-    - pro_attached_status == 'not-attached'
+    - not pro_attached | default(false)
   register: pro_attach
   changed_when: "'attached' in pro_attach.stdout | lower"
-  failed_when: pro_attach.rc != 0
+  failed_when: pro_attach.rc != 0 and 'already attached' not in pro_attach.stderr | lower
 
-- name: Debug | Check Ubuntu Pro status before enabling FIPS
-  command: pro status
-  register: pro_status_check
-  changed_when: false
-  failed_when: false
-
-- name: Debug | Output Ubuntu Pro status
-  debug:
-    var: pro_status_check.stdout
-
+# --- Check FIPS status ---
 - name: Check if FIPS updates are already enabled
   command: pro status --format json
-  register: pro_status
+  register: pro_status_fips
   changed_when: false
   failed_when: false
   when: pro_token is defined and pro_token != ''
@@ -46,21 +38,26 @@
   set_fact:
     fips_enabled: >-
       {{
-        (pro_status.stdout | from_json).services['fips-updates'].status is defined and
-        (pro_status.stdout | from_json).services['fips-updates'].status == 'enabled'
+        (pro_status_fips.stdout | from_json).services['fips-updates'].status is defined and
+        (pro_status_fips.stdout | from_json).services['fips-updates'].status == 'enabled'
       }}
-  when: pro_status.stdout is defined
+  when: pro_status_fips.stdout is defined
 
+# --- Enable FIPS ---
 - name: Enable FIPS updates channel (idempotent)
   command: pro enable fips-updates --assume-yes
   register: fips_enable
   changed_when: fips_enable.stdout is defined and 'enabled' in fips_enable.stdout | lower
-  failed_when: fips_enable.rc is defined and fips_enable.rc != 0
+  failed_when: >
+    fips_enable.rc != 0 and
+    ('already enabled' not in fips_enable.stdout | lower)
   when:
     - pro_token is defined and pro_token != ''
+    - pro_attached | default(false)
     - not fips_enabled | default(false)
   notify: Reboot if FIPS enabled
 
+# --- GRUB config ---
 - name: Ensure FIPS is enabled on next boot
   copy:
     dest: /etc/default/grub.d/99-fips.cfg
