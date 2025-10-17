@@ -2,8 +2,8 @@
 - name: Provision New Ubuntu 24.04 Server
   hosts: all
   become: true
-  become_method: sudo
-  become_user: root
+  #become_method: sudo
+  #become_user: root
 
   vars_files:
     - group_vars/all.yml
