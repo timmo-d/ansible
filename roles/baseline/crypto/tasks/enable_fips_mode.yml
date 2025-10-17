@@ -7,6 +7,16 @@
   tags: ['fips']
 
 # --- Check attachment status ---
+- name: Check Ubuntu Pro status
+  command: pro status --format json
+  register: pro_status
+  changed_when: false
+  failed_when: false
+  when:
+    - enable_fips_mode | default(false)
+    - pro_token is defined and pro_token != ''
+  tags: ['fips']
+  
 - name: Parse Ubuntu Pro status
   set_fact:
     pro_attached_status: "{{ pro_status.stdout | from_json | json_query('status') }}"
