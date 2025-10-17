@@ -40,6 +40,7 @@
         (pro_services_to_enable | default(['esm-infra','esm-apps']))
         + (['livepatch'] if (pro_enable_livepatch | default(false)) else [])
         + (['fips-updates'] if (pro_enable_fips_updates | default(false)) else [])
+        + (['usg'] if (enable_usg | default(false)) else [])
       }}
   tags: ['ubuntu_pro']
 

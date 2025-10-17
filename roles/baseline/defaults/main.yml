@@ -69,7 +69,7 @@ pro_services_to_enable:
   - esm-infra
   - esm-apps
 pro_enable_livepatch: true                     # enable Canonical Livepatch if entitled
-pro_enable_fips_updates: true                  # [false] **** DISRUPTIVE **** set true where DISA-STIG compliance is required (reboot required)
+pro_enable_fips_updates: false                  # [false] **** DISRUPTIVE **** set true where DISA-STIG compliance is required (reboot required)
 
 # USG (Ubuntu Security Guide)
 enable_usg: true                                # Enables Ubuntu Security Guide (USG) for system hardening and auditing.

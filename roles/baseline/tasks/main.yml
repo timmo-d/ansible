@@ -1,48 +1,75 @@
 ---
+########################################################
 # Baseline wrapper: includes each category in order
+########################################################
 
+# Include tasks related to account identity management
+# These may define user accounts, roles, and identity verification mechanisms
 - name: Include account_identity controls
   import_tasks: "{{ role_path }}/account_identity/tasks/main.yml"
 
+# Include tasks for access control mechanisms
+# Typically involves configuring permissions, access policies, and role-based access
 - name: Include access_control controls
   import_tasks: "{{ role_path }}/access_control/tasks/main.yml"
 
+# Include tasks for authorization controls
+# Ensures users have appropriate permissions for actions and resources
 - name: Include authz controls
   import_tasks: "{{ role_path }}/authz/tasks/main.yml"
 
+# Include tasks for cryptographic controls
+# May configure encryption, key management, and secure communication protocols
 - name: Include crypto controls
   import_tasks: "{{ role_path }}/crypto/tasks/main.yml"
 
+# Include tasks for logging and auditing
+# Helps track system activity and supports forensic analysis and compliance
 - name: Include logging_audit controls
   import_tasks: "{{ role_path }}/logging_audit/tasks/main.yml"
 
+# Include tasks for system configuration
+# Applies baseline configurations, hardening settings, and system parameters
 - name: Include system_config controls
   import_tasks: "{{ role_path }}/system_config/tasks/main.yml"
 
+# Include tasks for patching and vulnerability remediation
+# Ensures the system is up-to-date and protected against known threats
 - name: Include patch_vuln controls
   import_tasks: "{{ role_path }}/patch_vuln/tasks/main.yml"
 
+# Include tasks for network security controls
+# May configure firewalls, segmentation, and secure network protocols
 - name: Include network_security controls
   import_tasks: "{{ role_path }}/network_security/tasks/main.yml"
 
+# Include tasks for filesystem and storage controls
+# Handles disk encryption, access restrictions, and storage policies
 - name: Include fs_storage controls
   import_tasks: "{{ role_path }}/fs_storage/tasks/main.yml"
 
+# Include tasks for software and application control
+# Manages allowed applications, software restrictions, and execution policies
 - name: Include software_appcontrol controls
   import_tasks: "{{ role_path }}/software_appcontrol/tasks/main.yml"
 
+# Include tasks for continuous monitoring
+# Implements tools and configurations for ongoing system health and security checks
 - name: Include continuous_monitoring controls
   import_tasks: "{{ role_path }}/continuous_monitoring/tasks/main.yml"
 
+# Reboot the system if required due to FIPS or USG changes
+# Ensures kernel-level or system-wide changes take effect
 - name: Reboot if required (FIPS or USG remediation applied)
-  become: true
+  become: true                                                # Run the reboot with elevated privileges
   ansible.builtin.reboot:
     msg: "Rebooting to apply FIPS kernel or USG changes"
-    reboot_timeout: "{{ reboot_timeout_sec }}"
-    pre_reboot_delay: "{{ pre_reboot_delay_sec }}"
-    post_reboot_delay: "{{ post_reboot_delay_sec }}"
-    connect_timeout: 5
-    test_command: "{{ reboot_test_command }}"
+    reboot_timeout: "{{ reboot_timeout_sec }}"                # Maximum time to wait for reboot
+    pre_reboot_delay: "{{ pre_reboot_delay_sec }}"            # Delay before initiating reboot
+    post_reboot_delay: "{{ post_reboot_delay_sec }}"          # Delay after reboot before reconnecting
+    connect_timeout: 5                                        # Timeout for SSH connection attempts
+    test_command: "{{ reboot_test_command }}"                 # Command to verify system is back online
   when:
-    - auto_reboot_on_changes | default(true)
-    - (pro_enable_fips_updates | default(false)) or (usg_apply_fix | default(false))
+    - auto_reboot_on_changes | default(true)                  # Only reboot if auto-reboot is enabled
+    - (pro_enable_fips_updates | default(false)) or (usg_apply_fix | default(false))    # Reboot only if FIPS or USG changes were applied
+    
