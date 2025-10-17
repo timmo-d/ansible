@@ -1,5 +1,15 @@
 #---
 approved_sudo_users: ["{{ ansible_user }}"]
-#pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
 #approved_sources_list: ""
 #usg_apply_fix: false
+
+# Ubuntu Pro token (from https://ubuntu.com/pro/dashboard)
+pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
+# Base services to enable; defaults to esm-infra + esm-apps if unset.
+pro_services_to_enable:
+  - esm-infra
+  - esm-apps
+
+# Optional toggles:
+pro_enable_livepatch: true         # enable Canonical Livepatch if entitled
+pro_enable_fips_updates: false     # enable FIPS Updates (requires reboot; use when you need FIPS compliance)

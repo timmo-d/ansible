@@ -1,0 +1,75 @@
+---
+# roles/baseline/system_config/tasks/ubuntu_pro.yml
+# Idempotently attach to Ubuntu Pro (if token provided) and enable desired services.
+# Requires: pro_token (string). Optional: pro_services_to_enable (list), pro_enable_fips_updates (bool), pro_enable_livepatch (bool).
+
+- name: Ensure Pro client present
+  become: true
+  ansible.builtin.apt:
+    name: ubuntu-advantage-tools   # provides the `pro` CLI
+    state: present
+    update_cache: yes
+  tags: ['ubuntu_pro']
+
+- name: Check current Pro status (JSON)
+  ansible.builtin.command: pro status --format json
+  register: pro_status
+  changed_when: false
+  failed_when: false
+  tags: ['ubuntu_pro']
+
+- name: Attach this machine to Ubuntu Pro (non-interactive) if a token is provided
+  when:
+    - pro_token is defined
+    - pro_token | length > 0
+  become: true
+  ansible.builtin.command: pro attach {{ pro_token }}
+  register: pro_attach
+  # Per CLI docs: rc=0 success, rc=2 already attached. Treat both as success.
+  failed_when: pro_attach.rc not in [0, 2]
+  changed_when: pro_attach.rc == 0
+  tags: ['ubuntu_pro']
+  # Canonical describes the attach flow and tokens here. [2](https://documentation.ubuntu.com/pro-client/en/v30/howtoguides/get_token_and_attach/)
+- name: Refresh Pro status after attach
+  ansible.builtin.command: pro status --format json
+  register: pro_status_after
+  changed_when: false
+  failed_when: false
+  tags: ['ubuntu_pro']
+
+- name: Build list of services to enable (defaults + toggles)
+  ansible.builtin.set_fact:
+    pro_services_effective: >-
+      {{
+        (pro_services_to_enable
+         | default(['esm-infra', 'esm-apps']))
+        +
+        ([ 'livepatch' ] if (pro_enable_livepatch | default(false)) else [])
+        +
+        ([ 'fips-updates' ] if (pro_enable_fips_updates | default(false)) else [])
+      }}
+  tags: ['ubuntu_pro']
+
+- name: Enable requested Ubuntu Pro services (idempotent)
+  become: true
+  ansible.builtin.command: "pro enable {{ item }}"
+  register: pro_enable_results
+  loop: "{{ pro_services_effective | unique }}"
+  changed_when: "'enabled' in (pro_enable_results.stdout | default('') | lower) or 'enabled' in (pro_enable_results.results[0].stdout|default('')|lower)"
+  failed_when: false  # if a service isn't entitled/available, pro exits nonzero; we continue
+  tags: ['ubuntu_pro']
+  # Canonical shows enabling esm-infra / esm-apps / livepatch with `pro enable`,
+  # and recommends `fips-updates` (not legacy `fips`) on supported releases. [3](https://documentation.ubuntu.com/pro/pro-client/enable_esm_infra/)[5](https://documentation.ubuntu.com/pro-client/en/latest/howtoguides/enable_esm_infra/)
+
+- name: Note that a reboot is required when enabling FIPS Updates
+  ansible.builtin.debug:
+    msg: "FIPS Updates were requested; a reboot is typically required to complete installation."
+  when: "'fips-updates' in pro_services_effective"
+  tags: ['ubuntu_pro']
+  # Enabling FIPS Updates installs a FIPS-compliant kernel/crypto and requires a reboot. [4](https://documentation.ubuntu.com/pro-client/en/latest/howtoguides/enable_fips/)[6](https://documentation.ubuntu.com/security/docs/compliance/fips/how-to-install-ubuntu-with-fips/)
+- name: Update package lists after enabling ESM
+  become: true
+  ansible.builtin.apt:
+    update_cache: yes
+  tags: ['ubuntu_pro']
+  # Canonical recommends refreshing & applying updates after enabling ESM repos. [3](https://documentation.ubuntu.com/pro/pro-client/enable_esm_infra/)

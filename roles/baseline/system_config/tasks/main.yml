@@ -40,3 +40,6 @@
   import_tasks: "{{ role_path }}/system_config/tasks/vendor_supported_release.yml"
   when: enable_vendor_supported_release
 
+- name: Attach to Ubuntu Pro and enable services
+  import_tasks: "{{ role_path }}/system_config/tasks/ubuntu_pro.yml"
+  when: enable_ubuntu_pro | default(true)
