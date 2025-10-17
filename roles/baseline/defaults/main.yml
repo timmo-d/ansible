@@ -1,63 +1,66 @@
-
 ---
+#################################################################################
 # Global feature switches (per-control). Set to false to skip a control area.
+#################################################################################
+
 # Account & Identity
-enable_enforce_password_policy: true
-enable_disable_blank_passwords: true
-enable_restrict_root_usage: true
-enable_pki_auth_mapping: true
+enable_enforce_password_policy: true          # Apply password complexity and aging rules (pwquality + login.defs)
+enable_disable_blank_passwords: true          # Detect and lock accounts with empty password fields
+enable_restrict_root_usage: true              # Disable remote root login via SSH and enforce sudo for privilege escalation
+enable_pki_auth_mapping: true                 # Install SSSD and smart card tooling for PKI-based authentication (site-specific config)
 
 # Access Control
-enable_limit_sudo_group: true
-enable_protect_sensitive_files: true
-enable_world_writable_dirs_sticky: true
+enable_limit_sudo_group: true                 # Restrict sudo group membership to approved users (enforces least privilege)
+enable_protect_sensitive_files: true          # Ensure secure ownership and permissions on critical auth files (e.g., /etc/shadow, /etc/passwd)
+enable_world_writable_dirs_sticky: true       # Apply sticky bit on all world-writable directories to prevent unauthorized file deletion
 
 # Authentication & Authorization
-enable_pam_lockout: true
-enable_pam_common_auth: true
-enable_disable_su_unless_sudo: true
+enable_pam_lockout: true                      # Enforce account lockouts after repeated failed login attempts (via pam_faillock)
+enable_pam_common_auth: true                  # Harden common PAM configuration to require strong password quality checks
+enable_disable_su_unless_sudo: true           # Restrict use of 'su' command to members of the sudo group only
+approved_sudo_users: ["{{ ansible_user }}"]   # List of users allowed in the sudo group (defaults to the current Ansible user)
 
 # Crypto
-enable_enable_fips_mode: false       # requires Ubuntu Pro token
-enable_ssh_strong_ciphers: true
-enable_disable_weak_protocols: true
+enable_enable_fips_mode: true                  # [false] Enables FIPS mode for cryptographic compliance; requires Ubuntu Pro subscription token.
+enable_ssh_strong_ciphers: true                # Enforces use of strong SSH ciphers to enhance secure communication.
+enable_disable_weak_protocols: true            # Disables outdated or insecure protocols (e.g., SSLv2, SSLv3) to reduce vulnerabilities.
 
 # Logging & Auditing
-enable_install_auditd: true
-enable_audit_rules_stig: true
-enable_rsyslog_remote: false
-enable_logrotate_hardening: true
-enable_auditd_log_group_root: true
+enable_install_auditd: true                    # Ensures auditd is installed to track system events for security auditing.
+enable_audit_rules_stig: true                  # Applies Security Technical Implementation Guide (STIG) audit rules for compliance.
+enable_rsyslog_remote: false                   # Disables remote logging via rsyslog; set to true to forward logs to a central server.
+enable_logrotate_hardening: true               # Enhances logrotate settings to prevent log tampering and ensure proper log management.
+enable_auditd_log_group_root: true             # Assigns auditd logs to the root group for restricted access.
 
 # System Configuration
-enable_disable_unnecessary_services: true
-enable_secure_boot_settings: true
-enable_kernel_hardening_sysctl: true
-enable_motd_banners: true
-enable_time_sync: true
-enable_blacklist_unused_filesystems: true
-enable_apparmor_enable: true
-enable_ubuntu_pro: true
-enable_vendor_supported_release: true
+enable_disable_unnecessary_services: true      # Disables services that are not required to reduce attack surface.
+enable_secure_boot_settings: true              # Enforces secure boot settings to prevent unauthorized kernel or bootloader modifications.
+enable_kernel_hardening_sysctl: true           # Applies sysctl parameters to harden the Linux kernel against common attacks.
+enable_motd_banners: true                      # Displays security banners in the Message of the Day (MOTD) for user awareness.
+enable_time_sync: true                         # Ensures system time is synchronized, critical for accurate logging and auditing.
+enable_blacklist_unused_filesystems: true      # Prevents loading of unused or insecure filesystems to reduce risk.
+enable_apparmor_enable: true                   # Enables AppArmor for mandatory access control to restrict application capabilities.
+enable_ubuntu_pro: true                        # Enables Ubuntu Pro features for extended security and compliance support.
+enable_vendor_supported_release: true          # Ensures the system runs a vendor-supported release for security updates.
 
 # Patch & Vulnerability
-enable_enable_unattended_upgrades: true
-enable_verify_package_signatures: true
+enable_enable_unattended_upgrades: true        # Enables automatic installation of security updates to reduce exposure to vulnerabilities.
+enable_verify_package_signatures: true         # Verifies package signatures to ensure integrity and authenticity of software.
 
 # Network Security
-enable_ufw_firewall: true
-enable_ssh_hardening: true
-enable_disable_unused_protocols: true
+enable_ufw_firewall: true                      # Enables and configures UFW (Uncomplicated Firewall) to control network traffic.
+enable_ssh_hardening: true                     # Applies security best practices to SSH configuration to prevent unauthorized access.
+enable_disable_unused_protocols: true          # Disables unused network protocols to reduce potential attack vectors.
 
 # File System & Storage
-enable_secure_mounts: true
-enable_encrypt_swap_and_tmp: false
-enable_aide_integrity: true
-enable_aide_periodic_check: true
+enable_secure_mounts: true                     # Applies secure mount options (e.g., noexec, nosuid) to protect against exploitation.
+enable_encrypt_swap_and_tmp: false             # Disables encryption of swap and /tmp; set to true for enhanced data protection.
+enable_aide_integrity: true                    # Installs and configures AIDE to monitor file integrity and detect unauthorized changes.
+enable_aide_periodic_check: true               # Schedules regular AIDE checks to maintain ongoing file integrity monitoring.
 
 # Software/Application Control
-enable_remove_unnecessary_packages: true
-enable_restrict_repos: false
+enable_remove_unnecessary_packages: true       # Removes unused or unnecessary packages to reduce system complexity and risk.
+enable_restrict_repos: false                   # Allows use of unrestricted repositories; set to true to limit to trusted sources only.
 
 # Continuous Monitoring
 # Ubuntu Pro
@@ -65,63 +68,62 @@ pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') | default('', true) }}"
 pro_services_to_enable:
   - esm-infra
   - esm-apps
-pro_enable_livepatch: true
-pro_enable_fips_updates: true  # [false] set true where DISA-STIG compliance is required (reboot required)
+pro_enable_livepatch: true                     # enable Canonical Livepatch if entitled
+pro_enable_fips_updates: true                  # [false] set true where DISA-STIG compliance is required (reboot required)
 
 # USG (Ubuntu Security Guide)
-enable_usg: true
-usg_profile: "disa_stig"        # or CIS profile, e.g., cis_level1_server
-usg_run_audit: true
-usg_apply_fix: true            # [false] DISRUPTIVE; enable on fresh builds
-usg_reports_dir: "/var/tmp"
+enable_usg: true                                # Enables Ubuntu Security Guide (USG) for system hardening and auditing.
+usg_profile: "disa_stig"                        # Specifies the hardening profile; options include 'disa_stig', 'cis_level1_server', etc.
+usg_run_audit: true                             # Runs a security audit using the selected USG profile.
+usg_apply_fix: true                             # Applies hardening fixes; disruptive changes—recommended only for fresh builds.
+usg_reports_dir: "/var/tmp"                     # Directory to store USG audit and remediation reports.
 
 # OpenSCAP (SCAP)
-enable_oscap: true
-oscap_profile: "xccdf_org.ssgproject.content_profile_cis_level1_server"
-oscap_results_path: "/var/tmp/openscap-results.xml"
-oscap_summary_path: "/var/tmp/openscap-summary.txt"
-oscap_datastream: ""           # leave empty to auto-discover from SSG content
+enable_oscap: true                              # Enables OpenSCAP for compliance scanning and reporting.
+oscap_profile: "xccdf_org.ssgproject.content_profile_cis_level1_server"  # Specifies the SCAP profile for compliance checks.
+oscap_results_path: "/var/tmp/openscap-results.xml"  # Path to store detailed OpenSCAP scan results.
+oscap_summary_path: "/var/tmp/openscap-summary.txt"  # Path to store summary of OpenSCAP findings.
+oscap_datastream: ""                            # Leave empty to auto-discover SCAP Security Guide (SSG) datastream content.
 
 # Reboot control
-auto_reboot_on_changes: true
-reboot_timeout_sec: 900         # bump for kernel/FIPS changes on slow hosts
-pre_reboot_delay_sec: 5
-post_reboot_delay_sec: 10
-reboot_test_command: "whoami"
-enable_banner_motd_privacy: true
+auto_reboot_on_changes: true                    # Automatically reboots the system if changes require it (e.g., kernel updates).
+reboot_timeout_sec: 900                         # Maximum time to wait for reboot; increase for slow systems or major changes.
+pre_reboot_delay_sec: 5                         # Delay before initiating reboot to allow final tasks to complete.
+post_reboot_delay_sec: 10                       # Delay after reboot to allow services to stabilize before continuing.
+reboot_test_command: "whoami"                   # Command used to verify system is back online after reboot.
+enable_banner_motd_privacy: true                # Enables privacy-focused MOTD banner to reduce information disclosure.
 
 # ---- Policy knobs ----
 # SSH & Crypto
-ssh_port: 22
-ssh_password_auth: false
-ssh_ciphers: 'aes256-gcm@openssh.com,chacha20-poly1305@openssh.com'
-ssh_macs: 'hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com'
-ssh_kex: 'curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512'
+ssh_port: 22                                     # SSH server listening port.
+ssh_password_auth: false                         # Disables password authentication; enforces key-based access.
+ssh_ciphers: 'aes256-gcm@openssh.com,chacha20-poly1305@openssh.com'  # Strong SSH encryption ciphers.
+ssh_macs: 'hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com'  # Secure message authentication codes (MACs).
+ssh_kex: 'curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512'  # Secure key exchange algorithms.
 
 # Password policy (pwquality/login.defs)
-pw_minlen: 14
-pw_minclass: 4
-pw_dcredit: -1
-pw_ucredit: -1
-pw_lcredit: -1
-pw_ocredit: -1
-pass_max_days: 60
-pass_min_days: 1
-pass_warn_age: 7
-default_umask: 027
+pw_minlen: 4                                    # [14] Minimum password length (characters)
+pw_minclass: 1                                  # [4] Minimum number of character classes (e.g., upper, lower, digit, special)
+pw_dcredit: -1                                  # [-1] Require at least one digit (negative means subtract from required classes)
+pw_ucredit: 0                                   # [-1] Require at least one uppercase letter
+pw_lcredit: 0                                   # [-1] Require at least one lowercase letter
+pw_ocredit: 0                                   # [-1] Require at least one special character (other)
+
+pass_max_days: 600                              # [60] Maximum password age in days before expiration
+pass_min_days: 1                                # [1] Minimum days before a password can be changed again
+pass_warn_age: 7                                # [7] Days before expiration to start warning the user
+
+default_umask: 027                              # [027] Default file creation mask (restricts permissions; 027 = rw for owner, r for group, none for others)
 
 # GRUB/sysctl/time
-grub_cmdline_linux: 'quiet splash audit=1 audit_backlog_limit=8192'
-chrony_servers: ['pool.ntp.org']
-bootloader_password_pbkdf2: ""
+grub_cmdline_linux: 'quiet splash audit=1 audit_backlog_limit=8192'  # Configures GRUB to enable auditing and increase backlog buffer size.
+chrony_servers: ['pool.ntp.org']                 # Specifies NTP servers for time synchronization using Chrony.
+bootloader_password_pbkdf2: ""                   # Optional GRUB bootloader password (PBKDF2 hash); leave empty if not used.
 
 # Logging
-rsyslog_remote_host: ""
-rsyslog_remote_port: 514
-
-# Compliance tools
-#pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"          # Ubuntu Pro token for FIPS
-#usg_apply_fix: false
+rsyslog_remote_host: ""                          # Remote syslog server hostname/IP; leave empty to disable remote logging.
+rsyslog_remote_port: 514                         # Port used for remote syslog communication (default is 514).
 
 # Repositories
-approved_sources_list: ""
+approved_sources_list: ""                        # Optional list of approved APT sources; leave empty to use system defaults.
+``
