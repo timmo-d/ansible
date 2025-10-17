@@ -25,8 +25,23 @@
   changed_when: "'attached' in pro_attach.stdout | lower"
   failed_when: pro_attach.rc != 0
 
+- name: Debug | Check Ubuntu Pro status before enabling FIPS
+  command: pro status
+  register: pro_status_check
+  changed_when: false
+  failed_when: false
+
+- name: Debug | Output Ubuntu Pro status
+  debug:
+    var: pro_status_check.stdout
+
 - name: Enable FIPS updates channel
   command: pro enable fips-updates
+  args:
+    timeout: 60
+  register: fips_enable
+  changed_when: "'enabled' in fips_enable.stdout | lower"
+  failed_when: fips_enable.rc != 0
   when: pro_token is defined and pro_token != ''
 
 - name: Ensure FIPS is enabled on next boot
