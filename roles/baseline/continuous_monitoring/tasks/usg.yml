@@ -45,7 +45,7 @@
     - (pro_status.stdout | from_json).status == 'not-attached'
   register: pro_attach
   changed_when: "'This machine is now attached' in pro_attach.stdout"
-  failed_when: pro_attach.rc not in [0]
+  failed_when: pro_attach.rc != 0
   tags: ['usg']
 
 - name: Enable the USG channel via Pro
