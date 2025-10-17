@@ -1,6 +1,4 @@
 ---
-# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
-
 - name: Install Ubuntu Pro client (required for FIPS)
   apt:
     name: ubuntu-advantage-tools
@@ -22,7 +20,6 @@
     dest: /etc/default/grub.d/99-fips.cfg
     content: |
       GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX fips=1"
-  notify: []
 
 - name: Update grub
   command: update-grub

@@ -1,6 +1,4 @@
 ---
-# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
-
 - name: Require pwquality during password changes
   lineinfile:
     path: /etc/pam.d/common-password

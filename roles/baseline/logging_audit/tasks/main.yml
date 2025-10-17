@@ -2,26 +2,26 @@
 # logging_audit control group — included by baseline/tasks/main.yml
 
 - name: Run install auditd
-  import_tasks: { role_path }/logging_audit/tasks/install_auditd.yml
+  import_tasks: "{{ role_path }}/logging_audit/tasks/install_auditd.yml"
   when: enable_install_auditd
 
 
 - name: Run audit rules stig
-  import_tasks: { role_path }/logging_audit/tasks/audit_rules_stig.yml
+  import_tasks: "{{ role_path }}/logging_audit/tasks/audit_rules_stig.yml"
   when: enable_audit_rules_stig
 
 
 - name: Run rsyslog remote
-  import_tasks: { role_path }/logging_audit/tasks/rsyslog_remote.yml
+  import_tasks: "{{ role_path }}/logging_audit/tasks/rsyslog_remote.yml"
   when: enable_rsyslog_remote
 
 
 - name: Run logrotate hardening
-  import_tasks: { role_path }/logging_audit/tasks/logrotate_hardening.yml
+  import_tasks: "{{ role_path }}/logging_audit/tasks/logrotate_hardening.yml"
   when: enable_logrotate_hardening
 
 
 - name: Run auditd log group root
-  import_tasks: { role_path }/logging_audit/tasks/auditd_log_group_root.yml
+  import_tasks: "{{ role_path }}/logging_audit/tasks/auditd_log_group_root.yml"
   when: enable_auditd_log_group_root
 

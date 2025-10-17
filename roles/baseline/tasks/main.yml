@@ -2,34 +2,44 @@
 # Baseline wrapper: include each category in order
 
 - name: Include account_identity controls
-  import_tasks: { role_path }/account_identity/tasks/main.yml
+  import_tasks: "{{ role_path }}/account_identity/tasks/main.yml"
+
 
 - name: Include access_control controls
-  import_tasks: { role_path }/access_control/tasks/main.yml
+  import_tasks: "{{ role_path }}/access_control/tasks/main.yml"
+
 
 - name: Include authz controls
-  import_tasks: { role_path }/authz/tasks/main.yml
+  import_tasks: "{{ role_path }}/authz/tasks/main.yml"
+
 
 - name: Include crypto controls
-  import_tasks: { role_path }/crypto/tasks/main.yml
+  import_tasks: "{{ role_path }}/crypto/tasks/main.yml"
+
 
 - name: Include logging_audit controls
-  import_tasks: { role_path }/logging_audit/tasks/main.yml
+  import_tasks: "{{ role_path }}/logging_audit/tasks/main.yml"
+
 
 - name: Include system_config controls
-  import_tasks: { role_path }/system_config/tasks/main.yml
+  import_tasks: "{{ role_path }}/system_config/tasks/main.yml"
+
 
 - name: Include patch_vuln controls
-  import_tasks: { role_path }/patch_vuln/tasks/main.yml
+  import_tasks: "{{ role_path }}/patch_vuln/tasks/main.yml"
+
 
 - name: Include network_security controls
-  import_tasks: { role_path }/network_security/tasks/main.yml
+  import_tasks: "{{ role_path }}/network_security/tasks/main.yml"
+
 
 - name: Include fs_storage controls
-  import_tasks: { role_path }/fs_storage/tasks/main.yml
+  import_tasks: "{{ role_path }}/fs_storage/tasks/main.yml"
+
 
 - name: Include software_appcontrol controls
-  import_tasks: { role_path }/software_appcontrol/tasks/main.yml
+  import_tasks: "{{ role_path }}/software_appcontrol/tasks/main.yml"
+
 
 - name: Include continuous_monitoring controls
-  import_tasks: { role_path }/continuous_monitoring/tasks/main.yml
+  import_tasks: "{{ role_path }}/continuous_monitoring/tasks/main.yml"

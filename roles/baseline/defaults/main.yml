@@ -1,8 +1,7 @@
-
 ---
 # Global feature switches and policy knobs
 # Account & Identity
-enable_enforce_password_policy: false
+enable_enforce_password_policy: true
 enable_disable_blank_passwords: true
 enable_restrict_root_usage: true
 enable_pki_auth_mapping: true
@@ -24,7 +23,7 @@ enable_audit_rules_stig: true
 enable_rsyslog_remote: false
 enable_logrotate_hardening: true
 enable_auditd_log_group_root: true
-# System Config
+# System Configuration
 enable_disable_unnecessary_services: true
 enable_secure_boot_settings: true
 enable_kernel_hardening_sysctl: true
@@ -33,7 +32,7 @@ enable_time_sync: true
 enable_blacklist_unused_filesystems: true
 enable_apparmor_enable: true
 enable_vendor_supported_release: true
-# Patch/Vuln
+# Patch & Vulnerability
 enable_enable_unattended_upgrades: true
 enable_verify_package_signatures: true
 # Network Security

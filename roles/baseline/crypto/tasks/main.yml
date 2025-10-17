@@ -2,16 +2,16 @@
 # crypto control group — included by baseline/tasks/main.yml
 
 - name: Run enable fips mode
-  import_tasks: { role_path }/crypto/tasks/enable_fips_mode.yml
+  import_tasks: "{{ role_path }}/crypto/tasks/enable_fips_mode.yml"
   when: enable_enable_fips_mode
 
 
 - name: Run ssh strong ciphers
-  import_tasks: { role_path }/crypto/tasks/ssh_strong_ciphers.yml
+  import_tasks: "{{ role_path }}/crypto/tasks/ssh_strong_ciphers.yml"
   when: enable_ssh_strong_ciphers
 
 
 - name: Run disable weak protocols
-  import_tasks: { role_path }/crypto/tasks/disable_weak_protocols.yml
+  import_tasks: "{{ role_path }}/crypto/tasks/disable_weak_protocols.yml"
   when: enable_disable_weak_protocols
 

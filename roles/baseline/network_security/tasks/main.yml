@@ -2,16 +2,16 @@
 # network_security control group — included by baseline/tasks/main.yml
 
 - name: Run ufw firewall
-  import_tasks: { role_path }/network_security/tasks/ufw_firewall.yml
+  import_tasks: "{{ role_path }}/network_security/tasks/ufw_firewall.yml"
   when: enable_ufw_firewall
 
 
 - name: Run ssh hardening
-  import_tasks: { role_path }/network_security/tasks/ssh_hardening.yml
+  import_tasks: "{{ role_path }}/network_security/tasks/ssh_hardening.yml"
   when: enable_ssh_hardening
 
 
 - name: Run disable unused protocols
-  import_tasks: { role_path }/network_security/tasks/disable_unused_protocols.yml
+  import_tasks: "{{ role_path }}/network_security/tasks/disable_unused_protocols.yml"
   when: enable_disable_unused_protocols
 

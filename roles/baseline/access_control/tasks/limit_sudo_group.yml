@@ -1,6 +1,4 @@
 ---
-# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
-
 - name: Get current sudo group members
   shell: "getent group sudo | cut -d: -f4"
   register: sudo_members

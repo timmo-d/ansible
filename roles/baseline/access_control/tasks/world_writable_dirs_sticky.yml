@@ -1,6 +1,4 @@
 ---
-# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
-
 - name: Find local world-writable directories
   shell: |
     df --local -P | awk 'NR!=1 {print $6}' | xargs -I '{}' find '{}' -xdev -type d -perm -0002

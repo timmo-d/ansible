@@ -1,6 +1,4 @@
 ---
-# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
-
 - name: Blacklist uncommon filesystem modules
   copy:
     dest: /etc/modprobe.d/blacklist-stig.conf

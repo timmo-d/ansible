@@ -1,6 +1,4 @@
 ---
-# This task is part of Ubuntu 24.04 LTS DISA-STIG baseline
-
 - name: Disable remote root login via SSH
   lineinfile:
     path: /etc/ssh/sshd_config

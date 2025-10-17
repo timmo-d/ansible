@@ -2,16 +2,16 @@
 # authz control group — included by baseline/tasks/main.yml
 
 - name: Run pam lockout
-  import_tasks: { role_path }/authz/tasks/pam_lockout.yml
+  import_tasks: "{{ role_path }}/authz/tasks/pam_lockout.yml"
   when: enable_pam_lockout
 
 
 - name: Run pam common auth
-  import_tasks: { role_path }/authz/tasks/pam_common_auth.yml
+  import_tasks: "{{ role_path }}/authz/tasks/pam_common_auth.yml"
   when: enable_pam_common_auth
 
 
 - name: Run disable su unless sudo
-  import_tasks: { role_path }/authz/tasks/disable_su_unless_sudo.yml
+  import_tasks: "{{ role_path }}/authz/tasks/disable_su_unless_sudo.yml"
   when: enable_disable_su_unless_sudo
 
