@@ -14,12 +14,21 @@ pro_enable_livepatch: true         # enable Canonical Livepatch if entitled
 pro_enable_fips_updates: false     # enable FIPS Updates (requires reboot; use when you need FIPS compliance)
 
 
-# --- USG (Ubuntu Security Guide) settings ---
+# --- USG ---
 enable_usg: true
-usg_run_audit: true
-usg_profile: "disa_stig"           # compliance profile: 'disa_stig' or 'cis'
-usg_reports_dir: "/var/tmp"        # where to save audit reports
-usg_apply_fix: false               # set true to remediate (DISRUPTIVE; reboot required
+usg_profile: "disa_stig"        # or a CIS profile you use (e.g., cis_level1_server)
+usg_run_audit: true             # run `usg audit`
+usg_apply_fix: false            # DISRUPTIVE; set true on fresh builds only
+usg_reports_dir: "/var/tmp"
 
-# If targeting DISA-STIG, also flip on FIPS Updates (requires reboot)
-pro_enable_fips_updates: false  # set to true where you need FIPS compliance
+# --- SCAP/OpenSCAP ---
+enable_oscap: true
+oscap_profile: "xccdf_org.ssgproject.content_profile_cis_level1_server"  # adjust to your DS
+oscap_results_path: "/var/tmp/openscap-results.xml"
+oscap_summary_path: "/var/tmp/openscap-summary.txt"
+
+# If you want to pass in a known DS file, set this; otherwise we'll auto-discover.
+oscap_datastream: ""
+
+# Pro/FIPS (recommended for DISA-STIG)
+pro_enable_fips_updates: false   # set true on machines that must be DISA-STIG compliant

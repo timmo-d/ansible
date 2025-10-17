@@ -1,26 +1,108 @@
 ---
+# Install OpenSCAP and SSG content, find a datastream, run an evaluation.
 
-- name: Install OpenSCAP scanner and SCAP Security Guide content
-  apt:
-    name: [openscap-scanner, scap-security-guide]
-    state: present
+- name: Ensure Universe repo is enabled (OpenSCAP + SSG live here)
+  become: true
+  ansible.builtin.command: add-apt-repository -y universe
+  register: add_universe_scap
+  changed_when: add_universe_scap.rc == 0 and ('universe' in (add_universe_scap.stdout | lower))
+  failed_when: false
+  tags: ['scap']
+  # OpenSCAP scanner and SSG binaries are in Universe on 24.04. citehttps://launchpad.net/ubuntu/noble/+package/openscap-scannerhttps://launchpad.net/ubuntu/noble/+source/scap-security-guide
+
+- name: Update apt cache
+  become: true
+  ansible.builtin.apt:
     update_cache: yes
+  tags: ['scap']
 
-- name: Detect Ubuntu SCAP datastream file (24.04 or compatible)
-  shell: ls -1 /usr/share/xml/scap/ssg/content/ssg-ubuntu*-ds.xml | head -n1
-  args:
-    warn: false
-  register: ssg_ds
+- name: Install OpenSCAP scanner (oscap)
+  become: true
+  ansible.builtin.apt:
+    name: openscap-scanner
+    state: present
+  tags: ['scap']
+  # Confirmed package for Noble. citehttps://launchpad.net/ubuntu/noble/+package/openscap-scanner
+
+- name: Install SCAP Security Guide content packages (ssg-*)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - ssg-base
+      - ssg-debderived
+      - ssg-debian
+      - ssg-nondebian
+      - ssg-applications
+    state: present
+  failed_when: false
+  tags: ['scap']
+  # On Debian/Ubuntu, SSG content is delivered as ssg-* binaries (source name is scap-security-guide). citehttps://launchpad.net/ubuntu/noble/+source/scap-security-guidehttps://www.open-scap.org/security-policies/scap-security-guide/
+
+# Optional umbrella (harmless if absent on your mirror)
+- name: Try to install 'scap-security-guide' umbrella package (best-effort)
+  become: true
+  ansible.builtin.apt:
+    name: scap-security-guide
+    state: present
+  failed_when: false
+  tags: ['scap']
+
+# --- Datastream discovery ---
+- name: Use provided datastream if set
+  ansible.builtin.set_fact:
+    ssg_ds_file: "{{ oscap_datastream }}"
+  when: oscap_datastream | default('') | length > 0
+  tags: ['scap']
+
+- name: Discover a SCAP DataStream (Ubuntu preferred, then Debian, then any)
+  ansible.builtin.shell: |
+    set -o pipefail
+    for f in \
+      /usr/share/xml/scap/ssg/content/ssg-ubuntu*-ds*.xml \
+      /usr/share/xml/scap/ssg/content/ssg-debian*-ds*.xml \
+      /usr/share/xml/scap/ssg/content/*-ds*.xml; do
+      [ -f "$f" ] && { echo "$f"; break; }
+    done
+  args: { executable: /bin/bash }
+  register: ssg_ds_search
+  when: (oscap_datastream | default('')) | length == 0
   changed_when: false
-  failed_when: ssg_ds.stdout | length == 0
+  failed_when: false
+  tags: ['scap']
+  # SSG content conventionally lives under /usr/share/xml/scap/ssg/content/. citehttps://docs.redhat.com/en/documentation/red_hat_satellite/6.14/html/managing_security_compliance/configuring_scap_contents_security-compliance
 
-- name: Run OpenSCAP DISA-STIG profile evaluation
-  command: oscap xccdf eval --profile stig --results /var/tmp/openscap-results.xml {{ ssg_ds.stdout }}
-  register: oscap
+- name: Set discovered datastream path
+  ansible.builtin.set_fact:
+    ssg_ds_file: "{{ ssg_ds_search.stdout | trim }}"
+  when:
+    - (oscap_datastream | default('')) | length == 0
+    - ssg_ds_search.stdout | length > 0
+  tags: ['scap']
+
+- name: Skip SCAP evaluation if no datastream found
+  ansible.builtin.debug:
+    msg: "No SCAP DataStream found under /usr/share/xml/scap/ssg/content; skipping OpenSCAP."
+  when: ssg_ds_file is not defined or ssg_ds_file | length == 0
+  tags: ['scap']
+
+# --- Evaluation ---
+- name: Evaluate with OpenSCAP
+  become: true
+  ansible.builtin.command: >
+    oscap xccdf eval
+    --results {{ oscap_results_path | default('/var/tmp/openscap-results.xml') }}
+    --profile {{ oscap_profile }}
+    {{ ssg_ds_file }}
+  register: oscap_eval
   changed_when: false
-  ignore_errors: yes
+  failed_when: false
+  when: ssg_ds_file is defined and ssg_ds_file | length > 0
+  tags: ['scap']
 
-- name: Save OpenSCAP summary to file
-  copy:
-    dest: /var/tmp/openscap-summary.txt
-    content: "{{ oscap.stdout }}"
+- name: Save OpenSCAP summary
+  become: true
+  ansible.builtin.copy:
+    dest: "{{ oscap_summary_path | default('/var/tmp/openscap-summary.txt') }}"
+    content: "{{ oscap_eval.stdout | default('') }}"
+  when: ssg_ds_file is defined and ssg_ds_file | length > 0
+  tags: ['scap']
