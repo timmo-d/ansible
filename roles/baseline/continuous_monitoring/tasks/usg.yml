@@ -23,16 +23,14 @@
   when: enable_usg | default(true)
   tags: ['usg']
 
-- name: Check if system is already attached to Ubuntu Pro
-  become: true
-  ansible.builtin.command: pro status --format json
-  register: pro_status
-  changed_when: false
-  failed_when: false
+
+
+- name: Parse Ubuntu Pro status
+  set_fact:
+    pro_attached_status: "{{ pro_status.stdout | from_json | json_query('status') }}"
   when:
     - enable_usg | default(true)
-    - pro_token is defined
-    - pro_token | length > 0
+    - pro_status.stdout is defined
   tags: ['usg']
 
 - name: Attach to Ubuntu Pro if not already attached
@@ -42,7 +40,7 @@
     - enable_usg | default(true)
     - pro_token is defined
     - pro_token | length > 0
-    - (pro_status.stdout | from_json).status == 'not-attached'
+    - pro_attached_status == 'not-attached'
   register: pro_attach
   changed_when: "'This machine is now attached' in pro_attach.stdout"
   failed_when: pro_attach.rc != 0
