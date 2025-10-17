@@ -13,15 +13,13 @@
   changed_when: false
   failed_when: false
   when:
-    - enable_fips_mode | default(false)
     - pro_token is defined and pro_token != ''
   tags: ['fips']
-  
+
 - name: Parse Ubuntu Pro status
   set_fact:
     pro_attached_status: "{{ pro_status.stdout | from_json | json_query('status') }}"
   when:
-    - enable_fips_mode | default(false)
     - pro_status.stdout is defined
   tags: ['fips']
 
@@ -29,7 +27,6 @@
   become: true
   ansible.builtin.command: pro attach {{ pro_token }}
   when:
-    - enable_fips_mode | default(false)
     - pro_token is defined
     - pro_token | length > 0
     - pro_attached_status == 'not-attached'
