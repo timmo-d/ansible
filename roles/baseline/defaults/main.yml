@@ -102,12 +102,12 @@ ssh_macs: 'hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com'  # Secur
 ssh_kex: 'curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512'  # Secure key exchange algorithms.
 
 # Password policy (pwquality/login.defs)
-pw_minlen: 4                                    # [14] Minimum password length (characters)
-pw_minclass: 1                                  # [4] Minimum number of character classes (e.g., upper, lower, digit, special)
-pw_dcredit: -1                                  # [-1] Require at least one digit (negative means subtract from required classes)
-pw_ucredit: 0                                   # [-1] Require at least one uppercase letter
-pw_lcredit: 0                                   # [-1] Require at least one lowercase letter
-pw_ocredit: 0                                   # [-1] Require at least one special character (other)
+pw_minlen: 14                                    # [14] Minimum password length (characters)
+pw_minclass: 4                                   # [4] Minimum number of character classes (e.g., upper, lower, digit, special)
+pw_dcredit: -1                                   # [-1] Require at least one digit (negative means subtract from required classes)
+pw_ucredit: -1                                   # [-1] Require at least one uppercase letter
+pw_lcredit: -1                                   # [-1] Require at least one lowercase letter
+pw_ocredit: -1                                   # [-1] Require at least one special character (other)
 
 pass_max_days: 600                              # [60] Maximum password age in days before expiration
 pass_min_days: 1                                # [1] Minimum days before a password can be changed again
