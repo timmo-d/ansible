@@ -44,3 +44,15 @@
 - name: Include continuous_monitoring controls
   import_tasks: "{{ role_path }}/continuous_monitoring/tasks/main.yml"
 
+- name: Reboot if required (FIPS or USG remediation applied)
+  become: true
+  ansible.builtin.reboot:
+    msg: "Rebooting to apply FIPS kernel or USG changes"
+    reboot_timeout: "{{ reboot_timeout_sec }}"
+    pre_reboot_delay: "{{ pre_reboot_delay_sec }}"
+    post_reboot_delay: "{{ post_reboot_delay_sec }}"
+    connect_timeout: 5
+    test_command: "{{ reboot_test_command }}"
+  when:
+    - auto_reboot_on_changes | default(true)
+    - (pro_enable_fips_updates | default(false)) or (usg_apply_fix | default(false))

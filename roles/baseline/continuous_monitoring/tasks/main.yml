@@ -1,17 +1,13 @@
+
 ---
-# continuous_monitoring control group — included by baseline/tasks/main.yml
+- name: Ubuntu Security Guide (USG)
+  import_tasks: "{{ role_path }}/continuous_monitoring/tasks/usg.yml"
+  when: enable_usg | default(true)
 
-- name: Run install usg
-  import_tasks: "{{ role_path }}/continuous_monitoring/tasks/install_usg.yml"
-  when: enable_install_usg
-
-
-- name: Run oscap scan
-  import_tasks: "{{ role_path }}/continuous_monitoring/tasks/oscap_scan.yml"
-  when: enable_oscap_scan
-
+- name: OpenSCAP scanner + SSG content + evaluation
+  import_tasks: "{{ role_path }}/continuous_monitoring/tasks/oscap.yml"
+  when: enable_oscap | default(true)
 
 - name: Run banner motd privacy
   import_tasks: "{{ role_path }}/continuous_monitoring/tasks/banner_motd_privacy.yml"
   when: enable_banner_motd_privacy
-

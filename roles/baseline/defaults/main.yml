@@ -60,8 +60,34 @@ enable_remove_unnecessary_packages: true
 enable_restrict_repos: false
 
 # Continuous Monitoring
-enable_install_usg: true
-enable_oscap_scan: true
+# Ubuntu Pro
+pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') | default('', true) }}"
+pro_services_to_enable:
+  - esm-infra
+  - esm-apps
+pro_enable_livepatch: true
+pro_enable_fips_updates: true  # [false] set true where DISA-STIG compliance is required (reboot required)
+
+# USG (Ubuntu Security Guide)
+enable_usg: true
+usg_profile: "disa_stig"        # or CIS profile, e.g., cis_level1_server
+usg_run_audit: true
+usg_apply_fix: true            # [false] DISRUPTIVE; enable on fresh builds
+usg_reports_dir: "/var/tmp"
+
+# OpenSCAP (SCAP)
+enable_oscap: true
+oscap_profile: "xccdf_org.ssgproject.content_profile_cis_level1_server"
+oscap_results_path: "/var/tmp/openscap-results.xml"
+oscap_summary_path: "/var/tmp/openscap-summary.txt"
+oscap_datastream: ""           # leave empty to auto-discover from SSG content
+
+# Reboot control
+auto_reboot_on_changes: true
+reboot_timeout_sec: 900         # bump for kernel/FIPS changes on slow hosts
+pre_reboot_delay_sec: 5
+post_reboot_delay_sec: 10
+reboot_test_command: "whoami"
 enable_banner_motd_privacy: true
 
 # ---- Policy knobs ----
@@ -94,8 +120,8 @@ rsyslog_remote_host: ""
 rsyslog_remote_port: 514
 
 # Compliance tools
-pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"          # Ubuntu Pro token for FIPS
-usg_apply_fix: false
+#pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"          # Ubuntu Pro token for FIPS
+#usg_apply_fix: false
 
 # Repositories
 approved_sources_list: ""

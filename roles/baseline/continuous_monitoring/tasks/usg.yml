@@ -1,21 +1,19 @@
----
-# Enable + install USG, then audit, optionally remediate.
-# USG is enabled via Pro ("pro enable usg"), then `apt install usg`.
-# Noble note: Some 24.04 builds historically returned "USG ... not available"; we skip gracefully.
 
+---
 - name: Ensure Universe repo is enabled (USG deps sometimes live here)
   become: true
   ansible.builtin.command: add-apt-repository -y universe
   register: add_universe
   changed_when: add_universe.rc == 0 and ('universe' in (add_universe.stdout | lower))
   failed_when: false
+  when: enable_usg | default(true)
   tags: ['usg']
-  # Enabling Universe is often required for USG dependencies. citehttps://discourse.ubuntu.com/t/installation-of-the-ubuntu-security-guide/26081
 
 - name: Update apt cache
   become: true
   ansible.builtin.apt:
     update_cache: yes
+  when: enable_usg | default(true)
   tags: ['usg']
 
 - name: Ensure Ubuntu Pro client is present
@@ -24,13 +22,14 @@
     name: ubuntu-advantage-tools
     state: present
     update_cache: yes
+  when: enable_usg | default(true)
   tags: ['usg']
 
-# If your baseline already attached, this is a no-op (rc=2 treated as success)
 - name: Attach to Ubuntu Pro if token provided (non-interactive)
   become: true
   ansible.builtin.command: pro attach {{ pro_token }}
   when:
+    - enable_usg | default(true)
     - pro_token is defined
     - pro_token | length > 0
   register: pro_attach
@@ -44,14 +43,14 @@
   register: pro_enable_usg
   changed_when: "'enabled' in (pro_enable_usg.stdout | lower)"
   failed_when: false
+  when: enable_usg | default(true)
   tags: ['usg']
-  # Canonical flow: `pro enable usg` → `apt install usg`. citehttps://documentation.ubuntu.com/pro-client/en/latest/howtoguides/enable_cis/
 
 - name: Flag USG availability for this release
   ansible.builtin.set_fact:
     usg_available: "{{ 'not available' not in (pro_enable_usg.stdout | lower) }}"
+  when: enable_usg | default(true)
   tags: ['usg']
-  # Some Noble builds historically returned "USG is not available for 24.04"; skip if so. citehttps://askubuntu.com/questions/1536679/unable-to-install-ubuntu-security-guide-on-ubuntu-24-04-lts-noble-numbat
 
 - name: Install USG CLI (package is 'usg')
   become: true
@@ -59,26 +58,28 @@
     name: usg
     state: present
     update_cache: yes
-  when: usg_available | default(true)
+  when:
+    - enable_usg | default(true)
+    - usg_available | default(true)
   tags: ['usg']
 
 - name: Explain skip when USG is not available
   ansible.builtin.debug:
     msg: "USG not available on this 24.04 build (per Pro). Skipping USG steps."
-  when: not usg_available | default(true)
+  when:
+    - enable_usg | default(true)
+    - not usg_available | default(true)
   tags: ['usg']
 
-# (Optional) If DISA-STIG is the target, recommend FIPS Updates
 - name: Note FIPS Updates recommended for DISA-STIG (reboot required)
   ansible.builtin.debug:
     msg: "DISA-STIG selected: Canonical recommends enabling 'fips-updates'. This typically requires a reboot."
   when:
+    - enable_usg | default(true)
     - usg_available | default(true)
     - (usg_profile | default('disa_stig')) == 'disa_stig'
   tags: ['usg']
-  # DISA-STIG requires FIPS-validated packages; Canonical recommends fips-updates. citehttps://documentation.ubuntu.com/pro-client/en/latest/howtoguides/enable_fips/https://documentation.ubuntu.com/security/docs/compliance/usg/disa-comply/
 
-# --- USG audit (report only) ---
 - name: USG | audit {{ usg_profile | default('disa_stig') }}
   become: true
   ansible.builtin.command: "usg audit {{ usg_profile | default('disa_stig') }}"
@@ -86,6 +87,7 @@
   changed_when: false
   failed_when: false
   when:
+    - enable_usg | default(true)
     - usg_available | default(true)
     - usg_run_audit | default(true)
   tags: ['usg']
@@ -97,25 +99,18 @@
     content: "{{ usg_audit.stdout | default('') }}"
     mode: '0644'
   when:
+    - enable_usg | default(true)
     - usg_available | default(true)
     - usg_run_audit | default(true)
   tags: ['usg']
 
-# --- USG remediation (DISRUPTIVE; reboot typically required) ---
 - name: USG | fix {{ usg_profile | default('disa_stig') }} (DISRUPTIVE)
   become: true
   ansible.builtin.command: "usg fix {{ usg_profile | default('disa_stig') }}"
   register: usg_fix
   changed_when: true
   when:
-    - usg_available | default(true)
-    - usg_apply_fix | default(false)
-  tags: ['usg']
-
-- name: Warn about reboot after USG remediation / FIPS Updates
-  ansible.builtin.debug:
-    msg: "USG remediation and/or FIPS Updates were applied. Schedule a reboot."
-  when:
+    - enable_usg | default(true)
     - usg_available | default(true)
     - usg_apply_fix | default(false)
   tags: ['usg']
