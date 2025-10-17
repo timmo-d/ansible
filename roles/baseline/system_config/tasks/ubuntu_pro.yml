@@ -45,7 +45,7 @@
 
 - name: Enable requested Ubuntu Pro services (idempotent)
   become: true
-  ansible.builtin.command: "pro enable {{ item }}"
+  ansible.builtin.command: "pro enable {{ item }} --assume-yes"
   register: pro_enable_results
   loop: "{{ pro_services_effective | unique }}"
   changed_when: "'enabled' in (pro_enable_results.stdout | default('') | lower) or ('results' in pro_enable_results and 'enabled' in (pro_enable_results.results[0].stdout | default('') | lower))"
