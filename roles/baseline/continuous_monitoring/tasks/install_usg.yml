@@ -2,7 +2,7 @@
 
 - name: Install Ubuntu Security Guide (USG)
   apt:
-    name: ubuntu-security-guide
+    name: usg
     state: present
     update_cache: yes
 

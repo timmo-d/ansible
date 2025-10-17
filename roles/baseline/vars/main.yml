@@ -13,3 +13,9 @@ pro_services_to_enable:
 # Optional toggles:
 pro_enable_livepatch: true         # enable Canonical Livepatch if entitled
 pro_enable_fips_updates: false     # enable FIPS Updates (requires reboot; use when you need FIPS compliance)
+
+
+# --- USG (Ubuntu Security Guide) settings ---
+usg_profile: "disa_stig"           # compliance profile: 'disa_stig' or 'cis'
+usg_reports_dir: "/var/tmp"        # where to save audit reports
+usg_apply_fix: false               # set true to remediate (DISRUPTIVE; reboot required
