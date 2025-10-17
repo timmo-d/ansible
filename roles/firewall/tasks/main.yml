@@ -19,6 +19,13 @@
 ###################################################
 # Copy across applicable ruleset
 ###################################################
+- name: Configure rules for SIEM Server configuration
+  template:
+    src: baseline_nftables.conf.j2
+    dest: /etc/nftables.conf
+    mode: '0644'
+  when: ruleset == "baseline"
+
 - name: Configure rules for Cloudflared/NGINX Reverse Proxy configuration
   template:
     src: nginx_nftables.conf.j2
