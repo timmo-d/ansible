@@ -21,7 +21,7 @@ enable_disable_su_unless_sudo: true           # Restrict use of 'su' command to 
 approved_sudo_users: ["{{ ansible_user }}"]   # List of users allowed in the sudo group (defaults to the current Ansible user)
 
 # Crypto
-enable_enable_fips_mode: true                  # [false] Enables FIPS mode for cryptographic compliance; requires Ubuntu Pro subscription token.
+enable_fips_mode: true                         # [false] Enables FIPS mode for cryptographic compliance; requires Ubuntu Pro subscription token.
 enable_ssh_strong_ciphers: true                # Enforces use of strong SSH ciphers to enhance secure communication.
 enable_disable_weak_protocols: true            # Disables outdated or insecure protocols (e.g., SSLv2, SSLv3) to reduce vulnerabilities.
 

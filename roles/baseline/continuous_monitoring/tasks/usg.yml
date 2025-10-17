@@ -78,9 +78,9 @@
     - not usg_available | default(true)
   tags: ['usg']
 
-- name: Note FIPS Updates recommended for DISA-STIG (reboot required)
+- name: Note USG recommended for DISA-STIG (reboot required)
   ansible.builtin.debug:
-    msg: "DISA-STIG selected: Canonical recommends enabling 'fips-updates'. This typically requires a reboot."
+    msg: "DISA-STIG selected: Canonical recommends enabling USG."
   when:
     - enable_usg | default(true)
     - usg_available | default(true)

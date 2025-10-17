@@ -2,28 +2,31 @@
   apt:
     name: ubuntu-advantage-tools
     state: present
+    update_cache: yes
   when: pro_token is defined and pro_token != ''
+  tags: ['fips']
 
 # --- Check attachment status ---
-- name: Check if system is already attached to Ubuntu Pro
-  command: pro status --format json
-  register: pro_status_attach
-  changed_when: false
-  failed_when: false
-  when: pro_token is defined and pro_token != ''
-
-- name: Set fact for Ubuntu Pro attachment status
+- name: Parse Ubuntu Pro status
   set_fact:
-    pro_attached: "{{ (pro_status_attach.stdout | from_json).account is defined }}"
-  when: pro_status_attach.stdout is defined
-- name: Attach Ubuntu Pro subscription
-  command: pro attach {{ pro_token }}
-  register: pro_attach
-  changed_when: "'attached' in pro_attach.stdout | lower"
-  failed_when: pro_attach.rc != 0 and 'already attached' not in pro_attach.stderr | lower
+    pro_attached_status: "{{ pro_status.stdout | from_json | json_query('status') }}"
   when:
-    - pro_token is defined and pro_token != ''
-    - not pro_attached | default(false)
+    - enable_fips_mode | default(false)
+    - pro_status.stdout is defined
+  tags: ['fips']
+
+- name: Attach to Ubuntu Pro if not already attached
+  become: true
+  ansible.builtin.command: pro attach {{ pro_token }}
+  when:
+    - enable_fips_mode | default(false)
+    - pro_token is defined
+    - pro_token | length > 0
+    - pro_attached_status == 'not-attached'
+  register: pro_attach
+  changed_when: "'This machine is now attached' in pro_attach.stdout"
+  failed_when: pro_attach.rc != 0
+  tags: ['fips']
 
 # --- Check FIPS status ---
 - name: Check if FIPS updates are already enabled
@@ -32,6 +35,7 @@
   changed_when: false
   failed_when: false
   when: pro_token is defined and pro_token != ''
+  tags: ['fips']
 
 - name: Set fact for FIPS updates status
   set_fact:
@@ -41,6 +45,7 @@
         (pro_status_fips.stdout | from_json).services['fips-updates'].status == 'enabled'
       }}
   when: pro_status_fips.stdout is defined
+  tags: ['fips']
 
 # --- Enable FIPS ---
 - name: Enable FIPS updates channel (idempotent)
@@ -55,6 +60,7 @@
     - pro_attached | default(false)
     - not fips_enabled | default(false)
   notify: Reboot if FIPS enabled
+  tags: ['fips']
 
 # --- GRUB config ---
 - name: Ensure FIPS is enabled on next boot
