@@ -35,14 +35,24 @@
   debug:
     var: pro_status_check.stdout
 
-- name: Enable FIPS updates channel
+- name: Enable FIPS updates channel (async)
   command: pro enable fips-updates
-  args:
-    timeout: 60
-  register: fips_enable
-  changed_when: "'enabled' in fips_enable.stdout | lower"
-  failed_when: fips_enable.rc != 0
+  async: 60
+  poll: 0
+  register: fips_enable_job
   when: pro_token is defined and pro_token != ''
+  tags: ['fips']
+
+- name: Wait for FIPS enable to complete
+  async_status:
+    jid: "{{ fips_enable_job.ansible_job_id }}"
+  register: fips_enable
+  until: fips_enable.finished
+  retries: 10
+  delay: 6
+  changed_when: fips_enable.stdout is defined and 'enabled' in fips_enable.stdout | lower
+  failed_when: fips_enable.rc is defined and fips_enable.rc != 0
+  tags: ['fips']
 
 - name: Ensure FIPS is enabled on next boot
   copy:
