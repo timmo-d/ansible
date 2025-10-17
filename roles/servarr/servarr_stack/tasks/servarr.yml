@@ -1,6 +1,6 @@
 - name: Install Servarr apps using tinyoverflow role
   include_role:
-    name: tinyoverflow.servarr
+    name: servarr/tinyoverflow.servarr
   vars:
     servarr_app: "{{ item }}"
     servarr_user: "{{ item }}"

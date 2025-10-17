@@ -11,15 +11,18 @@
     - community.general
 
   roles:
-    - role: packages            # Install essential packages
-    - role: time_sync
-    - role: network_security
-    - role: ssh_hardening          # requires playbook restart
-    - role: file_integrity_audit
-    #- role: auth_access
-    - role: crypto_fips           # Requires restart if FIPS is not already enabled
-    - role: logging_journal
-    - role: system_hardening
-    - role: session_timeouts
-    - role: packages_patching
-    - role: compliance_lockdown
+    - role: baseline/packages            # Install essential packages
+    - role: baseline/time_sync
+    - role: baseline/network_security
+    - role: baseline/ssh_hardening          # requires playbook restart
+    - role: baseline/file_integrity_audit
+    #- role: baseline/auth_access
+    - role: baseline/crypto_fips           # Requires restart if FIPS is not already enabled
+    - role: baseline/logging_journal
+    - role: baseline/system_hardening
+    - role: baseline/session_timeouts
+    - role: baseline/packages_patching
+    - role: baseline/compliance_lockdown
+    - role: firewall                # Install nftables and configure
+      vars:
+        ruleset: "baseline"

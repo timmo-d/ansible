@@ -25,12 +25,12 @@
     - role: firewall
       vars:
         ruleset: "siem"
-    - role: logstash
-    - role: ../roles/wazuh/wazuh-indexer
-    - role: ../roles/wazuh/ansible-wazuh-manager
-    - role: ../roles/wazuh/ansible-filebeat-oss
-    - role: ../roles/wazuh/wazuh-dashboard
-    - role: suricata
-    - role: prometheus
-    - role: grafana
-    - role: validate_siem
+    - role: siem/logstash
+    - role: ../roles/siem/wazuh/wazuh-indexer
+    - role: ../roles/siem/wazuh/ansible-wazuh-manager
+    - role: ../roles/siem/wazuh/ansible-filebeat-oss
+    - role: ../roles/siem/wazuh/wazuh-dashboard
+    - role: siem/suricata
+    - role: siem/prometheus
+    - role: siem/grafana
+    - role: siem/validate_siem
