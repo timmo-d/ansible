@@ -1,5 +1,5 @@
 #---
-approved_sudo_users: ["ubuntu", {{ ansible_user }}]
+approved_sudo_users: ["ubuntu", "{{ ansible_user }}"]
 #pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
 #approved_sources_list: ""
 #usg_apply_fix: false
