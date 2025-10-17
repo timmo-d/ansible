@@ -3,7 +3,7 @@
 
 - name: Run enable fips mode
   import_tasks: "{{ role_path }}/crypto/tasks/enable_fips_mode.yml"
-  when: enable_enable_fips_mode
+  when: enable_fips_mode
 
 
 - name: Run ssh strong ciphers
