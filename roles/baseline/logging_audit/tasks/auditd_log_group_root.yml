@@ -1,4 +1,5 @@
 ---
+
 - name: Ensure audit log group is root in auditd.conf
   lineinfile:
     path: /etc/audit/auditd.conf
@@ -7,7 +8,7 @@
     create: yes
   notify: restart_auditd
 
-- name: Ensure /var/log/audit/* group is root
+- name: Ensure audit log files group owner is root
   file:
     path: /var/log/audit
     state: directory

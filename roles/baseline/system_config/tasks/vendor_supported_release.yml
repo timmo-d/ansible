@@ -1,9 +1,11 @@
 ---
+
 - name: Check vendor-supported release (informational)
-  shell: . /etc/lsb-release && echo "$DISTRIB_DESCRIPTION"
+  shell: |
+    . /etc/lsb-release && echo "$DISTRIB_DESCRIPTION"
   register: lsb
   changed_when: false
 
-- name: Display release info
+- name: Display release information
   debug:
-    msg: "Detected release: {{ lsb.stdout }} — Ensure vendor-supported 24.04 LTS build."
+    msg: "Detected release: {{ lsb.stdout }} — Ensure this is a vendor-supported 24.04 LTS build."

@@ -1,11 +1,12 @@
 ---
-- name: Install OpenSCAP + SCAP Security Guide
+
+- name: Install OpenSCAP scanner and SCAP Security Guide content
   apt:
     name: [openscap-scanner, scap-security-guide]
     state: present
     update_cache: yes
 
-- name: Detect Ubuntu SCAP datastream
+- name: Detect Ubuntu SCAP datastream file (24.04 or compatible)
   shell: ls -1 /usr/share/xml/scap/ssg/content/ssg-ubuntu*-ds.xml | head -n1
   args:
     warn: false
@@ -13,13 +14,13 @@
   changed_when: false
   failed_when: ssg_ds.stdout | length == 0
 
-- name: Evaluate STIG profile
+- name: Run OpenSCAP DISA-STIG profile evaluation
   command: oscap xccdf eval --profile stig --results /var/tmp/openscap-results.xml {{ ssg_ds.stdout }}
   register: oscap
   changed_when: false
   ignore_errors: yes
 
-- name: Save OpenSCAP summary
+- name: Save OpenSCAP summary to file
   copy:
     dest: /var/tmp/openscap-summary.txt
     content: "{{ oscap.stdout }}"

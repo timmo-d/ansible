@@ -1,5 +1,6 @@
 ---
-- name: Require pwquality during password changes
+
+- name: Require pwquality during password changes (common-password)
   lineinfile:
     path: /etc/pam.d/common-password
     regexp: '^password\s+requisite\s+pam_pwquality.so'

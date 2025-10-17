@@ -1,5 +1,6 @@
 ---
-- name: Apply kernel/sysctl hardening
+
+- name: Apply kernel/sysctl hardening settings
   template:
     src: "{{ role_path }}/system_config/templates/sysctl-hardening.conf.j2"
     dest: /etc/sysctl.d/99-stig-hardening.conf
@@ -7,5 +8,5 @@
     group: root
     mode: '0644'
 
-- name: Reload sysctl
+- name: Reload sysctl settings
   command: sysctl --system

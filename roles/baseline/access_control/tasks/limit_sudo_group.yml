@@ -1,10 +1,11 @@
 ---
+
 - name: Get current sudo group members
   shell: "getent group sudo | cut -d: -f4"
   register: sudo_members
   changed_when: false
 
-- name: Remove unauthorized sudo users
+- name: Remove users not in the approved sudo list
   user:
     name: "{{ item }}"
     groups: "{{ (item in approved_sudo_users) | ternary('sudo','') }}"

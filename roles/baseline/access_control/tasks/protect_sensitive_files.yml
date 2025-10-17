@@ -1,5 +1,6 @@
 ---
-- name: Secure permissions on critical auth files
+
+- name: Enforce secure ownership/permissions on critical auth files
   file:
     path: "{{ item.path }}"
     owner: root

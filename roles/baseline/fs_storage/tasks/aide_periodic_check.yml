@@ -1,5 +1,6 @@
 ---
-- name: Configure monthly AIDE check
+
+- name: Configure monthly AIDE check (≤ 30 days) via cron
   cron:
     name: 'STIG: monthly AIDE check'
     user: root

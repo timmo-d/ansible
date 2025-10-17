@@ -1,5 +1,6 @@
 ---
-- name: Remove unused/insecure packages
+
+- name: Remove unused/insecure packages (tune per environment)
   apt:
     name: [nis, rsh-server, talk, telnet, ldap-utils]
     state: absent

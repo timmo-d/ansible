@@ -1,4 +1,5 @@
 ---
+
 - name: Disable remote root login via SSH
   lineinfile:
     path: /etc/ssh/sshd_config
@@ -8,7 +9,7 @@
     backup: yes
   notify: restart_sshd
 
-- name: Ensure sudo installed
+- name: Ensure sudo is installed
   apt:
     name: sudo
     state: present

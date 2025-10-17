@@ -1,5 +1,6 @@
 ---
-- name: Ensure /tmp is mounted with nodev,nosuid,noexec
+
+- name: Ensure /tmp is mounted with nodev,nosuid,noexec (tmpfs)
   mount:
     path: /tmp
     src: tmpfs

@@ -1,21 +1,22 @@
 ---
+
 - name: Ensure UFW present
   apt:
     name: ufw
     state: present
 
-- name: Default deny inbound
+- name: Set default deny inbound policy
   ufw:
     state: enabled
     policy: deny
     direction: incoming
 
-- name: Default allow outbound
+- name: Set default allow outbound policy
   ufw:
     policy: allow
     direction: outgoing
 
-- name: Allow SSH
+- name: Allow SSH on configured port
   ufw:
     rule: allow
     port: "{{ ssh_port }}"

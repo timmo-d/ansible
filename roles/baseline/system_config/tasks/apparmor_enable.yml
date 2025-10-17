@@ -1,17 +1,18 @@
 ---
+
 - name: Install AppArmor packages
   apt:
     name: [apparmor, apparmor-utils]
     state: present
     update_cache: yes
 
-- name: Ensure AppArmor running
+- name: Ensure AppArmor service is enabled and running
   systemd:
     name: apparmor
     enabled: yes
     state: started
 
-- name: Verify AppArmor status (report only)
+- name: Verify AppArmor status (reporting only)
   command: aa-status
   register: aa
   changed_when: false

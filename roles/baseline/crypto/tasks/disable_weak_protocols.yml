@@ -1,4 +1,5 @@
 ---
+
 - name: Force SSH Protocol 2 only
   lineinfile:
     path: /etc/ssh/sshd_config

@@ -1,4 +1,5 @@
 ---
+
 - name: Enforce signed repositories only
   lineinfile:
     path: /etc/apt/apt.conf.d/99verify

@@ -1,4 +1,5 @@
 ---
+
 - name: Remove insecure/legacy network packages
   apt:
     name: [telnet, rsh-server, rsh-client, tftp, xinetd]

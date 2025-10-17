@@ -1,9 +1,10 @@
 ---
-- name: Ensure cryptsetup present
+
+- name: Ensure cryptsetup present for encryption tasks
   apt:
     name: cryptsetup
     state: present
 
-- name: NOTE - Encrypting existing swap/tmp may require rebuild
+- name: NOTE - Encryption of existing swap/tmp may require rebuild
   debug:
-    msg: 'Recommend implementing LUKS and tmp/swap encryption during imaging.'
+    msg: 'Recommend implementing LUKS and tmp/swap encryption during imaging/provisioning for reliability.'

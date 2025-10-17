@@ -1,3 +1,4 @@
 ---
-- name: Include SSH hardening from crypto category
+
+- name: Include SSH hardening tasks from crypto category
   import_tasks: "{{ role_path }}/crypto/tasks/ssh_strong_ciphers.yml"

@@ -1,4 +1,5 @@
 ---
+
 - name: Deploy hardened sshd_config
   template:
     src: "{{ role_path }}/crypto/templates/sshd_config.j2"

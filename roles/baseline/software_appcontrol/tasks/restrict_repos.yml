@@ -1,5 +1,6 @@
 ---
-- name: Enforce approved sources.list (if provided)
+
+- name: Replace sources.list only when explicit allowlist provided
   copy:
     dest: /etc/apt/sources.list
     content: "{{ approved_sources_list }}"

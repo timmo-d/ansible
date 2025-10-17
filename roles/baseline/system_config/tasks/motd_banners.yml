@@ -1,5 +1,6 @@
 ---
-- name: Configure /etc/issue banner
+
+- name: Configure /etc/issue (console banner)
   template:
     src: "{{ role_path }}/system_config/templates/issue.j2"
     dest: /etc/issue
@@ -7,7 +8,7 @@
     group: root
     mode: '0644'
 
-- name: Configure /etc/issue.net banner
+- name: Configure /etc/issue.net (remote banner)
   template:
     src: "{{ role_path }}/system_config/templates/issue.net.j2"
     dest: /etc/issue.net

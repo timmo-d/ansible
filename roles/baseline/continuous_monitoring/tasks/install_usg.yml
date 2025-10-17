@@ -1,11 +1,12 @@
 ---
+
 - name: Install Ubuntu Security Guide (USG)
   apt:
     name: ubuntu-security-guide
     state: present
     update_cache: yes
 
-- name: Optionally apply DISA-STIG baseline
+- name: Optionally apply DISA-STIG baseline (may be disruptive)
   command: usg fix disa_stig
   when: usg_apply_fix | default(false)
 

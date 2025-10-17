@@ -1,10 +1,11 @@
 ---
+
 - name: Ensure logrotate installed
   apt:
     name: logrotate
     state: present
 
-- name: Secure perms on /etc/logrotate.conf
+- name: Set secure permissions on logrotate configuration
   file:
     path: /etc/logrotate.conf
     owner: root

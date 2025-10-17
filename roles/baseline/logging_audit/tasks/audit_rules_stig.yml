@@ -1,5 +1,6 @@
 ---
-- name: Deploy STIG audit rules
+
+- name: Deploy STIG-aligned audit rules
   template:
     src: "{{ role_path }}/logging_audit/templates/audit.rules.j2"
     dest: /etc/audit/rules.d/stig.rules

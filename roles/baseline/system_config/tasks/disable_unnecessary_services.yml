@@ -1,5 +1,6 @@
 ---
-- name: Disable legacy network services
+
+- name: Disable legacy and insecure network services (best effort)
   systemd:
     name: "{{ item }}"
     state: stopped

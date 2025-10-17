@@ -1,9 +1,10 @@
 ---
-- name: Install SSSD + opensc (site-specific)
+
+- name: Install SSSD and smart card tooling (site-specific config follows)
   apt:
     name: [sssd, sssd-tools, opensc]
     state: present
 
-- name: Placeholder for PKI/SSSD mapping
+- name: PKI/SSSD mapping requires realm details (placeholder)
   debug:
-    msg: 'Provide realm/LDAP/IdM and cert OID to render templates.'
+    msg: "Provide realm, LDAP/IdM, and cert OID details to render SSSD/Kerberos templates."

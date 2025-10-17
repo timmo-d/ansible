@@ -1,5 +1,6 @@
 ---
-- name: Blacklist uncommon filesystem modules
+
+- name: Blacklist uncommon filesystem kernel modules
   copy:
     dest: /etc/modprobe.d/blacklist-stig.conf
     content: |
@@ -11,3 +12,6 @@
       install squashfs /bin/true
       install udf /bin/true
       install vfat /bin/true
+    owner: root
+    group: root
+    mode: '0644'

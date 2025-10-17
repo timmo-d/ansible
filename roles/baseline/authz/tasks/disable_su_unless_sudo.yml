@@ -1,4 +1,5 @@
 ---
+
 - name: Restrict su to sudo group via pam_wheel
   lineinfile:
     path: /etc/pam.d/su

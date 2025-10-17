@@ -1,4 +1,5 @@
 ---
+
 - name: Ensure PAM modules present
   apt:
     name: [libpam-modules, libpam-pwquality]

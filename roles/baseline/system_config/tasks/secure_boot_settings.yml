@@ -1,4 +1,5 @@
 ---
+
 - name: Deploy hardened GRUB defaults
   template:
     src: "{{ role_path }}/system_config/templates/grub.j2"
@@ -7,7 +8,7 @@
     group: root
     mode: '0644'
 
-- name: Configure bootloader password if provided
+- name: Configure bootloader superuser/password if provided
   blockinfile:
     path: /etc/grub.d/40_custom
     create: yes
@@ -16,5 +17,5 @@
       password_pbkdf2 root {{ bootloader_password_pbkdf2 }}
   when: bootloader_password_pbkdf2 | length > 0
 
-- name: Update grub
+- name: Apply GRUB changes
   command: update-grub

@@ -1,11 +1,12 @@
 ---
+
 - name: Install auditd and plugins
   apt:
     name: [auditd, audispd-plugins]
     state: present
     update_cache: yes
 
-- name: Enable and start auditd
+- name: Enable and start auditd service
   systemd:
     name: auditd
     enabled: yes

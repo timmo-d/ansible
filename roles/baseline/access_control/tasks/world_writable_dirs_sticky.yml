@@ -1,5 +1,6 @@
 ---
-- name: Find local world-writable directories
+
+- name: Find local world-writable directories (require sticky bit)
   shell: |
     df --local -P | awk 'NR!=1 {print $6}' | xargs -I '{}' find '{}' -xdev -type d -perm -0002
   register: wwd
