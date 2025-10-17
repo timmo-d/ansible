@@ -1,7 +1,6 @@
 #---
 approved_sudo_users: ["{{ ansible_user }}"]
 #approved_sources_list: ""
-#usg_apply_fix: false
 
 # Ubuntu Pro token (from https://ubuntu.com/pro/dashboard)
 pro_token: "{{ lookup('env', 'UBUNTU_PRO_TOKEN') }}"
@@ -16,6 +15,11 @@ pro_enable_fips_updates: false     # enable FIPS Updates (requires reboot; use w
 
 
 # --- USG (Ubuntu Security Guide) settings ---
+enable_usg: true
+usg_run_audit: true
 usg_profile: "disa_stig"           # compliance profile: 'disa_stig' or 'cis'
 usg_reports_dir: "/var/tmp"        # where to save audit reports
 usg_apply_fix: false               # set true to remediate (DISRUPTIVE; reboot required
+
+# If targeting DISA-STIG, also flip on FIPS Updates (requires reboot)
+pro_enable_fips_updates: false  # set to true where you need FIPS compliance
