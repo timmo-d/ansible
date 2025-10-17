@@ -1,4 +1,3 @@
----
 - name: Ensure Universe repo is enabled (USG deps sometimes live here)
   become: true
   ansible.builtin.command: add-apt-repository -y universe
@@ -43,7 +42,7 @@
     - enable_usg | default(true)
     - pro_token is defined
     - pro_token | length > 0
-    - "'not-attached' in pro_status.stdout"
+    - (pro_status.stdout | from_json).status == 'not-attached'
   register: pro_attach
   changed_when: "'This machine is now attached' in pro_attach.stdout"
   failed_when: pro_attach.rc not in [0]
