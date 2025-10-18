@@ -69,14 +69,26 @@
 
 # --- RUNTIME BEHAVIOR / REPORTING ---
 
+
+# Remove any duplicate SILENTREPORTS lines (case-insensitive)
+- name: Remove duplicate SILENTREPORTS lines from /etc/default/aide
+  ansible.builtin.lineinfile:
+    path: /etc/default/aide
+    regexp: '(?i)^\s*SILENTREPORTS=.*$'
+    state: absent
+    create: true
+  when: enable_aide | default(true)
+
+# Ensure a single, correct line is present (case-insensitive match)
 - name: Ensure AIDE sends non-silent reports
   ansible.builtin.lineinfile:
     path: /etc/default/aide
     create: true
-    regexp: '^(?i)\s*SILENTREPORTS='
+    regexp: '(?i)^\s*SILENTREPORTS='     # NOTE: (?i) at the start
     line: 'SILENTREPORTS=no'
     state: present
   when: enable_aide | default(true)
+
 
 - name: Enable daily AIDE check (systemd timer)
   ansible.builtin.systemd:
