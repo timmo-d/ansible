@@ -1,11 +1,12 @@
----
+# vars (e.g., group_vars/all.yml)
+# aide_gzip_db: false  # set true to use .gz database files
+
 - name: Install AIDE
   ansible.builtin.package:
     name: aide
     state: present
   when: enable_aide | default(true)
 
-# Ensure AIDE DB directory exists (explicit; usually already present)
 - name: Ensure /var/lib/aide exists
   ansible.builtin.file:
     path: /var/lib/aide
@@ -15,33 +16,46 @@
     mode: '0755'
   when: enable_aide | default(true)
 
-# --- CONFIGURE AIDE CONF CLEANLY (DEDUPE + ENSURE EXACTLY ONE OF EACH) ---
-
-- name: Remove any duplicate database/database_out lines from aide.conf
+# Normalize config: dedupe, set gzip_dbout, and align filenames
+- name: Remove any existing database/database_out lines
   ansible.builtin.lineinfile:
     path: /etc/aide/aide.conf
     regexp: '^\s*(database|database_out)\s*=.*$'
     state: absent
   when: enable_aide | default(true)
 
-- name: Ensure AIDE database path is set (single line)
+- name: Ensure gzip_dbout is set explicitly
   ansible.builtin.lineinfile:
     path: /etc/aide/aide.conf
-    create: true
-    line: 'database=file:/var/lib/aide/aide.db'
+    regexp: '^\s*gzip_dbout\s*='
+    line: "gzip_dbout={{ 'yes' if aide_gzip_db | default(false) else 'no' }}"
+    create: yes
     state: present
   when: enable_aide | default(true)
 
-- name: Ensure AIDE database_out path is set (single line)
+- name: Compute AIDE database filenames based on compression
+  ansible.builtin.set_fact:
+    aide_db_file: "/var/lib/aide/aide.db{{ '.gz' if aide_gzip_db | default(false) else '' }}"
+    aide_db_new_file: "/var/lib/aide/aide.db.new{{ '.gz' if aide_gzip_db | default(false) else '' }}"
+  when: enable_aide | default(true)
+
+- name: Ensure AIDE database path is set
   ansible.builtin.lineinfile:
     path: /etc/aide/aide.conf
+    line: "database=file:{{ aide_db_file }}"
     create: true
-    line: 'database_out=file:/var/lib/aide/aide.db.new'
     state: present
   when: enable_aide | default(true)
 
-# --- ADD AIDE RULES BEFORE INITIALIZING (e.g., protect audit tools) ---
+- name: Ensure AIDE database_out path is set
+  ansible.builtin.lineinfile:
+    path: /etc/aide/aide.conf
+    line: "database_out=file:{{ aide_db_new_file }}"
+    create: true
+    state: present
+  when: enable_aide | default(true)
 
+# Your existing rules (kept)
 - name: Protect audit tools with AIDE rules
   ansible.builtin.lineinfile:
     path: /etc/aide/aide.conf
@@ -56,39 +70,25 @@
     - /usr/sbin/autrace
   when: enable_aide | default(true)
 
-# --- INITIALIZE DB ONCE; SUBSEQUENT RUNS SKIP ---
-
+# Initialize (idempotent; uses correct creates: path)
 - name: Initialize AIDE database (time consuming on first run)
   ansible.builtin.command: /usr/sbin/aideinit -y -f
   args:
-    creates: /var/lib/aide/aide.db
+    creates: "{{ aide_db_file }}"
   register: aide_init
   changed_when: aide_init.rc == 0
   failed_when: aide_init.rc not in [0, 1]
   when: enable_aide | default(true)
 
-# --- RUNTIME BEHAVIOR / REPORTING ---
-
-
-# Remove any duplicate SILENTREPORTS lines (case-insensitive)
-- name: Remove duplicate SILENTREPORTS lines from /etc/default/aide
-  ansible.builtin.lineinfile:
-    path: /etc/default/aide
-    regexp: '(?i)^\s*SILENTREPORTS=.*$'
-    state: absent
-    create: true
-  when: enable_aide | default(true)
-
-# Ensure a single, correct line is present (case-insensitive match)
+# Reporting settings (fixed regex)
 - name: Ensure AIDE sends non-silent reports
   ansible.builtin.lineinfile:
     path: /etc/default/aide
     create: true
-    regexp: '(?i)^\s*SILENTREPORTS='     # NOTE: (?i) at the start
+    regexp: '(?i)^\s*SILENTREPORTS='
     line: 'SILENTREPORTS=no'
     state: present
   when: enable_aide | default(true)
-
 
 - name: Enable daily AIDE check (systemd timer)
   ansible.builtin.systemd:
