@@ -1,6 +1,3 @@
-# vars (e.g., group_vars/all.yml)
-# aide_gzip_db: false  # set to true to use .gz DB files
-
 # Ensure AIDE present
 - name: Install AIDE
   become: yes
