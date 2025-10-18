@@ -1,5 +1,6 @@
 ---
-- name: restart_auditd
-  ansible.builtin.service:
-    name: auditd
-    state: restarted
+- name: compile_and_load_augenrules
+  ansible.builtin.command: /sbin/augenrules --load
+  register: augen
+  changed_when: "'No change' not in augen.stdout"
+  failed_when: "augen.rc not in [0, 1]"
