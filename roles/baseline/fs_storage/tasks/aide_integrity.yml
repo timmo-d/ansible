@@ -1,12 +1,7 @@
-# vars (e.g., group_vars/all.yml)
-# aide_gzip_db: false  # set true to use .gz database files
+# vars (group_vars/all.yml)
+# aide_gzip_db: false   # set to true if you want .gz databases
 
-- name: Install AIDE
-  ansible.builtin.package:
-    name: aide
-    state: present
-  when: enable_aide | default(true)
-
+# Ensure directory and aligned config (you already have these, shown for completeness)
 - name: Ensure /var/lib/aide exists
   ansible.builtin.file:
     path: /var/lib/aide
@@ -16,24 +11,15 @@
     mode: '0755'
   when: enable_aide | default(true)
 
-# Normalize config: dedupe, set gzip_dbout, and align filenames
-- name: Remove any existing database/database_out lines
-  ansible.builtin.lineinfile:
-    path: /etc/aide/aide.conf
-    regexp: '^\s*(database|database_out)\s*=.*$'
-    state: absent
-  when: enable_aide | default(true)
-
 - name: Ensure gzip_dbout is set explicitly
   ansible.builtin.lineinfile:
     path: /etc/aide/aide.conf
     regexp: '^\s*gzip_dbout\s*='
     line: "gzip_dbout={{ 'yes' if aide_gzip_db | default(false) else 'no' }}"
-    create: yes
-    state: present
+    create: true
   when: enable_aide | default(true)
 
-- name: Compute AIDE database filenames based on compression
+- name: Compute AIDE database filenames
   ansible.builtin.set_fact:
     aide_db_file: "/var/lib/aide/aide.db{{ '.gz' if aide_gzip_db | default(false) else '' }}"
     aide_db_new_file: "/var/lib/aide/aide.db.new{{ '.gz' if aide_gzip_db | default(false) else '' }}"
@@ -42,59 +28,62 @@
 - name: Ensure AIDE database path is set
   ansible.builtin.lineinfile:
     path: /etc/aide/aide.conf
+    regexp: '^\s*database\s*='
     line: "database=file:{{ aide_db_file }}"
     create: true
-    state: present
   when: enable_aide | default(true)
 
 - name: Ensure AIDE database_out path is set
   ansible.builtin.lineinfile:
     path: /etc/aide/aide.conf
+    regexp: '^\s*database_out\s*='
     line: "database_out=file:{{ aide_db_new_file }}"
     create: true
-    state: present
   when: enable_aide | default(true)
 
-# Your existing rules (kept)
-- name: Protect audit tools with AIDE rules
-  ansible.builtin.lineinfile:
-    path: /etc/aide/aide.conf
-    line: "{{ item }} p+i+n+u+g+s+b+acl+xattrs+sha512"
-    state: present
-  loop:
-    - /usr/sbin/auditctl
-    - /usr/sbin/auditd
-    - /usr/sbin/augenrules
-    - /usr/sbin/aureport
-    - /usr/sbin/ausearch
-    - /usr/sbin/autrace
-  when: enable_aide | default(true)
-
-# Initialize (idempotent; uses correct creates: path)
-- name: Initialize AIDE database (time consuming on first run)
-  ansible.builtin.command: /usr/sbin/aideinit -y -f
+# ---------- BYPASS THE WRAPPER: run 'aide --init' directly ----------
+- name: Initialize AIDE (direct)
+  ansible.builtin.command: /usr/sbin/aide --init
   args:
+    # Skip if the final DB already exists (idempotent)
     creates: "{{ aide_db_file }}"
   register: aide_init
   changed_when: aide_init.rc == 0
-  failed_when: aide_init.rc not in [0, 1]
+  failed_when: aide_init.rc != 0
   when: enable_aide | default(true)
 
-# Reporting settings (fixed regex)
-- name: Ensure AIDE sends non-silent reports
-  ansible.builtin.lineinfile:
-    path: /etc/default/aide
-    create: true
-    regexp: '(?i)^\s*SILENTREPORTS='
-    line: 'SILENTREPORTS=no'
-    state: present
+# Optional: show where AIDE says it wrote the DB (helps diagnose)
+- name: Show AIDE init message
+  ansible.builtin.debug:
+    msg: "{{ aide_init.stderr | default(aide_init.stdout) }}"
+  when:
+    - enable_aide | default(true)
+    - aide_init is defined
+
+# Move the newly created DB into place (what aideinit would have done)
+- name: Promote new AIDE DB into place
+  ansible.builtin.command: "mv -f {{ aide_db_new_file }} {{ aide_db_file }}"
+  args:
+    removes: "{{ aide_db_new_file }}"
+    creates: "{{ aide_db_file }}"
+  register: aide_mv
+  changed_when: aide_mv.rc == 0
+  failed_when: aide_mv.rc != 0
+  when:
+    - enable_aide | default(true)
+    - aide_init is defined
+    - aide_init.rc == 0
+
+# (Optional) Verify final DB exists
+- name: Verify final AIDE DB present
+  ansible.builtin.stat:
+    path: "{{ aide_db_file }}"
+  register: aide_db_stat
   when: enable_aide | default(true)
 
-- name: Enable daily AIDE check (systemd timer)
-  ansible.builtin.systemd:
-    name: dailyaidecheck.timer
-    state: started
-    enabled: true
-    masked: false
-    daemon_reload: true
-  when: enable_aide | default(true)
+- name: Fail if AIDE DB missing after init
+  ansible.builtin.fail:
+    msg: "AIDE DB {{ aide_db_file }} was not created."
+  when:
+    - enable_aide | default(true)
+    - aide_db_stat.stat.exists is not defined or not aide_db_stat.stat.exists
