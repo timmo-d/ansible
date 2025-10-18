@@ -5,7 +5,7 @@
 
 # Account & Identity
 enable_enforce_password_policy: true          # Apply password complexity and aging rules (pwquality + login.defs)
-enable_disable_blank_passwords: true          # [true] TODO: is this making sudo fail? Detect and lock accounts with empty password fields
+enable_disable_blank_passwords: true          # Detect and lock accounts with empty password fields
 enable_restrict_root_usage: true              # Disable remote root login via SSH and enforce sudo for privilege escalation
 enable_pki_auth_mapping: true                 # Install SSSD and smart card tooling for PKI-based authentication (site-specific config)
 enable_pwquality: true
@@ -13,19 +13,19 @@ enable_login_defs: true
 enable_pam_unix_sha512: true
 
 # Access Control
-enable_limit_sudo_group: true                 # [true] TODO: Fix sudo access creds. Restrict sudo group membership to approved users (enforces least privilege)
+enable_limit_sudo_group: true                 # Restrict sudo group membership to approved users (enforces least privilege)
 enable_protect_sensitive_files: true          # Ensure secure ownership and permissions on critical auth files (e.g., /etc/shadow, /etc/passwd)
 enable_world_writable_dirs_sticky: true       # Apply sticky bit on all world-writable directories to prevent unauthorized file deletion
-enforce_sudo_use_pty: true                    # [true]
+enforce_sudo_use_pty: true                    
 enforce_sudo_logfile: true
 sudo_logfile: /var/log/sudo.log
 enforce_sudo_timestamp: true
 sudo_timestamp_timeout: 5
-disable_sudo_nopasswd: true                 #[true] TODO: is sudo breaking here?
-disable_sudo_no_authenticate: true           #[true] TODO: is sudo breaking here?
+disable_sudo_nopasswd: true                 
+disable_sudo_no_authenticate: true           
 
 # Authentication & Authorization
-enable_pam_lockout: false                      # [true] TODO: THIS ONE?this is where sudo issue is breaking script. Enforce account lockouts after repeated failed login attempts (via pam_faillock)
+enable_pam_lockout: false                      # [true] TODO: Fix issue with not being able to access- failed attempts to access /etc/pam.d/common-account file. Enforce account lockouts after repeated failed login attempts (via pam_faillock)
 enable_pam_common_auth: true                  # Harden common PAM configuration to require strong password quality checks
 enable_disable_su_unless_sudo: true           # Restrict use of 'su' command to members of the sudo group only
 enable_pam_faillock: true
