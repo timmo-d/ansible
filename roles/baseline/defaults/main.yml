@@ -38,7 +38,7 @@ pam_faildelay_us: 4000000
 enable_pam_lastlog: true
 
 # Crypto
-enable_fips_mode: true                         # [false] Enables FIPS mode for cryptographic compliance; requires Ubuntu Pro subscription token.
+enable_fips_mode: false                         # [false] Enables FIPS mode for cryptographic compliance; requires Ubuntu Pro subscription token.
 enable_ssh_strong_ciphers: true                # Enforces use of strong SSH ciphers to enhance secure communication.
 enable_disable_weak_protocols: true            # Disables outdated or insecure protocols (e.g., SSLv2, SSLv3) to reduce vulnerabilities.
 grub_cmdline_linux: ""
@@ -111,7 +111,7 @@ pro_services_to_enable:
   - esm-infra
   - esm-apps
 pro_enable_livepatch: true                     # enable Canonical Livepatch if entitled
-pro_enable_fips_updates: true                  #  **** DISRUPTIVE **** set true where DISA-STIG compliance is required (reboot required)
+pro_enable_fips_updates: false                  #  **** DISRUPTIVE **** set true where DISA-STIG compliance is required (reboot required)
 
 # USG (Ubuntu Security Guide)
 enable_usg: true                                # Enables Ubuntu Security Guide (USG) for system hardening and auditing.
