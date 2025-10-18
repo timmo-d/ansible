@@ -97,6 +97,7 @@ enable_secure_mounts: true                     # Applies secure mount options (e
 enable_encrypt_swap_and_tmp: false             # Disables encryption of swap and /tmp; set to true for enhanced data protection.
 enable_aide: true                              # Installs and configures AIDE to monitor file integrity and detect unauthorized changes.
 enable_aide_periodic_check: true               # Schedules regular AIDE checks to maintain ongoing file integrity monitoring.
+aide_gzip_db: false                            # set to true to use .gz DB files
 
 # Software/Application Control
 enable_remove_unnecessary_packages: true       # Removes unused or unnecessary packages to reduce system complexity and risk.
