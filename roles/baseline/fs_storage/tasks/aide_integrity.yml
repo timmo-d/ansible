@@ -5,24 +5,48 @@
     state: present
   when: enable_aide | default(true)
 
-- name: Ensure AIDE DB paths set (database / database_out)
-  ansible.builtin.blockinfile:
-    path: /etc/aide/aide.conf
-    create: true
-    block: |
-      database=file:/var/lib/aide/aide.db
-      database_out=file:/var/lib/aide/aide.db.new
+# Ensure AIDE DB directory exists (explicit; usually already present)
+- name: Ensure /var/lib/aide exists
+  ansible.builtin.file:
+    path: /var/lib/aide
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
   when: enable_aide | default(true)
 
-- name: Initialize AIDE database
-  ansible.builtin.command: /usr/sbin/aideinit -y -f
-  args: { creates: /var/lib/aide/aide.db }
+# --- CONFIGURE AIDE CONF CLEANLY (DEDUPE + ENSURE EXACTLY ONE OF EACH) ---
+
+- name: Remove any duplicate database/database_out lines from aide.conf
+  ansible.builtin.lineinfile:
+    path: /etc/aide/aide.conf
+    regexp: '^\s*(database|database_out)\s*=.*$'
+    state: absent
   when: enable_aide | default(true)
+
+- name: Ensure AIDE database path is set (single line)
+  ansible.builtin.lineinfile:
+    path: /etc/aide/aide.conf
+    create: true
+    line: 'database=file:/var/lib/aide/aide.db'
+    state: present
+  when: enable_aide | default(true)
+
+- name: Ensure AIDE database_out path is set (single line)
+  ansible.builtin.lineinfile:
+    path: /etc/aide/aide.conf
+    create: true
+    line: 'database_out=file:/var/lib/aide/aide.db.new'
+    state: present
+  when: enable_aide | default(true)
+
+# --- ADD AIDE RULES BEFORE INITIALIZING (e.g., protect audit tools) ---
 
 - name: Protect audit tools with AIDE rules
   ansible.builtin.lineinfile:
     path: /etc/aide/aide.conf
     line: "{{ item }} p+i+n+u+g+s+b+acl+xattrs+sha512"
+    state: present
   loop:
     - /usr/sbin/auditctl
     - /usr/sbin/auditd
@@ -32,12 +56,26 @@
     - /usr/sbin/autrace
   when: enable_aide | default(true)
 
+# --- INITIALIZE DB ONCE; SUBSEQUENT RUNS SKIP ---
+
+- name: Initialize AIDE database (time consuming on first run)
+  ansible.builtin.command: /usr/sbin/aideinit -y -f
+  args:
+    creates: /var/lib/aide/aide.db
+  register: aide_init
+  changed_when: aide_init.rc == 0
+  failed_when: aide_init.rc not in [0, 1]
+  when: enable_aide | default(true)
+
+# --- RUNTIME BEHAVIOR / REPORTING ---
+
 - name: Ensure AIDE sends non-silent reports
   ansible.builtin.lineinfile:
     path: /etc/default/aide
     create: true
     regexp: '^(?i)\s*SILENTREPORTS='
     line: 'SILENTREPORTS=no'
+    state: present
   when: enable_aide | default(true)
 
 - name: Enable daily AIDE check (systemd timer)
