@@ -1,6 +1,13 @@
 ---
+
 - name: compile_and_load_augenrules
   ansible.builtin.command: /sbin/augenrules --load
   register: augen
-  changed_when: "'No change' not in augen.stdout"
-  failed_when: "augen.rc not in [0, 1]"
+  changed_when: >
+    'No change' not in (augen.stdout | default('')) and
+    'No change' not in (augen.stderr | default(''))
+  failed_when: >
+    augen.rc not in [0, 1] or
+    (augen.rc == 1 and
+     'No change' not in (augen.stdout | default('')) and
+     'No change' not in (augen.stderr | default('')))
