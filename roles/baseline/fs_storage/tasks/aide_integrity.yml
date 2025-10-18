@@ -91,7 +91,7 @@
   when: enable_aide | default(true)
 
 # Initialize database directly, passing the config path explicitly
-- name: Initialize AIDE (direct, with explicit config)
+- name: Initialize AIDE (takes about 5 minutes on first run)
   become: yes
   ansible.builtin.command: "{{ aide_bin.stdout }} --init --config /etc/aide/aide.conf"
   args:

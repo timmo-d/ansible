@@ -87,7 +87,7 @@
     - (usg_profile | default('disa_stig')) == 'disa_stig'
   tags: ['usg']
 
-- name: USG | audit {{ usg_profile | default('disa_stig') }}
+- name: USG | audit {{ usg_profile | default('disa_stig') }} (takes about 3 minutes)
   become: true
   ansible.builtin.command: "usg audit {{ usg_profile | default('disa_stig') }}"
   register: usg_audit
