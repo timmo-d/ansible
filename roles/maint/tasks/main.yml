@@ -9,9 +9,9 @@
 
 - name: Ensure media group exists
   group:
-    name: "{{ media_group }}"
+    name: media
     state: present
-    
+
 - name: Get GID of 'media' group
   command: getent group media
   register: media_group_info
