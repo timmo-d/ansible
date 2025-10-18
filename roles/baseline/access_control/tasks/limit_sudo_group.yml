@@ -1,41 +1,41 @@
----
 - name: Ensure sudo installed
   ansible.builtin.package:
     name: sudo
     state: present
 
+- name: Enforce sudo use_pty
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^\s*Defaults\b.*\buse_pty\b.*$'
+    line: 'Defaults use_pty'
+    validate: '/usr/sbin/visudo -cf %s'
+  when: enforce_sudo_use_pty | default(true)
+
+# >>> NEW: make sure approved users (e.g., tim) are in sudo group
 - name: Ensure approved sudo users are in the sudo group
   ansible.builtin.user:
     name: "{{ item }}"
     groups: sudo
     append: yes
   loop: "{{ approved_sudo_users | default([]) }}"
-  
-- name: Enforce sudo use_pty
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers
-    regexp: '^\\s*Defaults\\b.*\\buse_pty\\b.*$'
-    line: 'Defaults use_pty'
-    validate: '/usr/sbin/visudo -cf %s'
-  when: enforce_sudo_use_pty | default(true)
 
 - name: Get current sudo group members
-  shell: "getent group sudo | cut -d: -f4"
+  ansible.builtin.shell: "getent group sudo | cut -d: -f4"
   register: sudo_members
   changed_when: false
 
 - name: Remove users not in the approved sudo list
-  user:
+  ansible.builtin.user:
     name: "{{ item }}"
     groups: "{{ (item in approved_sudo_users) | ternary('sudo','') }}"
     append: no
   loop: "{{ sudo_members.stdout.split(',') if sudo_members.stdout else [] }}"
-  when: item and (item not in approved_sudo_users)
+  when: item and (item not in approved_sudo_users | default([]))
 
 - name: Set sudo logfile
   ansible.builtin.lineinfile:
     path: /etc/sudoers
-    regexp: '^\\s*Defaults\\b.*\\blogfile=.*$'
+    regexp: '^\s*Defaults\b.*\blogfile=.*$'
     line: 'Defaults logfile={{ sudo_logfile | default("/var/log/sudo.log") }}'
     validate: '/usr/sbin/visudo -cf %s'
   when: enforce_sudo_logfile | default(true)
@@ -43,10 +43,21 @@
 - name: Require re-authentication (timestamp_timeout)
   ansible.builtin.lineinfile:
     path: /etc/sudoers
-    regexp: '^\\s*Defaults\\b.*\\btimestamp_timeout\\s*=.*$'
+    regexp: '^\s*Defaults\b.*\btimestamp_timeout\s*=.*$'
     line: 'Defaults timestamp_timeout={{ sudo_timestamp_timeout | default(5) }}'
     validate: '/usr/sbin/visudo -cf %s'
   when: enforce_sudo_timestamp | default(true)
+
+# >>> Ensure the %sudo rule exists (password-based sudo)
+- name: Ensure sudo group requires password (no NOPASSWD)
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/10-sudo-group
+    owner: root
+    group: root
+    mode: '0440'
+    validate: 'visudo -cf %s'
+    content: |
+      %sudo ALL=(ALL:ALL) ALL
 
 - name: Remove NOPASSWD from /etc/sudoers and /etc/sudoers.d/*
   ansible.builtin.shell: |
