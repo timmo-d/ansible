@@ -22,7 +22,7 @@ sudo_logfile: /var/log/sudo.log
 enforce_sudo_timestamp: true
 sudo_timestamp_timeout: 5
 disable_sudo_nopasswd: false                 #[true] TODO: is sudo breaking here?
-disable_sudo_no_authenticate: false           #[true] TODO: is sudo breaking here?
+disable_sudo_no_authenticate: true           #[true] TODO: is sudo breaking here?
 
 # Authentication & Authorization
 enable_pam_lockout: false                      # [true] TODO: THIS ONE?this is where sudo issue is breaking script. Enforce account lockouts after repeated failed login attempts (via pam_faillock)
