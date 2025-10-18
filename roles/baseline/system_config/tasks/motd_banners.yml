@@ -7,6 +7,7 @@
     owner: root
     group: root
     mode: '0644'
+  when: enable_banners | default(true)
 
 - name: Configure /etc/issue.net (remote banner)
   template:
@@ -15,3 +16,4 @@
     owner: root
     group: root
     mode: '0644'
+  when: enable_banners | default(true)

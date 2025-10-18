@@ -4,20 +4,31 @@ Port {{ ssh_port }}
 Protocol 2
 ListenAddress 0.0.0.0
 PermitRootLogin no
-PasswordAuthentication {{ 'yes' if ssh_password_auth else 'no' }}
-ChallengeResponseAuthentication no
 PubkeyAuthentication yes
-KbdInteractiveAuthentication no
 PermitEmptyPasswords no
+MaxSessions 10
+PasswordAuthentication {{ ssh_password_auth | default('no') }}
+ChallengeResponseAuthentication no
+KbdInteractiveAuthentication no
+UsePAM yes
+PermitUserEnvironment no
+ClientAliveInterval {{ ssh_client_alive_interval | default(600) }}
+ClientAliveCountMax {{ ssh_client_alive_countmax | default(0) }}
 LoginGraceTime 30
 MaxAuthTries 3
-MaxSessions 10
-ClientAliveInterval 300
-ClientAliveCountMax 0
-AllowTcpForwarding no
+IgnoreRhosts yes
 X11Forwarding no
+AllowTcpForwarding no
+Banner /etc/issue.net
+
+{% if enable_fips_mode | default(false) %}
+# FIPS-appropriate sets
+Ciphers aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes128-ctr
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
+KexAlgorithms ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group14-sha256
+{% else %}
+# Strict (non-FIPS) set, keeping FIPS-compatible options first
 Ciphers {{ ssh_ciphers }}
 MACs {{ ssh_macs }}
 KexAlgorithms {{ ssh_kex }}
-Banner /etc/issue.net
-UsePAM yes
+{% endif %}

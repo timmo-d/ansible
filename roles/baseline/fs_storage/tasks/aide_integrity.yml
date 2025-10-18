@@ -1,16 +1,50 @@
 ---
-
-- name: Install AIDE for file integrity monitoring
-  apt:
+- name: Install AIDE
+  ansible.builtin.package:
     name: aide
     state: present
+  when: enable_aide | default(true)
 
-- name: Initialize AIDE database (one-time; time-consuming)
-  command: aideinit
-  args:
-    creates: /var/lib/aide/aide.db.new
+- name: Ensure AIDE DB paths set (database / database_out)
+  ansible.builtin.blockinfile:
+    path: /etc/aide/aide.conf
+    create: true
+    block: |
+      database=file:/var/lib/aide/aide.db
+      database_out=file:/var/lib/aide/aide.db.new
+  when: enable_aide | default(true)
 
-- name: Activate AIDE database
-  command: mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
-  args:
-    creates: /var/lib/aide/aide.db
+- name: Initialize AIDE database
+  ansible.builtin.command: /usr/sbin/aideinit -y -f
+  args: { creates: /var/lib/aide/aide.db }
+  when: enable_aide | default(true)
+
+- name: Protect audit tools with AIDE rules
+  ansible.builtin.lineinfile:
+    path: /etc/aide/aide.conf
+    line: "{{ item }} p+i+n+u+g+s+b+acl+xattrs+sha512"
+  loop:
+    - /usr/sbin/auditctl
+    - /usr/sbin/auditd
+    - /usr/sbin/augenrules
+    - /usr/sbin/aureport
+    - /usr/sbin/ausearch
+    - /usr/sbin/autrace
+  when: enable_aide | default(true)
+
+- name: Ensure AIDE sends non-silent reports
+  ansible.builtin.lineinfile:
+    path: /etc/default/aide
+    create: true
+    regexp: '^(?i)\s*SILENTREPORTS='
+    line: 'SILENTREPORTS=no'
+  when: enable_aide | default(true)
+
+- name: Enable daily AIDE check (systemd timer)
+  ansible.builtin.systemd:
+    name: dailyaidecheck.timer
+    state: started
+    enabled: true
+    masked: false
+    daemon_reload: true
+  when: enable_aide | default(true)

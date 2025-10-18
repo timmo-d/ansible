@@ -1,5 +1,16 @@
 ---
+- name: Ensure sudo installed
+  ansible.builtin.package:
+    name: sudo
+    state: present
 
+- name: Enforce sudo use_pty
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^\\s*Defaults\\b.*\\buse_pty\\b.*$'
+    line: 'Defaults use_pty'
+    validate: '/usr/sbin/visudo -cf %s'
+  when: enforce_sudo_use_pty | default(true)
 
 - name: Get current sudo group members
   shell: "getent group sudo | cut -d: -f4"
@@ -13,3 +24,43 @@
     append: no
   loop: "{{ sudo_members.stdout.split(',') if sudo_members.stdout else [] }}"
   when: item and (item not in approved_sudo_users)
+
+- name: Set sudo logfile
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^\\s*Defaults\\b.*\\blogfile=.*$'
+    line: 'Defaults logfile={{ sudo_logfile | default("/var/log/sudo.log") }}'
+    validate: '/usr/sbin/visudo -cf %s'
+  when: enforce_sudo_logfile | default(true)
+
+- name: Require re-authentication (timestamp_timeout)
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^\\s*Defaults\\b.*\\btimestamp_timeout\\s*=.*$'
+    line: 'Defaults timestamp_timeout={{ sudo_timestamp_timeout | default(5) }}'
+    validate: '/usr/sbin/visudo -cf %s'
+  when: enforce_sudo_timestamp | default(true)
+
+- name: Remove NOPASSWD from /etc/sudoers and /etc/sudoers.d/*
+  ansible.builtin.shell: |
+    set -o pipefail
+    for f in /etc/sudoers /etc/sudoers.d/*; do
+      [ -e "$f" ] || continue
+      sed -i -E 's/^(?!#)(.*\sNOPASSWD\s*:\s.*)$/# \1/' "$f"
+      /usr/sbin/visudo -cf "$f" >/dev/null 2>&1 || echo "visudo validation failed for $f" >&2
+    done
+  args:
+    executable: /bin/bash
+  when: disable_sudo_nopasswd | default(true)
+
+- name: Remove !authenticate from /etc/sudoers and /etc/sudoers.d/*
+  ansible.builtin.shell: |
+    set -o pipefail
+    for f in /etc/sudoers /etc/sudoers.d/*; do
+      [ -e "$f" ] || continue
+      sed -i -E 's/^(?!#)(.*\s\!authenticate.*)$/# \1/' "$f"
+      /usr/sbin/visudo -cf "$f" >/dev/null 2>&1 || echo "visudo validation failed for $f" >&2
+    done
+  args:
+    executable: /bin/bash
+  when: disable_sudo_no_authenticate | default(true)

@@ -1,0 +1,5 @@
+# pam_faillock (Ubuntu 24.04)
+deny={{ faillock_deny | default(5) }}
+failinterval={{ faillock_interval | default(900) }}
+unlock_time={{ faillock_unlock_time | default(900) }}
+silent={{ 'yes' if faillock_silent|default(true) else 'no' }}

@@ -8,22 +8,41 @@ enable_enforce_password_policy: true          # Apply password complexity and ag
 enable_disable_blank_passwords: true          # Detect and lock accounts with empty password fields
 enable_restrict_root_usage: true              # Disable remote root login via SSH and enforce sudo for privilege escalation
 enable_pki_auth_mapping: true                 # Install SSSD and smart card tooling for PKI-based authentication (site-specific config)
+enable_pwquality: true
+enable_login_defs: true
+enable_pam_unix_sha512: true
 
 # Access Control
 enable_limit_sudo_group: true                 # Restrict sudo group membership to approved users (enforces least privilege)
 enable_protect_sensitive_files: true          # Ensure secure ownership and permissions on critical auth files (e.g., /etc/shadow, /etc/passwd)
 enable_world_writable_dirs_sticky: true       # Apply sticky bit on all world-writable directories to prevent unauthorized file deletion
+enforce_sudo_use_pty: true
+enforce_sudo_logfile: true
+sudo_logfile: /var/log/sudo.log
+enforce_sudo_timestamp: true
+sudo_timestamp_timeout: 5
+disable_sudo_nopasswd: true
+disable_sudo_no_authenticate: true
 
 # Authentication & Authorization
 enable_pam_lockout: true                      # Enforce account lockouts after repeated failed login attempts (via pam_faillock)
 enable_pam_common_auth: true                  # Harden common PAM configuration to require strong password quality checks
 enable_disable_su_unless_sudo: true           # Restrict use of 'su' command to members of the sudo group only
 approved_sudo_users: ["{{ ansible_user }}"]   # List of users allowed in the sudo group (defaults to the current Ansible user)
+enable_pam_faillock: true
+faillock_deny: 5
+faillock_interval: 900
+faillock_unlock_time: 900
+faillock_silent: true
+enable_pam_faildelay: true
+pam_faildelay_us: 4000000
+enable_pam_lastlog: true
 
 # Crypto
 enable_fips_mode: true                         # [false] Enables FIPS mode for cryptographic compliance; requires Ubuntu Pro subscription token.
 enable_ssh_strong_ciphers: true                # Enforces use of strong SSH ciphers to enhance secure communication.
 enable_disable_weak_protocols: true            # Disables outdated or insecure protocols (e.g., SSLv2, SSLv3) to reduce vulnerabilities.
+grub_cmdline_linux: ""
 
 # Logging & Auditing
 enable_install_auditd: true                    # Ensures auditd is installed to track system events for security auditing.
@@ -31,6 +50,20 @@ enable_audit_rules_stig: true                  # Applies Security Technical Impl
 enable_rsyslog_remote: false                   # Disables remote logging via rsyslog; set to true to forward logs to a central server.
 enable_logrotate_hardening: true               # Enhances logrotate settings to prevent log tampering and ensure proper log management.
 enable_auditd_log_group_root: true             # Assigns auditd logs to the root group for restricted access.
+enable_auditd: true
+audit_privileged_bins:
+  - /usr/bin/sudo
+  - /usr/bin/su
+  - /usr/sbin/useradd
+  - /usr/sbin/usermod
+  - /usr/sbin/userdel
+  - /usr/bin/chage
+  - /usr/bin/passwd
+  - /usr/bin/gpasswd
+  - /usr/sbin/cron
+  - /usr/bin/crontab
+  - /usr/sbin/visudo
+  - /usr/sbin/apparmor_parser
 
 # System Configuration
 enable_disable_unnecessary_services: true      # Disables services that are not required to reduce attack surface.
@@ -42,6 +75,13 @@ enable_blacklist_unused_filesystems: true      # Prevents loading of unused or i
 enable_apparmor_enable: true                   # Enables AppArmor for mandatory access control to restrict application capabilities.
 enable_ubuntu_pro: true                        # Enables Ubuntu Pro features for extended security and compliance support.
 enable_vendor_supported_release: true          # Ensures the system runs a vendor-supported release for security updates.
+enable_banners: true
+remove_gdm: true
+gnome_lockdown: true
+gnome_idle_delay: 900
+gnome_lock_delay: 5
+enable_grub_password: false
+grub_password_pbkdf2_hash: ""
 
 # Patch & Vulnerability
 enable_enable_unattended_upgrades: true        # Enables automatic installation of security updates to reduce exposure to vulnerabilities.
@@ -55,12 +95,13 @@ enable_disable_unused_protocols: true          # Disables unused network protoco
 # File System & Storage
 enable_secure_mounts: true                     # Applies secure mount options (e.g., noexec, nosuid) to protect against exploitation.
 enable_encrypt_swap_and_tmp: false             # Disables encryption of swap and /tmp; set to true for enhanced data protection.
-enable_aide_integrity: true                    # Installs and configures AIDE to monitor file integrity and detect unauthorized changes.
+enable_aide: true                              # Installs and configures AIDE to monitor file integrity and detect unauthorized changes.
 enable_aide_periodic_check: true               # Schedules regular AIDE checks to maintain ongoing file integrity monitoring.
 
 # Software/Application Control
 enable_remove_unnecessary_packages: true       # Removes unused or unnecessary packages to reduce system complexity and risk.
 enable_restrict_repos: false                   # Allows use of unrestricted repositories; set to true to limit to trusted sources only.
+remove_prelink: true
 
 # Continuous Monitoring
 # Ubuntu Pro
@@ -97,23 +138,28 @@ enable_banner_motd_privacy: true                # Enables privacy-focused MOTD b
 # SSH & Crypto
 ssh_port: 22                                     # SSH server listening port.
 ssh_password_auth: false                         # Disables password authentication; enforces key-based access.
-ssh_ciphers: 'aes256-gcm@openssh.com,chacha20-poly1305@openssh.com'  # Strong SSH encryption ciphers.
+ssh_ciphers: 'aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes128-ctr,chacha20-poly1305@openssh.com'  # Strong SSH encryption ciphers.
 ssh_macs: 'hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com'  # Secure message authentication codes (MACs).
-ssh_kex: 'curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512'  # Secure key exchange algorithms.
+ssh_kex: 'curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group14-sha256'  # Secure key exchange algorithms.
+ssh_client_alive_interval: 600
+ssh_client_alive_countmax: 0
 
 # Password policy (pwquality/login.defs)
 pw_minlen: 14                                    # [14] Minimum password length (characters)
+pw_difok: 8
 pw_minclass: 4                                   # [4] Minimum number of character classes (e.g., upper, lower, digit, special)
 pw_dcredit: -1                                   # [-1] Require at least one digit (negative means subtract from required classes)
 pw_ucredit: -1                                   # [-1] Require at least one uppercase letter
 pw_lcredit: -1                                   # [-1] Require at least one lowercase letter
 pw_ocredit: -1                                   # [-1] Require at least one special character (other)
-
-pass_max_days: 600                              # [60] Maximum password age in days before expiration
+pw_dictcheck: 1
+pass_max_days: 365                              # [60] Maximum password age in days before expiration
 pass_min_days: 1                                # [1] Minimum days before a password can be changed again
 pass_warn_age: 7                                # [7] Days before expiration to start warning the user
+pw_maxrepeat: 3
 
 default_umask: 027                              # [027] Default file creation mask (restricts permissions; 027 = rw for owner, r for group, none for others)
+pam_unix_rounds: 5000
 
 # GRUB/sysctl/time
 grub_cmdline_linux: 'quiet splash audit=1 audit_backlog_limit=8192'  # Configures GRUB to enable auditing and increase backlog buffer size.

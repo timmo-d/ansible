@@ -1,4 +1,4 @@
-
+# pwquality for STIG/USG
 minlen = {{ pw_minlen }}
 minclass = {{ pw_minclass }}
 dcredit = {{ pw_dcredit }}
@@ -6,3 +6,7 @@ ucredit = {{ pw_ucredit }}
 lcredit = {{ pw_lcredit }}
 ocredit = {{ pw_ocredit }}
 retry = 3
+maxrepeat = {{ pw_maxrepeat | default(3) }}
+difok = {{ pw_difok | default(8) }}
+dictcheck = {{ pw_dictcheck | default(1) }}
+enforce_for_root

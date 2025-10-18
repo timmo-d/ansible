@@ -14,3 +14,11 @@
     owner: root
     group: root
     mode: '0644'
+
+- name: Remove unused dependencies and old kernels after upgrades
+  ansible.builtin.blockinfile:
+    path: /etc/apt/apt.conf.d/50unattended-upgrades
+    create: yes
+    block: |
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+      Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";

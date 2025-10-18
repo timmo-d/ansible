@@ -5,3 +5,10 @@
     name: [nis, rsh-server, talk, telnet, ldap-utils]
     state: absent
   ignore_errors: yes
+
+- name: Ensure prelink is absent
+  ansible.builtin.package:
+    name: prelink
+    state: absent
+  when: remove_prelink | default(true)
+  

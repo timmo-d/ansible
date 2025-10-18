@@ -1,4 +1,9 @@
 ---
+- name: Ensure auditd installed and enabled
+  ansible.builtin.package:
+    name: auditd
+    state: present
+  when: enable_auditd | default(true)
 
 - name: Deploy STIG-aligned audit rules
   template:
@@ -8,3 +13,16 @@
     group: root
     mode: '0640'
   notify: restart_auditd
+  when: enable_auditd | default(true)
+
+- name: Ensure augenrules compiles and loads rules
+  ansible.builtin.command: /sbin/augenrules --load
+  changed_when: false
+  when: enable_auditd | default(true)
+
+- name: Ensure auditd service running and persistent
+  ansible.builtin.systemd:
+    name: auditd
+    state: started
+    enabled: true
+  when: enable_auditd | default(true)  

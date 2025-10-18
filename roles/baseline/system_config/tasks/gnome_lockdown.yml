@@ -1,0 +1,62 @@
+---
+- name: Optionally purge gdm3 if GUI not allowed
+  ansible.builtin.package:
+    name: gdm3
+    state: absent
+  when: remove_gdm | default(true)
+
+- name: Disable XDMCP (GDM)
+  ansible.builtin.ini_file:
+    path: /etc/gdm3/custom.conf
+    section: xdmcp
+    option: Enable
+    value: "false"
+    no_extra_spaces: true
+    create: yes
+  when: gnome_lockdown | default(true)
+
+- name: Ensure dconf directories exist
+  ansible.builtin.file:
+    path: "/etc/dconf/db/local.d/locks"
+    state: directory
+    mode: '0755'
+
+- name: Enforce dconf lockdowns (user list, automount, autorun, screensaver)
+  ansible.builtin.copy:
+    dest: /etc/dconf/db/local.d/00-security-settings
+    mode: '0644'
+    content: |
+      [org/gnome/login-screen]
+      disable-user-list=true
+
+      [org/gnome/desktop/media-handling]
+      automount=false
+      automount-open=false
+      autorun-never=true
+
+      [org/gnome/desktop/session]
+      idle-delay=uint32 {{ gnome_idle_delay | default(900) }}
+
+      [org/gnome/desktop/screensaver]
+      lock-enabled=true
+      lock-delay=uint32 {{ gnome_lock_delay | default(5) }}
+  when: gnome_lockdown | default(true)
+
+- name: Lock the dconf keys
+  ansible.builtin.copy:
+    dest: /etc/dconf/db/local.d/locks/00-security-settings-lock
+    mode: '0644'
+    content: |
+      /org/gnome/login-screen/disable-user-list
+      /org/gnome/desktop/media-handling/automount
+      /org/gnome/desktop/media-handling/automount-open
+      /org/gnome/desktop/media-handling/autorun-never
+      /org/gnome/desktop/session/idle-delay
+      /org/gnome/desktop/screensaver/lock-enabled
+      /org/gnome/desktop/screensaver/lock-delay
+  when: gnome_lockdown | default(true)
+
+- name: Update dconf databases
+  ansible.builtin.command: dconf update
+  changed_when: false
+  when: gnome_lockdown | default(true)
