@@ -42,6 +42,23 @@
     - /mnt/data
     - /mnt/r
 
+
+- name: Ensure UFW is installed
+  apt:
+    name: ufw
+    state: present
+    update_cache: yes
+
+- name: Allow Samba ports through UFW
+  ufw:
+    rule: allow
+    name: Samba
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    policy: allow
+
 - name: Mount CIFS shares
   mount:
     path: "{{ item.path }}"
