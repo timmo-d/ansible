@@ -59,22 +59,6 @@
 - name: Include continuous_monitoring controls
   import_tasks: "{{ role_path }}/continuous_monitoring/tasks/main.yml"
 
-
-- name: Ensure "{{ ansible_user }}"'s SSH directory exists
-  file:
-    path: /home/tim/.ssh
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: '0700'
-
-- name: Add public key to tim's authorized_keys
-  authorized_key:
-    user: "{{ ansible_user }}"
-    state: present
-    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
-
-
 # Reboot the system if required due to FIPS or USG changes
 # Ensures kernel-level or system-wide changes take effect
 - name: Reboot if required (FIPS or USG remediation applied)

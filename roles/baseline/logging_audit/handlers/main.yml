@@ -1,4 +1,3 @@
----
 - name: compile_and_load_augenrules
   ansible.builtin.command: /sbin/augenrules --load
   register: augen
