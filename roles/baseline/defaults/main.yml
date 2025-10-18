@@ -5,7 +5,7 @@
 
 # Account & Identity
 enable_enforce_password_policy: true          # Apply password complexity and aging rules (pwquality + login.defs)
-enable_disable_blank_passwords: true          # Detect and lock accounts with empty password fields
+enable_disable_blank_passwords: false          # [true] TODO: is this making sudo fail? Detect and lock accounts with empty password fields
 enable_restrict_root_usage: true              # Disable remote root login via SSH and enforce sudo for privilege escalation
 enable_pki_auth_mapping: true                 # Install SSSD and smart card tooling for PKI-based authentication (site-specific config)
 enable_pwquality: true
@@ -21,8 +21,8 @@ enforce_sudo_logfile: true
 sudo_logfile: /var/log/sudo.log
 enforce_sudo_timestamp: true
 sudo_timestamp_timeout: 5
-disable_sudo_nopasswd: true
-disable_sudo_no_authenticate: true
+disable_sudo_nopasswd: false                 #[true] TODO: is sudo breaking here?
+disable_sudo_no_authenticate: false           #[true] TODO: is sudo breaking here?
 
 # Authentication & Authorization
 enable_pam_lockout: true                      # Enforce account lockouts after repeated failed login attempts (via pam_faillock)
