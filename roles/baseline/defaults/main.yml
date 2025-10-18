@@ -25,7 +25,7 @@ disable_sudo_nopasswd: false                 #[true] TODO: is sudo breaking here
 disable_sudo_no_authenticate: false           #[true] TODO: is sudo breaking here?
 
 # Authentication & Authorization
-enable_pam_lockout: true                      # Enforce account lockouts after repeated failed login attempts (via pam_faillock)
+enable_pam_lockout: false                      # [true] TDO: this is where sudo issue is breaking script. Enforce account lockouts after repeated failed login attempts (via pam_faillock)
 enable_pam_common_auth: true                  # Harden common PAM configuration to require strong password quality checks
 enable_disable_su_unless_sudo: true           # Restrict use of 'su' command to members of the sudo group only
 enable_pam_faillock: true
