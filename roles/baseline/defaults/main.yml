@@ -82,6 +82,7 @@ gnome_lock_delay: 5
 enable_grub_password: false
 grub_password_pbkdf2_hash: ""
 
+
 # Patch & Vulnerability
 enable_enable_unattended_upgrades: true        # Enables automatic installation of security updates to reduce exposure to vulnerabilities.
 enable_verify_package_signatures: true         # Verifies package signatures to ensure integrity and authenticity of software.

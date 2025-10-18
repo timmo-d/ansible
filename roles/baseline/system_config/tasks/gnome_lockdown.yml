@@ -31,7 +31,7 @@
     no_extra_spaces: true
   when:
     - gnome_lockdown | default(true)
-    - "'gdm3' in ansible_facts.package
+    - "'gdm3' in ansible_facts.packages"
 
 
 - name: Ensure dconf directories exist
