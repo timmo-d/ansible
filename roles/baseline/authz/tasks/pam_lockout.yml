@@ -7,7 +7,7 @@
 
 - name: Ensure faillock.conf present
   ansible.builtin.template:
-    src: faillock.conf.j2
+    src: "{{ role_path }}/authz/templates/faillock.conf.j2"
     dest: /etc/security/faillock.conf
     owner: root
     group: root
