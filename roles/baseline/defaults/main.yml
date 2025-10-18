@@ -16,7 +16,7 @@ enable_pam_unix_sha512: true
 enable_limit_sudo_group: true                 # Restrict sudo group membership to approved users (enforces least privilege)
 enable_protect_sensitive_files: true          # Ensure secure ownership and permissions on critical auth files (e.g., /etc/shadow, /etc/passwd)
 enable_world_writable_dirs_sticky: true       # Apply sticky bit on all world-writable directories to prevent unauthorized file deletion
-enforce_sudo_use_pty: true
+enforce_sudo_use_pty: false                    # [true]
 enforce_sudo_logfile: true
 sudo_logfile: /var/log/sudo.log
 enforce_sudo_timestamp: true
