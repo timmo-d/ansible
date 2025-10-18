@@ -8,13 +8,11 @@
 # Typically involves configuring permissions, access policies, and role-based access
 - name: Include access_control controls
   import_tasks: "{{ role_path }}/access_control/tasks/main.yml"
-  
+
 # Include tasks related to account identity management
 # These may define user accounts, roles, and identity verification mechanisms
 - name: Include account_identity controls
   import_tasks: "{{ role_path }}/account_identity/tasks/main.yml"
-
-
 
 # Include tasks for authorization controls
 # Ensures users have appropriate permissions for actions and resources
