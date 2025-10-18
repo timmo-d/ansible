@@ -129,7 +129,7 @@ oscap_datastream: ""                            # Leave empty to auto-discover S
 
 # Reboot control
 auto_reboot_on_changes: true                    # Automatically reboots the system if changes require it (e.g., kernel updates).
-reboot_timeout_sec: 900                         # Maximum time to wait for reboot; increase for slow systems or major changes.
+reboot_timeout_sec: 360                         # Maximum time to wait for reboot; increase for slow systems or major changes.
 pre_reboot_delay_sec: 5                         # Delay before initiating reboot to allow final tasks to complete.
 post_reboot_delay_sec: 10                       # Delay after reboot to allow services to stabilize before continuing.
 reboot_test_command: "whoami"                   # Command used to verify system is back online after reboot.
