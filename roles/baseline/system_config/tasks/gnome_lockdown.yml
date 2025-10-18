@@ -1,9 +1,25 @@
 ---
+# Discover what’s installed
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+# Install the dconf CLI only if GNOME/GDM is present
+- name: Ensure dconf-cli is installed when GDM is installed
+  ansible.builtin.apt:
+    name: dconf-cli
+    state: present
+    update_cache: yes
+  when:
+    - gnome_lockdown | default(true)
+    - "'gdm3' in ansible_facts.packages"
+
 - name: Optionally purge gdm3 if GUI not allowed
   ansible.builtin.package:
     name: gdm3
     state: absent
   when: remove_gdm | default(true)
+
 
 - name: Disable XDMCP (GDM)
   ansible.builtin.ini_file:
@@ -11,15 +27,19 @@
     section: xdmcp
     option: Enable
     value: "false"
-    no_extra_spaces: true
     create: yes
-  when: gnome_lockdown | default(true)
+    no_extra_spaces: true
+  when:
+    - gnome_lockdown | default(true)
+    - "'gdm3' in ansible_facts.package
+
 
 - name: Ensure dconf directories exist
   ansible.builtin.file:
     path: "/etc/dconf/db/local.d/locks"
     state: directory
     mode: '0755'
+
 
 - name: Enforce dconf lockdowns (user list, automount, autorun, screensaver)
   ansible.builtin.copy:
@@ -40,7 +60,9 @@
       [org/gnome/desktop/screensaver]
       lock-enabled=true
       lock-delay=uint32 {{ gnome_lock_delay | default(5) }}
-  when: gnome_lockdown | default(true)
+  when:
+    - gnome_lockdown | default(true)
+    - "'gdm3' in ansible_facts.packages"
 
 - name: Lock the dconf keys
   ansible.builtin.copy:
@@ -54,9 +76,13 @@
       /org/gnome/desktop/session/idle-delay
       /org/gnome/desktop/screensaver/lock-enabled
       /org/gnome/desktop/screensaver/lock-delay
-  when: gnome_lockdown | default(true)
+  when:
+    - gnome_lockdown | default(true)
+    - "'gdm3' in ansible_facts.packages"
 
 - name: Update dconf databases
   ansible.builtin.command: dconf update
   changed_when: false
-  when: gnome_lockdown | default(true)
+  when:
+    - gnome_lockdown | default(true)
+    - "'gdm3' in ansible_facts.packages"
