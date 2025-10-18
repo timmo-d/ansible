@@ -13,7 +13,7 @@
 
 - name: Run aide integrity
   import_tasks: "{{ role_path }}/fs_storage/tasks/aide_integrity.yml"
-  when: enable_aide_integrity
+  when: enable_aide
 
 
 - name: Run aide periodic check
