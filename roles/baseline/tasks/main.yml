@@ -3,15 +3,18 @@
 # Baseline wrapper: includes each category in order
 ########################################################
 
-# Include tasks related to account identity management
-# These may define user accounts, roles, and identity verification mechanisms
-- name: Include account_identity controls
-  import_tasks: "{{ role_path }}/account_identity/tasks/main.yml"
 
 # Include tasks for access control mechanisms
 # Typically involves configuring permissions, access policies, and role-based access
 - name: Include access_control controls
   import_tasks: "{{ role_path }}/access_control/tasks/main.yml"
+  
+# Include tasks related to account identity management
+# These may define user accounts, roles, and identity verification mechanisms
+- name: Include account_identity controls
+  import_tasks: "{{ role_path }}/account_identity/tasks/main.yml"
+
+
 
 # Include tasks for authorization controls
 # Ensures users have appropriate permissions for actions and resources
@@ -72,4 +75,3 @@
   when:
     - auto_reboot_on_changes | default(true)                  # Only reboot if auto-reboot is enabled
     - (pro_enable_fips_updates | default(false)) or (usg_apply_fix | default(false))    # Reboot only if FIPS or USG changes were applied
-    
