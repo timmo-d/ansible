@@ -82,6 +82,6 @@
 - name: Update grub
   command: update-grub
 
-- name: Reboot for FIPS
-  ansible.builtin.reboot:
-  when: enable_fips_mode | default(false)
+#- name: Reboot for FIPS
+#  ansible.builtin.reboot:
+#  when: enable_fips_mode | default(false)
