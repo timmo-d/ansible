@@ -28,7 +28,6 @@ disable_sudo_no_authenticate: true
 enable_pam_lockout: true                      # Enforce account lockouts after repeated failed login attempts (via pam_faillock)
 enable_pam_common_auth: true                  # Harden common PAM configuration to require strong password quality checks
 enable_disable_su_unless_sudo: true           # Restrict use of 'su' command to members of the sudo group only
-approved_sudo_users: ["{{ ansible_user }}"]   # List of users allowed in the sudo group (defaults to the current Ansible user)
 enable_pam_faillock: true
 faillock_deny: 5
 faillock_interval: 900

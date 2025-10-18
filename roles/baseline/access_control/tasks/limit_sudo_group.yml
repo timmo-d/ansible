@@ -4,6 +4,13 @@
     name: sudo
     state: present
 
+- name: Ensure approved sudo users are in the sudo group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: sudo
+    append: yes
+  loop: "{{ approved_sudo_users | default([]) }}"
+  
 - name: Enforce sudo use_pty
   ansible.builtin.lineinfile:
     path: /etc/sudoers

@@ -107,5 +107,7 @@ disallow_unauthenticated_apt: true
 
 
 
-
-
+#################
+## NEW (TODO: above may be able to be remove)
+#################
+approved_sudo_users: ["{{ ansible_user }}"]   # List of users allowed in the sudo group (defaults to the current Ansible user)
