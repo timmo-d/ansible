@@ -1,0 +1,71 @@
+- name: Install dependencies
+  apt:
+    name:
+      - samba
+      - cifs-utils
+    state: present
+    update_cache: yes
+    install_recommends: no
+
+- name: Get GID of 'media' group
+  command: getent group media
+  register: media_group_info
+  changed_when: false
+
+- name: Set GID fact for media group
+  set_fact:
+    media_gid: "{{ media_group_info.stdout.split(':')[2] }}"
+
+- name: Create CIFS credentials file
+  copy:
+    dest: /etc/smb_credentials
+    content: |
+      username={{ username }}
+      password={{ password }}
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Ensure mount points exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: media
+    mode: '0755'
+  loop:
+    - /mnt/data
+    - /mnt/r
+
+- name: Mount CIFS shares
+  mount:
+    path: "{{ item.path }}"
+    src: "{{ item.src }}"
+    fstype: cifs
+    opts: "credentials=/etc/smb_credentials,x-systemd.automount,rw,uid=1000,gid={{ media_gid }},file_mode=0664,dir_mode=0775,vers=3.0,sec=ntlmssp,nodfs"
+    state: mounted
+  loop:
+    - {
+        path: "/mnt/data",
+        src: "//{{ file_server_ip }}/data"
+      }
+    - {
+        path: "/mnt/r",
+        src: "//{{ file_server_ip }}/r"
+      }
+
+- name: Restrict Samba to SMBv2 and SMBv3 only
+  blockinfile:
+    path: /etc/samba/smb.conf
+    block: |
+      [global]
+      server min protocol = SMB2
+      server max protocol = SMB3
+
+
+- name: Copy file to mounted share
+  copy:
+    src: /var/lib/usg/
+    dest: /mnt/data/
+    remote_src: yes
+
