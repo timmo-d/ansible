@@ -1,4 +1,7 @@
-# ---- Ensure AIDE package is present (with privilege escalation) ----
+# vars (e.g., group_vars/all.yml)
+# aide_gzip_db: false  # set to true to use .gz DB files
+
+# Ensure AIDE present
 - name: Install AIDE
   become: yes
   ansible.builtin.package:
@@ -6,7 +9,7 @@
     state: present
   when: enable_aide | default(true)
 
-# ---- Ensure target dir exists ----
+# Ensure database directory
 - name: Ensure /var/lib/aide exists
   become: yes
   ansible.builtin.file:
@@ -17,8 +20,7 @@
     mode: '0755'
   when: enable_aide | default(true)
 
-# ---- Explicitly set gzip_dbout and align filenames ----
-# Toggle this in group_vars/all.yml  (aide_gzip_db: true|false)
+# Normalize config: dedupe, set gzip_dbout, compute filenames
 - name: Remove any existing database/database_out lines
   become: yes
   ansible.builtin.lineinfile:
@@ -61,7 +63,23 @@
     state: present
   when: enable_aide | default(true)
 
-# ---- Discover binary paths safely (don’t hardcode /usr/sbin/aide) ----
+# Protect audit tools, as you had
+- name: Protect audit tools with AIDE rules
+  become: yes
+  ansible.builtin.lineinfile:
+    path: /etc/aide/aide.conf
+    line: "{{ item }} p+i+n+u+g+s+b+acl+xattrs+sha512"
+    state: present
+  loop:
+    - /usr/sbin/auditctl
+    - /usr/sbin/auditd
+    - /usr/sbin/augenrules
+    - /usr/sbin/aureport
+    - /usr/sbin/ausearch
+    - /usr/sbin/autrace
+  when: enable_aide | default(true)
+
+# Find aide binary (don't hardcode /usr/sbin/aide)
 - name: Find aide binary
   ansible.builtin.command: bash -lc 'command -v aide || true'
   register: aide_bin
@@ -69,51 +87,25 @@
   failed_when: false
   when: enable_aide | default(true)
 
-- name: Find aideinit wrapper
-  ansible.builtin.command: bash -lc 'command -v aideinit || true'
-  register: aideinit_bin
-  changed_when: false
-  failed_when: false
-  when: enable_aide | default(true)
-
-# ---- Fail fast if neither binary is present (shouldn’t happen after install) ----
-- name: Assert an AIDE executable exists
+- name: Assert aide binary is available
   ansible.builtin.assert:
-    that:
-      - "(aide_bin.stdout | length) > 0 or (aideinit_bin.stdout | length) > 0"
-    fail_msg: "AIDE is not available on PATH even after installation."
+    that: "(aide_bin.stdout | length) > 0"
+    fail_msg: "Could not find 'aide' in PATH after installation."
   when: enable_aide | default(true)
 
-# ---- Initialize database (prefer direct aide --init; fallback to aideinit) ----
-# Direct aide --init (idempotent via 'creates')
-- name: Initialize AIDE (direct, if available)
+# Initialize database directly, passing the config path explicitly
+- name: Initialize AIDE (direct, with explicit config)
   become: yes
-  ansible.builtin.command: "{{ aide_bin.stdout }} --init"
+  ansible.builtin.command: "{{ aide_bin.stdout }} --init --config /etc/aide/aide.conf"
   args:
     creates: "{{ aide_db_file }}"
   register: aide_init_direct
   changed_when: aide_init_direct.rc == 0
   failed_when: aide_init_direct.rc != 0
-  when:
-    - enable_aide | default(true)
-    - (aide_bin.stdout | length) > 0
+  when: enable_aide | default(true)
 
-# Fallback to aideinit wrapper if 'aide' wasn’t found
-- name: Initialize AIDE (wrapper fallback)
-  become: yes
-  ansible.builtin.command: "{{ aideinit_bin.stdout }} -y -f"
-  args:
-    creates: "{{ aide_db_file }}"
-  register: aide_init_wrapper
-  changed_when: aide_init_wrapper.rc == 0
-  failed_when: aide_init_wrapper.rc not in [0, 1]
-  when:
-    - enable_aide | default(true)
-    - (aide_bin.stdout | length) == 0
-    - (aideinit_bin.stdout | length) > 0
-
-# ---- If we used direct aide --init, promote the .new file into place ----
-- name: Promote new AIDE DB into place (direct-init path only)
+# Promote the .new DB to the final DB (what aideinit normally does)
+- name: Promote new AIDE DB into place
   become: yes
   ansible.builtin.command: "mv -f {{ aide_db_new_file }} {{ aide_db_file }}"
   args:
@@ -124,11 +116,10 @@
   failed_when: aide_mv.rc != 0
   when:
     - enable_aide | default(true)
-    - (aide_bin.stdout | length) > 0
     - aide_init_direct is defined
     - aide_init_direct.rc == 0
 
-# ---- Reporting preferences (fixed regex) ----
+# Reporting prefs and timer (unchanged)
 - name: Ensure AIDE sends non-silent reports
   become: yes
   ansible.builtin.lineinfile:
@@ -139,7 +130,6 @@
     state: present
   when: enable_aide | default(true)
 
-# ---- Daily timer ----
 - name: Enable daily AIDE check (systemd timer)
   become: yes
   ansible.builtin.systemd:
@@ -149,3 +139,4 @@
     masked: false
     daemon_reload: true
   when: enable_aide | default(true)
+``
