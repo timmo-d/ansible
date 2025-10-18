@@ -13,7 +13,7 @@ enable_login_defs: true
 enable_pam_unix_sha512: true
 
 # Access Control
-enable_limit_sudo_group: true                 # [true] TODO: Fix sudo access creds. Restrict sudo group membership to approved users (enforces least privilege)
+enable_limit_sudo_group: false                 # [true] TODO: Fix sudo access creds. Restrict sudo group membership to approved users (enforces least privilege)
 enable_protect_sensitive_files: true          # Ensure secure ownership and permissions on critical auth files (e.g., /etc/shadow, /etc/passwd)
 enable_world_writable_dirs_sticky: true       # Apply sticky bit on all world-writable directories to prevent unauthorized file deletion
 enforce_sudo_use_pty: true                    # [true]
@@ -25,7 +25,7 @@ disable_sudo_nopasswd: false                 #[true] TODO: is sudo breaking here
 disable_sudo_no_authenticate: false           #[true] TODO: is sudo breaking here?
 
 # Authentication & Authorization
-enable_pam_lockout: false                      # [true] TDO: this is where sudo issue is breaking script. Enforce account lockouts after repeated failed login attempts (via pam_faillock)
+enable_pam_lockout: true                      # [true] TDO: this is where sudo issue is breaking script. Enforce account lockouts after repeated failed login attempts (via pam_faillock)
 enable_pam_common_auth: true                  # Harden common PAM configuration to require strong password quality checks
 enable_disable_su_unless_sudo: true           # Restrict use of 'su' command to members of the sudo group only
 enable_pam_faillock: true
