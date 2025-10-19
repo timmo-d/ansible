@@ -1,9 +1,7 @@
----
-
 - name: Include SSH hardening tasks from crypto category
   import_tasks: "{{ role_path }}/crypto/tasks/ssh_strong_ciphers.yml"
 
-- name: "SSH | CIS server settings"
+- name: SSH | CIS server settings
   lineinfile:
     path: /etc/ssh/sshd_config
     regexp: '^{{ item.key }}\s+'
@@ -18,7 +16,7 @@
     - { key: MaxStartups,             value: "{{ ssh_limits.max_startups }}" }
   notify: restart_sshd
 
-- name: "SSH | Limit Users (optional)"
+- name: SSH | Limit Users (optional)
   when: ssh_limits.allowusers|length>0
   lineinfile:
     path: /etc/ssh/sshd_config

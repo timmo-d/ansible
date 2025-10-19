@@ -1,12 +1,10 @@
----
-
 - name: Remove insecure/legacy network packages
   apt:
     name: [telnet, rsh-server, rsh-client, tftp, xinetd]
     state: absent
   ignore_errors: yes
 
-- name: "PROTOCOLS | disable uncommon network protocols"
+- name: PROTOCOLS | disable uncommon network protocols
   copy:
     dest: /etc/modprobe.d/cis_uncommon.conf
     mode: '0644'

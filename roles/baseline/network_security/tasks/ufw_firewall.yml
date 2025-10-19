@@ -1,5 +1,3 @@
----
-
 - name: Ensure UFW present
   apt:
     name: ufw
@@ -22,22 +20,22 @@
     port: "{{ ssh_port }}"
     proto: tcp
 
-- name: "FIREWALL | ensure only UFW is active"
+- name: FIREWALL | ensure only UFW is active
   service: { name: nftables, enabled: no, state: stopped }
   ignore_errors: yes
 
-- name: "FIREWALL | default deny inbound, allow outbound"
+- name: FIREWALL | default deny inbound, allow outbound
   block:
     - ufw: { state: enabled, direction: incoming, policy: deny }
     - ufw: { direction: routed, policy: deny }
     - ufw: { direction: outgoing, policy: allow }
 
-- name: "FIREWALL | loopback rules"
+- name: FIREWALL | loopback rules
   block:
     - ufw: { rule: allow, interface: lo, direction: in }
     - ufw: { rule: deny, src: 127.0.0.0/8, direction: in }
 
-- name: "FIREWALL | allow required inbound ports (SSH only by default)"
+- name: FIREWALL | allow required inbound ports (SSH only by default)
   ufw:
     rule: allow
     port: "{{ item.split('/') [0] }}"
