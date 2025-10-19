@@ -37,4 +37,13 @@
           {{ s }}
           {% endfor %}
     - systemd: { name: chrony, enabled: yes, state: started }
-    - systemd: { name: systemd-timesyncd, enabled: no, state: stopped }
+  
+- name: Gather service facts
+  service_facts:
+
+- name: Disable and stop systemd-timesyncd if present
+  systemd:
+    name: systemd-timesyncd
+    enabled: no
+    state: stopped
+  when: "'systemd-timesyncd.service' in ansible_facts.services"
