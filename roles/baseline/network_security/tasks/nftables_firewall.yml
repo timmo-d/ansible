@@ -19,9 +19,9 @@
 ###################################################
 # Copy across applicable ruleset
 ###################################################
-- name: Configure rules for SIEM Server configuration
+- name: Configure rules for Baseline Server configuration
   template:
-    src: baseline_nftables.conf.j2
+    src: "{{ role_path }}/network_security/templates/baseline_nftables.conf.j2"
     dest: /etc/nftables.conf
     mode: '0644'
 
