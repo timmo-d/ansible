@@ -22,6 +22,7 @@
 -a always,exit -F arch={{arch}} -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -k perm_mod
 -a always,exit -F arch={{arch}} -S chown,fchown,lchown,fchownat -F auid>=1000 -F auid!=4294967295 -k perm_mod
 -a always,exit -F arch={{arch}} -S setxattr,lsetxattr,fsetxattr,removexattr,lremovexattr,fremovexattr -F auid>=1000 -F auid!=4294967295 -k perm_mod
+-a always,exit -F arch={{arch}} -S setxattr -S removexattr -k dac_mod
 {% endfor %}
 
 ## File deletions
@@ -48,6 +49,7 @@
 ## Privileged commands (adjustable)
 {% for bin in audit_privileged_bins | default(['/usr/bin/sudo','/usr/bin/su','/usr/sbin/useradd','/usr/sbin/usermod','/usr/sbin/userdel','/usr/bin/chage','/usr/bin/passwd','/usr/bin/gpasswd','/usr/sbin/cron','/usr/bin/crontab','/usr/sbin/visudo','/usr/sbin/apparmor_parser']) %}
 -a always,exit -F path={{bin}} -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
+-a always,exit -F path=/usr/bin/sudoedit -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged
 {% endfor %}
 
 ## Journald directory watch

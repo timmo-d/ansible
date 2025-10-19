@@ -11,3 +11,9 @@
     owner: root
     group: root
     mode: '0644'
+
+- name: System Audit Logs Must Have Mode 0600
+  when: enable_audit_log_permissions | default(false)
+  ansible.builtin.file:
+    path: "/var/log/audit"
+    mode: "0600"
