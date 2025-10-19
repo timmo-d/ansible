@@ -105,7 +105,11 @@ enable_motd_banners: true
 
 time_sync_provider: chrony
 chrony_servers:
-  - "pool.au.pool.ntp.org iburst"
+  - "0.au.pool.ntp.org"
+  - "1.au.pool.ntp.org"
+  - "2.au.pool.ntp.org"
+  - "3.au.pool.ntp.org"
+  - "time.cloudflare.com"
 
 enable_core_dumps_disable: true
 enable_apport_disable: true
