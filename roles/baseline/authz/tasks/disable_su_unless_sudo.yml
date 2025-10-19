@@ -16,12 +16,13 @@
     regexp: '^\s*auth\s+required\s+pam_wheel\.so'
     line: 'auth required pam_wheel.so use_uid group=wheel'
 
+
 - name: "SU | wheel must be empty"
   shell: |
-    getent group wheel | awk -F: '{print $4}' | tr ',' '
-' | grep -vE '^$|^root$' || true
+    getent group wheel | awk -F: '{print $4}' | tr ',' '\n' | grep -vE '^$|^root$' || true
   register: current_wheel
   changed_when: false
+
 
 - name: "SU | remove wheel non-root members"
   when: current_wheel.stdout_lines|length>0
