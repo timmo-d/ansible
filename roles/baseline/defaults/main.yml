@@ -30,9 +30,14 @@ enable_pam_lockout: true                      # [true] TODO: Fix issue with not 
 enable_pam_common_auth: true                  # Harden common PAM configuration to require strong password quality checks
 enable_disable_su_unless_sudo: true           # Restrict use of 'su' command to members of the sudo group only
 enable_pam_faillock: true
-faillock_deny: 5
+faillock_deny: 5            # TODO: Remove duplicates
 faillock_interval: 900
 faillock_unlock_time: 900
+pam_lockout:
+  deny: 5
+  unlock_time: 900
+  fail_interval: 900
+
 faillock_silent: true
 enable_pam_faildelay: true
 pam_faildelay_us: 4000000
