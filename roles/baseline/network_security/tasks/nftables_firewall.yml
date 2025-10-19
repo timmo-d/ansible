@@ -1,0 +1,39 @@
+#####################################################
+# Upgrade firewall application
+#####################################################
+- name: Gather service facts
+  ansible.builtin.service_facts:
+
+- name: Disable ufw if service exists
+  service:
+    name: ufw
+    state: stopped
+    enabled: no
+  when: "'ufw' in ansible_facts.services"
+
+- name: Install nftables
+  apt:
+    name: nftables
+    state: present
+
+###################################################
+# Copy across applicable ruleset
+###################################################
+- name: Configure rules for SIEM Server configuration
+  template:
+    src: baseline_nftables.conf.j2
+    dest: /etc/nftables.conf
+    mode: '0644'
+
+###########################################
+# Start nftables and apply ruleset
+###########################################
+- name: Enable and start nftables service
+  systemd:
+    name: nftables
+    enabled: true
+    state: started
+
+- name: Apply nftables ruleset
+  command: nft -f /etc/nftables.conf
+  become: true

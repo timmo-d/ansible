@@ -1,0 +1,71 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+  chain input {
+    type filter hook input priority 0;
+    policy drop;
+
+    # Allow loopback
+    iif lo accept
+
+    # Allow established/related connections
+    ct state established,related accept
+
+    # Allow inbound SSH and app ports from 192.168.1.0/24
+    ip saddr 192.168.1.0/24 tcp dport { 22 } accept
+
+    # Allow ICMP (ping)
+    ip protocol icmp icmp type echo-reply accept
+    ip6 nexthdr icmpv6 icmpv6 type echo-reply accept
+
+    # Log and drop everything else
+    log prefix "nftables INPUT DROP: " flags all limit rate 10/second
+    counter drop
+  }
+
+  chain output {
+    type filter hook output priority 0;
+    policy drop;
+
+    # Allow loopback
+    oif lo accept
+
+    # Allow established/related connections
+    ct state established,related accept
+
+    # Allow outbound ICMP (ping)
+    ip protocol icmp icmp type echo-request accept
+    ip6 nexthdr icmpv6 icmpv6 type echo-request accept
+
+    # Allow outbound DNS
+    udp dport 53 accept
+    tcp dport 53 accept
+
+    # Allow outbound NTP
+    udp dport 123 accept
+
+    # Allow outbound HTTPS
+    tcp dport 443 accept
+
+    # Allow outbound HTTP
+    tcp dport 80 accept
+
+    # Allow outbound Secure DNS
+    tcp dport 853 accept     # DNS over TLS
+    # DNS over HTTPS uses port 443 (already allowed)
+
+    # Allow DHCP (client side)
+    #udp sport 68 udp dport 67 accept
+
+    # Allow outbound Samba traffic to 192.168.1.106
+    ip daddr 192.168.1.106 tcp dport { 139, 445 } accept
+    ip daddr 192.168.1.106 udp dport { 137, 138 } accept
+    
+    # Log and drop everything else
+    log prefix "nftables OUTPUT DROP: " flags all limit rate 10/second
+    counter drop
+  }
+
+}

@@ -124,7 +124,8 @@ enable_enable_unattended_upgrades: true        # Enables automatic installation 
 enable_verify_package_signatures: true         # Verifies package signatures to ensure integrity and authenticity of software.
 
 # Network Security
-enable_ufw_firewall: true                      # Enables and configures UFW (Uncomplicated Firewall) to control network traffic.
+enable_ufw_firewall: false                      # Enables and configures UFW (Uncomplicated Firewall) to control network traffic.
+enable_nftables_firewall: true                 # Enables and configures NFTables to control network traffic.
 enable_ssh_hardening: true                     # Applies security best practices to SSH configuration to prevent unauthorized access.
 enable_disable_unused_protocols: true          # Disables unused network protocols to reduce potential attack vectors.
 ufw_allowed_ports: ['22/tcp']

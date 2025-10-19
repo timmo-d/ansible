@@ -4,6 +4,10 @@
   import_tasks: "{{ role_path }}/network_security/tasks/ufw_firewall.yml"
   when: enable_ufw_firewall
 
+- name: Run nftables firewall
+  import_tasks: "{{ role_path }}/network_security/tasks/nftables_firewall.yml"
+  when: enable_nftables_firewall
+
 - name: Run ssh hardening
   import_tasks: "{{ role_path }}/network_security/tasks/ssh_hardening.yml"
   when: enable_ssh_hardening
