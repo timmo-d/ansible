@@ -118,7 +118,7 @@ pro_enable_fips_updates: "{{ enable_fips_mode }}"                  #  **** DISRU
 
 # USG (Ubuntu Security Guide)
 enable_usg: true                                # Enables Ubuntu Security Guide (USG) for system hardening and auditing.
-usg_profile: "disa_stig"                        # Specifies the hardening profile; options include 'disa_stig', 'cis_level1_server', etc.
+usg_profile: "cis_level2_server"                        # Specifies the hardening profile; options include 'disa_stig', 'cis_level1_server', etc.
 usg_run_audit: true                             # Runs a security audit using the selected USG profile.
 usg_apply_fix: false                             # [FALSE] **** DISRUPTIVE **** Applies hardening fixes; disruptive changes—recommended only for fresh builds.
 usg_reports_dir: "/var/tmp"                     # Directory to store USG audit and remediation reports.
