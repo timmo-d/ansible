@@ -15,12 +15,12 @@
 - name: "SAMBA | ensure present when enabled"
   when: samba_enabled
   apt:
-    name: [ 'samba', 'smbd', 'smbclient' ]
+    name: [ 'samba', 'cifs-utils' ]
     state: present
 
 - name: "SAMBA | ensure absent when disabled (CIS)"
   when: not samba_enabled
   apt:
-    name: [ 'samba', 'smbd', 'smbclient' ]
+    name: [ 'samba', 'cifs-utils' ]
     state: absent
     purge: yes
