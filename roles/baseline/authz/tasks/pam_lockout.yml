@@ -23,7 +23,8 @@
 #    - 'auth required pam_faillock.so preauth'
 #    - 'auth [default=die] pam_faillock.so authfail'
 #  when: enable_pam_faillock | default(true)
-- name: "PAM | faillock lines in common-auth"
+
+- name: PAM | faillock lines in common-auth
   blockinfile:
     path: /etc/pam.d/common-auth
     marker: "# {mark} CIS faillock"
