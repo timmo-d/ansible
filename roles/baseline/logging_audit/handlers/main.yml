@@ -13,6 +13,11 @@
 - name: reload_auditd
   command: augenrules --load
 
-- name: restart_journald
-  service: { name: systemd-journald, state: restarted }
+#- name: restart_journald
+#  service: { name: systemd-journald, state: restarted }
 
+- name: restart_journald
+  service:
+    name: systemd-journald
+    state: restarted
+    
