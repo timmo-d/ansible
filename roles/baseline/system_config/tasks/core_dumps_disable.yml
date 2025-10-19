@@ -1,0 +1,11 @@
+---
+- name: "CORE DUMPS | fs.suid_dumpable=0"
+  sysctl: { name: fs.suid_dumpable, value: '0', state: present, reload: yes }
+
+- name: "CORE DUMPS | limits disable"
+  copy:
+    dest: /etc/security/limits.d/cis-nodump.conf
+    mode: '0644'
+    content: |
+      * soft core 0
+      * hard core 0

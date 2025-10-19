@@ -12,6 +12,8 @@
       install squashfs /bin/true
       install udf /bin/true
       install vfat /bin/true
+      install usb-storage /bin/true
+      install overlay /bin/true
     owner: root
     group: root
     mode: '0644'

@@ -7,7 +7,9 @@
     group: "{{ item.group | default('root') }}"
     mode: "{{ item.mode }}"
   loop:
-    - { path: '/etc/shadow',   mode: '0600' }
-    - { path: '/etc/gshadow',  mode: '0600' }
-    - { path: '/etc/passwd',   mode: '0644' }
-    - { path: '/etc/group',    mode: '0644' }
+    - { path: /etc/gshadow,  group: shadow, mode: '0600' }
+    - { path: /etc/gshadow-, group: shadow, mode: '0600' }
+    - { path: /etc/shadow,   group: shadow, mode: '0600' }
+    - { path: /etc/shadow-,  group: shadow, mode: '0600' }
+    - { path: '/etc/passwd', group: shadow, mode: '0644' }
+    - { path: '/etc/group', group: shadow, mode: '0644' }

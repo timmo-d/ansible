@@ -1,0 +1,22 @@
+---
+- name: "UMASK | /etc/profile"
+  replace:
+    path: /etc/profile
+    regexp: '(^\s*umask\s+)\d+'
+    replace: '\1{{ default_umask }}'
+
+- name: "UMASK | /etc/bash.bashrc"
+  lineinfile:
+    path: /etc/bash.bashrc
+    regexp: '^\s*umask\s+\d+'
+    line: "umask {{ default_umask }}"
+    create: yes
+
+- name: "SHELL TIMEOUT"
+  copy:
+    dest: /etc/profile.d/zzz-timeout.sh
+    mode: '0644'
+    content: |
+      TMOUT={{ shell_timeout }}
+      readonly TMOUT
+      export TMOUT

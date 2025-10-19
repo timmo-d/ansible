@@ -7,3 +7,16 @@
     line: 'password requisite pam_pwquality.so try_first_pass local_users_only retry=3 enforce_for_root'
     create: yes
     backup: yes
+
+- name: "PAM | enforce pam_pwhistory"
+  lineinfile:
+    path: /etc/pam.d/common-password
+    regexp: '^\s*password\s+required\s+pam_pwhistory\.so'
+    line: "password required pam_pwhistory.so remember={{ pam_hist_remember }} use_authtok"
+    insertafter: '^password\s+.*pam_unix\.so'
+
+- name: "PAM | ensure pam_unix has use_authtok"
+  replace:
+    path: /etc/pam.d/common-password
+    regexp: '(^\s*password\s+.*pam_unix\.so.*)(?<!use_authtok)$'
+    replace: '\1 use_authtok'

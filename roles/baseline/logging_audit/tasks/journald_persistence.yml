@@ -1,0 +1,43 @@
+---
+- name: "JOURNALD | persistence & compression (CIS)"
+  ini_file:
+    path: /etc/systemd/journald.conf
+    section: Journal
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    no_extra_spaces: true
+  loop:
+    - { key: Storage,         value: "persistent" }
+    - { key: Compress,        value: "yes" }
+    - { key: ForwardToSyslog, value: "no" }
+  notify: restart_journald
+
+# Placeholder wiring for systemd-journal-upload (disabled by default)
+- name: "JOURNAL UPLOAD | package present (placeholder)"
+  when: enable_journal_upload | default(false)
+  apt: { name: systemd-journal-remote, state: present }
+
+- name: "JOURNAL UPLOAD | configure URL/TLS (placeholder)"
+  when: enable_journal_upload | default(false)
+  block:
+    - ini_file:
+        path: /etc/systemd/journal-upload.conf
+        section: Upload
+        option: URL
+        value: "{{ journal_upload_url }}"
+    - ini_file:
+        path: /etc/systemd/journal-upload.conf
+        section: Upload
+        option: ServerKeyFile
+        value: "{{ journal_upload_tls.server_key }}"
+    - ini_file:
+        path: /etc/systemd/journal-upload.conf
+        section: Upload
+        option: ServerCertificateFile
+        value: "{{ journal_upload_tls.server_crt }}"
+    - ini_file:
+        path: /etc/systemd/journal-upload.conf
+        section: Upload
+        option: TrustedCertificateFile
+        value: "{{ journal_upload_tls.ca_crt }}"
+    - systemd: { name: systemd-journal-upload.service, enabled: true, state: started }

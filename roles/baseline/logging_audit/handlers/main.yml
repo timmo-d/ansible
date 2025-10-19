@@ -9,3 +9,10 @@
     (augen.rc == 1 and
      'No change' not in (augen.stdout | default('')) and
      'No change' not in (augen.stderr | default('')))
+
+- name: reload_auditd
+  command: augenrules --load
+
+- name: restart_journald
+  service: { name: systemd-journald, state: restarted }
+

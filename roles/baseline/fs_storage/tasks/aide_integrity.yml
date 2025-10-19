@@ -4,7 +4,7 @@
   ansible.builtin.package:
     name: aide
     state: present
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 # Ensure database directory
 - name: Ensure /var/lib/aide exists
@@ -15,7 +15,7 @@
     owner: root
     group: root
     mode: '0755'
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 # Normalize config: dedupe, set gzip_dbout, compute filenames
 - name: Remove any existing database/database_out lines
@@ -24,7 +24,7 @@
     path: /etc/aide/aide.conf
     regexp: '^\s*(database|database_out)\s*=.*$'
     state: absent
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 - name: Ensure gzip_dbout is set explicitly
   become: yes
@@ -34,13 +34,13 @@
     line: "gzip_dbout={{ 'yes' if aide_gzip_db | default(false) else 'no' }}"
     create: yes
     state: present
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 - name: Compute AIDE database filenames based on compression
   ansible.builtin.set_fact:
     aide_db_file: "/var/lib/aide/aide.db{{ '.gz' if aide_gzip_db | default(false) else '' }}"
     aide_db_new_file: "/var/lib/aide/aide.db.new{{ '.gz' if aide_gzip_db | default(false) else '' }}"
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 - name: Ensure AIDE database path is set
   become: yes
@@ -49,7 +49,7 @@
     line: "database=file:{{ aide_db_file }}"
     create: true
     state: present
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 - name: Ensure AIDE database_out path is set
   become: yes
@@ -58,7 +58,7 @@
     line: "database_out=file:{{ aide_db_new_file }}"
     create: true
     state: present
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 # Protect audit tools, as you had
 - name: Protect audit tools with AIDE rules
@@ -74,7 +74,7 @@
     - /usr/sbin/aureport
     - /usr/sbin/ausearch
     - /usr/sbin/autrace
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 # Find aide binary (don't hardcode /usr/sbin/aide)
 - name: Find aide binary
@@ -82,13 +82,13 @@
   register: aide_bin
   changed_when: false
   failed_when: false
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 - name: Assert aide binary is available
   ansible.builtin.assert:
     that: "(aide_bin.stdout | length) > 0"
     fail_msg: "Could not find 'aide' in PATH after installation."
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 # Initialize database directly, passing the config path explicitly
 - name: Initialize AIDE (takes about 5 minutes on first run)
@@ -99,7 +99,7 @@
   register: aide_init_direct
   changed_when: aide_init_direct.rc == 0
   failed_when: aide_init_direct.rc != 0
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 # Promote the .new DB to the final DB (what aideinit normally does)
 - name: Promote new AIDE DB into place
@@ -112,7 +112,7 @@
   changed_when: aide_mv.rc == 0
   failed_when: aide_mv.rc != 0
   when:
-    - enable_aide | default(true)
+    - enable_aide_integrity | default(true)
     - aide_init_direct is defined
     - aide_init_direct.rc == 0
 
@@ -125,7 +125,7 @@
     regexp: '(?i)^\s*SILENTREPORTS='
     line: 'SILENTREPORTS=no'
     state: present
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)
 
 - name: Enable daily AIDE check (systemd timer)
   become: yes
@@ -135,4 +135,4 @@
     enabled: true
     masked: false
     daemon_reload: true
-  when: enable_aide | default(true)
+  when: enable_aide_integrity | default(true)

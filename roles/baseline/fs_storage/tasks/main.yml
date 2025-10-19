@@ -20,3 +20,6 @@
   import_tasks: "{{ role_path }}/fs_storage/tasks/aide_periodic_check.yml"
   when: enable_aide_periodic_check
 
+
+- import_tasks: "{{ role_path }}/fs_storage/tasks/partition_assert.yml"
+  when: enable_secure_mounts

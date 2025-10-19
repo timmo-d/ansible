@@ -1,0 +1,11 @@
+---
+- name: "PARTITION LAYOUT | assert"
+  block:
+    - command: findmnt -rn -o TARGET
+      register: mounts
+      changed_when: false
+    - set_fact:
+        missing_mounts: "{{ ['/home','/var','/var/log','/var/log/audit','/var/tmp'] | difference(mounts.stdout_lines) }}"
+    - debug:
+        msg: "CIS recommends separate partition for: {{ missing_mounts | join(', ') }} — plan LVM migration."
+      when: missing_mounts|length > 0

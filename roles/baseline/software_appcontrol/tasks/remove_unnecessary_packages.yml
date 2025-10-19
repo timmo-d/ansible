@@ -11,4 +11,16 @@
     name: prelink
     state: absent
   when: remove_prelink | default(true)
-  
+
+- name: "SAMBA | ensure present when enabled"
+  when: samba_enabled
+  apt:
+    name: [ 'samba', 'smbd', 'smbclient' ]
+    state: present
+
+- name: "SAMBA | ensure absent when disabled (CIS)"
+  when: not samba_enabled
+  apt:
+    name: [ 'samba', 'smbd', 'smbclient' ]
+    state: absent
+    purge: yes

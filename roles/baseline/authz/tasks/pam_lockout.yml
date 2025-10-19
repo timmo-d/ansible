@@ -23,6 +23,15 @@
 #    - 'auth required pam_faillock.so preauth'
 #    - 'auth [default=die] pam_faillock.so authfail'
 #  when: enable_pam_faillock | default(true)
+- name: "PAM | faillock lines in common-auth"
+  blockinfile:
+    path: /etc/pam.d/common-auth
+    marker: "# {mark} CIS faillock"
+    block: |
+      auth required pam_faillock.so preauth silent audit deny={{ pam_lockout.deny }} unlock_time={{ pam_lockout.unlock_time }} fail_interval={{ pam_lockout.fail_interval }}
+      auth [default=die] pam_faillock.so authfail audit deny={{ pam_lockout.deny }} unlock_time={{ pam_lockout.unlock_time }} fail_interval={{ pam_lockout.fail_interval }}
+      account required pam_faillock.so
+
 
 - name: Ensure pam_faillock is in common-account
   ansible.builtin.lineinfile:

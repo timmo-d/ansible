@@ -40,3 +40,15 @@
 - name: Attach to Ubuntu Pro and enable services
   import_tasks: "{{ role_path }}/system_config/tasks/ubuntu_pro.yml"
   when: enable_ubuntu_pro | default(true)
+
+
+
+- import_tasks: "{{ role_path }}/system_config/tasks/apport_disable.yml"
+  when: enable_apport_disable
+
+- import_tasks: "{{ role_path }}/system_config/tasks/umask_and_timeout.yml"
+  when: enable_umask_and_timeout
+
+- import_tasks: "{{ role_path }}/system_config/tasks/core_dumps_disable.yml"
+  when: enable_core_dumps_disable
+

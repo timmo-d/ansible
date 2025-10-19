@@ -23,6 +23,7 @@ enforce_sudo_timestamp: true
 sudo_timestamp_timeout: 5
 disable_sudo_nopasswd: true                 
 disable_sudo_no_authenticate: true           
+approved_sudo_users: []
 
 # Authentication & Authorization
 enable_pam_lockout: true                      # [true] TODO: Fix issue with not being able to access- failed attempts to access /etc/pam.d/common-account file. Enforce account lockouts after repeated failed login attempts (via pam_faillock)
@@ -36,6 +37,7 @@ faillock_silent: true
 enable_pam_faildelay: true
 pam_faildelay_us: 4000000
 enable_pam_lastlog: true
+pam_hist_remember: 24
 
 # Crypto
 enable_fips_mode: false                         # [false] Enables FIPS mode for cryptographic compliance; requires Ubuntu Pro subscription token.
@@ -66,6 +68,14 @@ audit_privileged_bins:
   - /usr/bin/crontab
   - /usr/sbin/visudo
   - /usr/sbin/apparmor_parser
+enable_journald_persistence: true
+enable_journal_upload: false
+journal_upload_url: ""
+journal_upload_tls:
+  server_key: /etc/ssl/private/journal-upload.key
+  server_crt: /etc/ssl/certs/journal-upload.crt
+  ca_crt:     /etc/ssl/certs/ca-bundle.crt
+
 
 # System Configuration
 enable_disable_unnecessary_services: true      # Disables services that are not required to reduce attack surface.
@@ -84,6 +94,19 @@ gnome_idle_delay: 900
 gnome_lock_delay: 5
 enable_grub_password: false
 grub_password_pbkdf2_hash: ""
+enable_secure_boot_settings: true
+enable_kernel_hardening_sysctl: true
+enable_motd_banners: true
+
+time_sync_provider: chrony
+chrony_servers:
+  - "pool.au.pool.ntp.org iburst"
+
+enable_core_dumps_disable: true
+enable_apport_disable: true
+enable_umask_and_timeout: true
+default_umask: "027"
+shell_timeout: 900
 
 
 # Patch & Vulnerability
@@ -94,11 +117,21 @@ enable_verify_package_signatures: true         # Verifies package signatures to 
 enable_ufw_firewall: true                      # Enables and configures UFW (Uncomplicated Firewall) to control network traffic.
 enable_ssh_hardening: true                     # Applies security best practices to SSH configuration to prevent unauthorized access.
 enable_disable_unused_protocols: true          # Disables unused network protocols to reduce potential attack vectors.
+ufw_allowed_ports: ['22/tcp']
+ssh_limits:
+  client_alive_interval: 300
+  client_alive_count_max: 3
+  gssapi_authentication: 'no'
+  hostbased_authentication: 'no'
+  allow_tcp_forwarding: 'no'
+  log_level: INFO
+  max_startups: '10:30:60'
+  allowusers: []
 
 # File System & Storage
 enable_secure_mounts: true                     # Applies secure mount options (e.g., noexec, nosuid) to protect against exploitation.
 enable_encrypt_swap_and_tmp: false             # Disables encryption of swap and /tmp; set to true for enhanced data protection.
-enable_aide: true                              # Installs and configures AIDE to monitor file integrity and detect unauthorized changes.
+enable_aide_integrity: true                    # Installs and configures AIDE to monitor file integrity and detect unauthorized changes.
 enable_aide_periodic_check: true               # Schedules regular AIDE checks to maintain ongoing file integrity monitoring.
 aide_gzip_db: false                            # set to true to use .gz DB files
 
@@ -106,6 +139,8 @@ aide_gzip_db: false                            # set to true to use .gz DB files
 enable_remove_unnecessary_packages: true       # Removes unused or unnecessary packages to reduce system complexity and risk.
 enable_restrict_repos: false                   # Allows use of unrestricted repositories; set to true to limit to trusted sources only.
 remove_prelink: true
+samba_enabled: true   # SWITCH: set true to keep Samba; false removes it
+
 
 # Continuous Monitoring
 # Ubuntu Pro
@@ -161,9 +196,10 @@ pass_max_days: 365                              # [60] Maximum password age in d
 pass_min_days: 1                                # [1] Minimum days before a password can be changed again
 pass_warn_age: 7                                # [7] Days before expiration to start warning the user
 pw_maxrepeat: 3
-
+maxsequence: 3
 default_umask: 027                              # [027] Default file creation mask (restricts permissions; 027 = rw for owner, r for group, none for others)
 pam_unix_rounds: 5000
+pw_inactive_days: 30
 
 # GRUB/sysctl/time
 grub_cmdline_linux: 'quiet splash audit=1 audit_backlog_limit=8192'  # Configures GRUB to enable auditing and increase backlog buffer size.

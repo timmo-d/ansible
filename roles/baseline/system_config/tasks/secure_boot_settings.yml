@@ -17,5 +17,12 @@
       password_pbkdf2 root {{ bootloader_password_pbkdf2 }}
   when: bootloader_password_pbkdf2 | length > 0
 
-- name: Apply GRUB changes
-  command: update-grub
+- name: "GRUB | ensure apparmor boot flags"
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX='
+    line: 'GRUB_CMDLINE_LINUX="apparmor=1 security=apparmor"'
+  notify: update_grub
+
+#- name: Apply GRUB changes
+#  command: update-grub

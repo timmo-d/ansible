@@ -16,3 +16,25 @@
     name: chrony
     enabled: yes
     state: started
+
+- name: "TIME | chrony selected (CIS-aligned)"
+  when: time_sync_provider == 'chrony'
+  block:
+    - apt:
+        name: chrony
+        state: present
+        update_cache: yes
+    - lineinfile:
+        path: /etc/chrony/chrony.conf
+        regexp: '^(pool|server)\s+'
+        line: ''
+        state: absent
+    - blockinfile:
+        path: /etc/chrony/chrony.conf
+        marker: "# {mark} CIS chrony"
+        block: |
+          {% for s in chrony_servers %}
+          {{ s }}
+          {% endfor %}
+    - systemd: { name: chrony, enabled: yes, state: started }
+    - systemd: { name: systemd-timesyncd, enabled: no, state: stopped }

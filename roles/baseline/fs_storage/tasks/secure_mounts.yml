@@ -15,3 +15,11 @@
     fstype: auto
     opts: defaults,nodev
   ignore_errors: yes
+
+- name: "/dev/shm | ensure nodev,nosuid,noexec"
+  mount:
+    path: /dev/shm
+    src: tmpfs
+    fstype: tmpfs
+    opts: "defaults,nodev,nosuid,noexec"
+    state: mounted

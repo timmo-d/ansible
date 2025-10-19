@@ -2,3 +2,26 @@
 
 - name: Include SSH hardening tasks from crypto category
   import_tasks: "{{ role_path }}/crypto/tasks/ssh_strong_ciphers.yml"
+
+- name: "SSH | CIS server settings"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^{{ item.key }}\s+'
+    line: '{{ item.key }} {{ item.value }}'
+  loop:
+    - { key: ClientAliveInterval,    value: "{{ ssh_limits.client_alive_interval }}" }
+    - { key: ClientAliveCountMax,    value: "{{ ssh_limits.client_alive_count_max }}" }
+    - { key: HostbasedAuthentication, value: "{{ ssh_limits.hostbased_authentication }}" }
+    - { key: GSSAPIAuthentication,    value: "{{ ssh_limits.gssapi_authentication }}" }
+    - { key: AllowTcpForwarding,      value: "{{ ssh_limits.allow_tcp_forwarding }}" }
+    - { key: LogLevel,                value: "{{ ssh_limits.log_level }}" }
+    - { key: MaxStartups,             value: "{{ ssh_limits.max_startups }}" }
+  notify: restart_sshd
+
+- name: "SSH | Limit Users (optional)"
+  when: ssh_limits.allowusers|length>0
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^AllowUsers\s+'
+    line: 'AllowUsers {{ ssh_limits.allowusers | join(" ") }}'
+  notify: restart_sshd

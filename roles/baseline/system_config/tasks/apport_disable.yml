@@ -1,0 +1,9 @@
+---
+- name: "APPORT | disable"
+  block:
+    - lineinfile:
+        path: /etc/default/apport
+        regexp: '^enabled='
+        line: 'enabled=0'
+        create: yes
+    - service: { name: apport, enabled: no, state: stopped }

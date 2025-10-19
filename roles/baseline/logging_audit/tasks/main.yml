@@ -25,3 +25,5 @@
   import_tasks: "{{ role_path }}/logging_audit/tasks/auditd_log_group_root.yml"
   when: enable_auditd_log_group_root
 
+- import_tasks: journald_persistence.yml
+  when: enable_journald_persistence or enable_journal_upload

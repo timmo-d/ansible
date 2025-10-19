@@ -22,3 +22,10 @@
     state: started
     enabled: true
   when: enable_auditd | default(true)
+
+- name: "AUDITD | ensure rules.d is root:root 0750"
+  file:
+    path: /etc/audit/rules.d
+    owner: root
+    group: root
+    mode: '0750'
