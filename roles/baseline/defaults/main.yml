@@ -27,6 +27,7 @@ approved_sudo_users: []
 
 # Authentication & Authorization
 enable_pam_lockout: false                      # [true] TODO: Fix issue with not being able to access- failed attempts to access /etc/pam.d/common-account file. Enforce account lockouts after repeated failed login attempts (via pam_faillock)
+                                              # Also causes login with immediate session rejection.
 enable_pam_common_auth: true                  # Harden common PAM configuration to require strong password quality checks
 enable_disable_su_unless_sudo: true           # Restrict use of 'su' command to members of the sudo group only
 enable_pam_faillock: true
