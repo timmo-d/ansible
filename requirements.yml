@@ -1,6 +1,7 @@
 ---
 collections:
   - name: community.general
-    version: ">=8.0.0"   # optional, pin to a minimum or exact version
+    version: ">=12.0.0"   # optional, pin to a minimum or exact version
   - community.crypto
+
   
